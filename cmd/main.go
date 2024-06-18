@@ -1,0 +1,100 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/johnkristanf/clamscanner/database"
+	"github.com/johnkristanf/clamscanner/handlers"
+	"github.com/johnkristanf/clamscanner/helpers"
+	"github.com/johnkristanf/clamscanner/middlewares"
+	"github.com/johnkristanf/clamscanner/routes"
+)
+
+
+var (
+	accessTokenDuration   						= 3 * time.Hour
+	refreshTokenDuration  						= 3 * 24 * time.Hour
+	accessTokenSecret	  						= "accessToken_secret"
+	refreshTokenSecret	  						= "refreshToken_secret"
+)
+
+func main() {
+
+	router := http.NewServeMux()
+
+	db, err := database.DBconfig()
+	if err != nil {
+		fmt.Printf("error in db config: %v \n", err)
+	}
+	
+	redis, err := middlewares.REDIS("http://localhost:6379")
+	if err != nil {
+		fmt.Printf("error in redis: %v \n", err)
+	}
+
+	json := helpers.JsonConfig()
+	image := helpers.ImageHelperConfig()
+
+	jwt := middlewares.JWT_CONFIG(
+		accessTokenDuration, 
+		refreshTokenDuration, 
+		accessTokenSecret, 
+		refreshTokenSecret,
+		json,
+	)
+	
+
+	accountHandler := &handlers.AccountHandler{
+		DB_METHOD:   db,
+		JSON_METHOD: json,
+		JWT_METHOD: jwt,
+	}
+
+	reportsHandler := &handlers.ReportHandler{
+		DB_METHOD:   db,
+		JSON_METHOD: json,
+		JWT_METHOD: jwt,
+		REDIS_METHOD: redis,
+	}
+
+	datasetsHandler := &handlers.DatasetsHandlers{
+		DB_METHOD:   db,
+		JSON_METHOD: json,
+		JWT_METHOD: jwt,
+		REDIS_METHOD: redis,
+		IMAGE_HELPERS_METHODS: image,
+	}
+
+	modelHandler := &handlers.ModelHandlers{
+		DB_METHOD:   db,
+		JSON_METHOD: json,
+		JWT_METHOD: jwt,
+		REDIS_METHOD: redis,
+	}
+
+
+	routes.AccountRoutes(router, accountHandler)
+	routes.ReportsRoutes(router, reportsHandler)
+	routes.DatasetsRoutes(router, datasetsHandler)
+	routes.ModelRoutes(router, modelHandler)
+
+	
+	stack := middlewares.Use(
+		middlewares.Logger,
+		middlewares.AllowCors,
+	)
+
+	s := http.Server{
+		Addr:    ":8080",
+		Handler: stack(router),
+	}
+
+	log.Println("Server is listening on port 8080")
+	if err := s.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+
+}

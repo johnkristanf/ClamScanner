@@ -1,0 +1,11 @@
+.auth_bg {
+    background-image: url('./img//landing_page_bg.jpg');
+    background-size: cover; 
+    background-position: center; 
+    
+}
+
+.auth_bg::before{
+    filter: blur(5px); 
+}
+  

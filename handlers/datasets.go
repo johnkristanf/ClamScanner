@@ -1,0 +1,325 @@
+package handlers
+
+import (
+	
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"sync"
+	
+
+	"github.com/go-redis/redis/v8"
+	"github.com/johnkristanf/clamscanner/database"
+	"github.com/johnkristanf/clamscanner/helpers"
+	"github.com/johnkristanf/clamscanner/middlewares"
+	"github.com/johnkristanf/clamscanner/types"
+)
+
+type DatasetsHandlers struct {
+	DB_METHOD    			database.DATASET_DB_METHOD
+	JSON_METHOD  			helpers.JSON_METHODS
+	JWT_METHOD   			middlewares.JWT_METHOD
+	REDIS_METHOD 			middlewares.REDIS_METHOD
+	IMAGE_HELPERS_METHODS 	helpers.IMAGES_HELPERS_METHODS
+}
+
+
+
+
+func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
+
+	var newClassData *types.NewClass
+	errorChan := make(chan error, 1)
+
+	h.JSON_METHOD.JsonDecode(r, &newClassData)
+
+	dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
+
+	err := os.MkdirAll(dynamicFolderPath, 0755)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		defer close(errorChan)
+
+		if err := h.DB_METHOD.AddDatasetClass(newClassData); err != nil {
+			errorChan <- err
+		}
+
+	}()
+
+	if err := <-errorChan; err != nil {
+		return err
+	}
+
+	if err := h.REDIS_METHOD.DELETE("datasets", r); err != nil {
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Added!")
+}
+
+
+
+func (h *DatasetsHandlers) proccessUploadImage(files []*multipart.FileHeader, destFolder string, wg *sync.WaitGroup) error {
+	defer wg.Done()
+
+	for _, fileHeader := range files {
+		wg.Add(1)
+
+		file, err := fileHeader.Open()
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		if !h.IMAGE_HELPERS_METHODS.IsValidImage(file) {
+			continue
+		}
+
+		if _, err := file.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+
+		destFile, err := os.Create(filepath.Join(destFolder, fileHeader.Filename))
+		if err != nil {
+			return err
+		}
+		defer destFile.Close()
+
+		_, err = io.Copy(destFile, file)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+
+
+func (h *DatasetsHandlers) UploadImageDatasetHandler(w http.ResponseWriter, r *http.Request) error {
+
+	var wg sync.WaitGroup
+
+	if err := r.ParseMultipartForm(100 * 1024 * 1024); err != nil {
+		return err
+	}
+
+	uploadErrChan := make(chan error, 1)
+
+	formDatasetClass := r.FormValue("datasetClass")
+	formDatasetClassID := r.FormValue("class_id")
+	formDatasetFiles := r.MultipartForm.File["images"]
+
+	fmt.Println("formDatasetClass: ", formDatasetClass)
+
+	destFolder := filepath.Join("datasets", formDatasetClass)
+
+	classID, err := strconv.Atoi(formDatasetClassID)
+	if err != nil {
+		return err
+	}
+
+
+	go func() {
+
+		defer close(uploadErrChan)
+
+		if err := h.proccessUploadImage(formDatasetFiles, destFolder, &wg); err != nil {
+			uploadErrChan <- err
+		}
+
+	}()
+
+	wg.Wait()
+
+	if err := <-uploadErrChan; err != nil {
+		if err.Error() == "invalid image type"{
+			return h.JSON_METHOD.JsonEncode(w, http.StatusUnsupportedMediaType, "Invalid Image Type Please Upload Another!")
+		} else {
+			return err
+		}
+	}
+
+
+	imgcount, err := h.IMAGE_HELPERS_METHODS.CountImages(destFolder)
+	if err != nil {
+		return err
+	}
+
+	
+	if err := h.DB_METHOD.UpdateDatasetClassData(imgcount, classID); err != nil {
+		return err
+	}
+
+	
+	if err := h.REDIS_METHOD.DELETE("datasets", r); err != nil {
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Uploaded")
+}
+
+func (h *DatasetsHandlers) FetchDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
+
+	var datasets []*types.Fetch_DatasetClass
+
+	err := h.REDIS_METHOD.GET(&datasets, "datasets", r)
+
+	if err == redis.Nil{
+
+		datasets, err := h.DB_METHOD.FetchDatasetClasses()
+		if err != nil {
+			return err
+		}
+
+		if err := h.REDIS_METHOD.SET(datasets, "datasets", r); err != nil{
+			return err
+		}
+
+		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, datasets)
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, datasets)
+	
+}
+
+func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter, r *http.Request) error {
+
+	// BUG DIRI DLI MA SERVE ANG IMAGE TRY GAMIT OG AWS S3 OR GOOGLE STORAGE 
+	// IF NAA NAY CREDIT CARD TABANG MAA
+	classFolderParam := r.PathValue("classFolderName")
+    folderPath := filepath.Join("datasets", classFolderParam)
+
+    if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+        return err
+    }
+
+    files, err := os.ReadDir(folderPath)
+    if err != nil {
+        return err
+    }
+
+    for _, file := range files {
+
+        if !file.IsDir() && h.IMAGE_HELPERS_METHODS.IsImage(file.Name()) {
+            imagePath := filepath.Join(folderPath, file.Name())
+			http.ServeFile(w, r, imagePath)
+        }
+    }
+
+
+    return nil
+    
+
+	// files, err := os.ReadDir(folderPath)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// for _, file := range files {
+
+	// 	if !file.IsDir() && isImage(file.Name()) {
+
+	// 		imagePath := filepath.Join(folderPath, file.Name())
+	// 		imageData, err := os.ReadFile(imagePath)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+
+	// 		contentType := http.DetectContentType(imageData)
+	// 		w.Header().Set("Content-Type", contentType)
+
+	// 		_, err = w.Write(imageData)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+
+	// 		if f, ok := w.(http.Flusher); ok {
+	// 			f.Flush()
+	// 		}
+
+	// 		fmt.Println("File: ", file.Name(), "is send successfully")
+
+	// 	}
+	// }
+
+	// return nil
+
+
+	// imageDataBufferMap := make(map[string][][]byte)
+	// var buffArray [][]byte
+
+	// files, err := os.ReadDir(folderPath)
+	// if err != nil{
+	// 	return err
+	// }
+
+	// for _, file := range files {
+
+	//     if !file.IsDir() && isImage(file.Name()) {
+
+	//         imagePath := filepath.Join(folderPath, file.Name())
+
+	//         imageData, err := os.ReadFile(imagePath)
+	//         if err != nil {
+	//             fmt.Println("Error reading file:", err)
+	//             continue
+	//         }
+
+	// 		buffArray = append(buffArray, imageData)
+
+	// 		fmt.Println("Image", file.Name(), "sent successfully")
+
+	//     }
+	// }
+
+	// imageDataBufferMap["images"] = buffArray
+
+	// fmt.Println("imageDataBufferMap", imageDataBufferMap)
+
+	// return h.JSON_METHOD.JsonEncode(w, http.StatusOK, imageDataBufferMap)
+
+}
+
+func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
+
+	errorChan := make(chan error, 1)
+	classID, err := strconv.Atoi(r.PathValue("class_id"))
+	if err != nil {
+		return err
+	}
+
+	dynamicFolderPath := filepath.Join("datasets", r.PathValue("className"))
+
+	err = os.RemoveAll(dynamicFolderPath)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		defer close(errorChan)
+
+		if err := h.DB_METHOD.DeleteDatasetClass(classID); err != nil {
+			errorChan <- err
+		}
+	}()
+
+	if err := <-errorChan; err != nil {
+		return err
+	}
+
+	if err := h.REDIS_METHOD.DELETE("datasets", r); err != nil {
+		return err
+	}
+	
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "DELETE NA DOL")
+}
+
+
