@@ -31,3 +31,15 @@ export async function AddNewDatasetClass(data: DatasetClassTypes){
     }
 }
 
+export async function EditDatasetClass(data: DatasetClassTypes){
+
+    try {
+        return axios.post("http://localhost:8080/edit/dataset/class", data, {
+            withCredentials: true
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+

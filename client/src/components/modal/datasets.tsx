@@ -1,20 +1,21 @@
 import { faEdit, faX } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
-import { AddNewDatasetClass, UploadNewImage } from "../../http/post/datasets";
+import { AddNewDatasetClass, EditDatasetClass, UploadNewImage } from "../../http/post/datasets";
 import { DatasetClassTypes } from "../../types/datasets";
 import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 
 
+
 export const AddNewDatasetModal = ({setisOpenAddModal}: {
     setisOpenAddModal: React.Dispatch<React.SetStateAction<boolean>>,
 }) => {
 
+    const queryClient = useQueryClient();
     const { register, handleSubmit, reset } = useForm<DatasetClassTypes>();
 
-    const queryClient = useQueryClient();
 
     const { isLoading, mutate } = useMutation(AddNewDatasetClass, {
 
@@ -102,85 +103,143 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
     setisOpenInfoModal: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
 
-    const [row, cols] = [5, 50];
+    const queryClient = useQueryClient();
     const [readOnly, setReadOnly] = useState(true);
+    const [formData, setFormData] = useState<DatasetClassTypes>({
+        ...classDetailsData 
+    });
 
-    const textInfoInputs = [
-        { label: "Description", value: classDetailsData?.description },
-    ];
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
+    const { isLoading, mutate } = useMutation(EditDatasetClass, {
+
+        onSuccess: () => {
+            queryClient.invalidateQueries("dataset_classes");
+
+            Swal.fire({
+                title: "Changes Saved",
+                text: "Dataset information updated successfully",
+                icon: "success",
+                confirmButtonColor: "#3085d6",
+            }).then(result => {
+
+                const { isConfirmed, isDismissed } = result
+
+                if(isConfirmed || isDismissed){
+                    window.location.href = '/datasets'
+                }
+            })
+    
+            setReadOnly(true);
+            setisOpenInfoModal(false)
+        
+        },
+  
+        onError: (error: any) => {
+          console.error("Edit Dataset Error:", error);
+        },
+    })
+
+
+    const saveChanges = () => mutate(formData)
+
+       
+    
+
+    if(isLoading) return <div>Fetching Dataset Clase Information....</div>
+
 
     return (
-
         <div className="flex w-full justify-center items-center">
+            <div className="flex flex-col bg-white rounded-md absolute top-8 w-[70%] p-5" style={{ zIndex: 7000 }}>
 
-                <div className="flex flex-col bg-white rounded-md absolute top-8 w-[70%] p-5" style={{ zIndex: 7000 }}>
+                <div className="flex w-full justify-between items-center">
+                    <h1 className="text-black font-bold text-2xl mb-5">{formData.name}</h1>
 
-                    <div className="flex w-full justify-between items-center">
-                        <h1 className="text-black font-bold text-2xl mb-5">{ classDetailsData?.name }</h1>
-
-                        <div className="flex gap-5">
-
+                    <div className="flex gap-5">
+                        {readOnly ? (
                             <button
                                 onClick={() => setReadOnly(!readOnly)}
-                                className={`text-white font-bold w-full rounded-md p-3 hover:opacity-75 ${readOnly ? 'bg-blue-900' : 'bg-gray-500'}`}>
-                                {readOnly ? <FontAwesomeIcon icon={faEdit} /> : 'Cancel'}
+                                className="text-white font-bold w-full rounded-md p-3 hover:opacity-75 bg-blue-900"
+                            >
+                                <FontAwesomeIcon icon={faEdit} />
                             </button>
+                        ) : (
+                            <div className="flex gap-5">
+                                <button
+                                    onClick={saveChanges}
+                                    className="text-white font-bold w-full rounded-md p-3 hover:opacity-75 bg-blue-900"
+                                >
+                                    Save
+                                </button>
 
-                            <button
-                                onClick={() => setisOpenInfoModal(false)}
-                                className="text-white font-bold bg-black w-full rounded-md p-3 hover:opacity-75">
-                                <FontAwesomeIcon icon={faX} />
-                            </button>
+                                <button
+                                    onClick={() => {
+                                        setReadOnly(!readOnly);
+                                        // Optionally, reset formData to original values on cancel
+                                        // setFormData(classDetailsData);
+                                    }}
+                                    className="text-white font-bold w-full rounded-md p-3 hover:opacity-75 bg-gray-500"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
 
-                        </div>
+                        <button
+                            onClick={() => setisOpenInfoModal(false)}
+                            className="text-white font-bold bg-black w-full rounded-md p-3 hover:opacity-75"
+                        >
+                            <FontAwesomeIcon icon={faX} />
+                        </button>
+                    </div>
+                </div>
 
+                <form className="flex flex-col w-full gap-5">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-gray-500 font-bold text-lg">Description</h1>
+                        <textarea
+                            readOnly={readOnly}
+                            rows={5}
+                            className={`rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-full focus:outline-none ${!readOnly ? 'border-2 border-blue-800' : ''}`}
+                            value={formData.description}
+                            onChange={handleInputChange}
+                            name="description"
+                        />
                     </div>
 
-                    <form className="flex flex-col w-full gap-5">
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-gray-500 font-bold text-lg">Scientific Name</h1>
+                        <input
+                            type="text"
+                            readOnly={readOnly}
+                            value={formData.scientific_name}
+                            onChange={handleInputChange}
+                            name="scientific_name"
+                            className={`rounded-md mb-5 bg-gray-300 placeholder-gray-500 font-semibold p-2 w-full focus:outline-none ${!readOnly ? 'border-2 border-blue-800' : ''}`}
+                        />
 
-                        {textInfoInputs.map((item, index) => (
-
-                            <div key={index} className="flex flex-col gap-1">
-                                <h1 className="text-gray-500 font-bold text-lg">{item.label}</h1>
-                                <textarea
-                                    readOnly={readOnly}
-                                    rows={row}
-                                    cols={cols}
-                                    className={`rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-full focus:outline-none ${!readOnly ? 'border-2 border-blue-800' : ''}`}
-                                    value={item.value}>
-                                </textarea>
-                            </div>
-
-                        ))}
-
-                        <div className="flex flex-col gap-2">
-
-                            <h1 className="text-gray-500 font-bold text-lg">Scientific Name</h1>
-                            <input
-                                type="text"
-                                readOnly={readOnly}
-                                value={classDetailsData?.scientific_name}
-                                className={`rounded-md mb-5 bg-gray-300 placeholder-gray-500 font-semibold p-2 w-full focus:outline-none ${!readOnly ? 'border-2 border-blue-800' : ''}`} 
-                            />
-
-                            <h1 className="text-gray-500 font-bold text-lg">Status</h1>
-                            <input
-                                type="text"
-                                readOnly={readOnly}
-                                value={classDetailsData?.status}
-                                className={`rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-full focus:outline-none ${!readOnly ? 'border-2 border-blue-800' : ''}`} 
-                            />
-
-                        </div>
-
-                    </form>
-
-                </div>
+                        <h1 className="text-gray-500 font-bold text-lg">Status</h1>
+                        <input
+                            type="text"
+                            readOnly={readOnly}
+                            value={formData.status}
+                            onChange={handleInputChange}
+                            name="status"
+                            className={`rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-full focus:outline-none ${!readOnly ? 'border-2 border-blue-800' : ''}`}
+                        />
+                    </div>
+                </form>
+            </div>
         </div>
-       
     );
-}
-
+};
 
 
 export function UploadModal({ className, class_id, setisOpenUpload }: {
