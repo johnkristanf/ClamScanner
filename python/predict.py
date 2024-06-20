@@ -8,7 +8,7 @@ from keras._tf_keras.keras.optimizers import Adam
 
 print("WORKING DIR:", os.getcwd())
 
-model_path = os.path.abspath("./models/ClamScanner_best_v2.keras")
+model_path = os.path.abspath("./models/ClamScanner_best_v4.h5")
 
 def load_resnet_model():
     if not os.path.exists(model_path):
@@ -18,8 +18,8 @@ def load_resnet_model():
     resnet_model = load_model(model_path)
     print("Model loaded successfully.")
 
-    # resnet_model.compile(optimizer=Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    # print("Model recompiled successfully.")
+    resnet_model.compile(optimizer=Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    print("Model recompiled successfully.")
 
 
 load_resnet_model()
