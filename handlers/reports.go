@@ -302,7 +302,6 @@ func (h *ReportHandler) UpdateReportStatusHandler(w http.ResponseWriter, r *http
 		return err
 	}
 
-	fmt.Println("update status id: ", report_id)
 
 	if err := h.DB_METHOD.UpdateReportStatus(int64(report_id)); err != nil {
 		return err
