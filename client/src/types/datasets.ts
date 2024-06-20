@@ -3,7 +3,6 @@ export type DatasetClassTypes = {
     name:               string 
     scientific_name:    string
     description:        string 
-    lifecycle:          string 
     status:             string 
     count:              string 
 }
