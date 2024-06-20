@@ -37,7 +37,6 @@ func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http
 
     dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
 
-
 	wg.Add(1)
     go func() {
         defer wg.Done()
@@ -96,6 +95,18 @@ func (h *DatasetsHandlers) addPythonDSClass(path string) error {
 	return nil
 }
 
+
+func (h *DatasetsHandlers) EditDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
+
+	var editClassInfo *types.EditClass
+	h.JSON_METHOD.JsonDecode(r, &editClassInfo)
+
+	if err := h.DB_METHOD.UpdateDatasetClassInfo(editClassInfo); err != nil{
+		return err
+	}
+
+	return nil
+}
 
 
 // func (h *DatasetsHandlers) proccessUploadImage(files []*multipart.FileHeader, destFolder string, wg *sync.WaitGroup) error {
