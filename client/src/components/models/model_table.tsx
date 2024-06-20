@@ -22,11 +22,6 @@ export function ModelTable({ setisModelDetailsModal, setModelDetails, setNumberO
         setModelDetails(data)
     }
 
-    // Check if there are models available
-    if (!models || models.length === 0) {
-        return <div className="text-white text-2xl font-bold text-center">No Trained Models</div>;
-    }
-
     return (
         <div className="overflow-auto flex items-center justify-center h-full w-full scrollable-container">
             <div className="rounded-md h-full w-full">
