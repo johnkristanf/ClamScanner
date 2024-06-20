@@ -26,6 +26,7 @@ interface TrainingMetrics {
   val_accuracy: number[];
   loss: number[];
   val_loss: number[];
+  class_names: string[]
 }
 
 const ModelsPage: React.FC = () => {
@@ -41,17 +42,23 @@ const ModelsPage: React.FC = () => {
     val_accuracy: [],
     loss: [],
     val_loss: [],
+    class_names: []
   });
 
   useEffect(() => {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       setTrainingMetrics((prevMetrics) => ({
+
         epochs: [...prevMetrics.epochs, data.epoch],
+
         accuracy: [...prevMetrics.accuracy, data.accuracy],
         val_accuracy: [...prevMetrics.val_accuracy, data.val_accuracy],
+
         loss: [...prevMetrics.loss, data.loss],
         val_loss: [...prevMetrics.val_loss, data.val_loss],
+
+        class_names: data.class_names
       }));
     };
   }, []);
@@ -95,7 +102,7 @@ const ModelsPage: React.FC = () => {
 
   if (trainingMetrics.epochs.length > 0) {
     chartData = trainingMetrics.epochs.map((epoch, index) => ([
-      epoch,
+      epoch + 1,
       trainingMetrics.accuracy[index],
       trainingMetrics.val_accuracy[index],
       trainingMetrics.loss[index],
@@ -105,7 +112,7 @@ const ModelsPage: React.FC = () => {
     chartData.unshift(['Epoch', 'Accuracy', 'Val Accuracy', 'Loss', 'Val Loss']);
   }
 
-  console.log("trainingMetrics", trainingMetrics)
+  console.log("trainingMetrics: ", trainingMetrics)
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -133,6 +140,17 @@ const ModelsPage: React.FC = () => {
                 <FontAwesomeIcon icon={faRobot} /> Train New Model
               </button>
             </div>
+
+            {
+              trainingMetrics.class_names.length > 0 && (
+                <div className="w-full text-white font-bold flex gap-3 text-lg">
+                  <h1>Dataset Class Names:</h1>
+                  {trainingMetrics.class_names.join(', ')}
+                </div>
+              )
+            }
+
+          
 
             <ModelTable
               setisModelDetailsModal={setIsModelDetailsModalOpen}
