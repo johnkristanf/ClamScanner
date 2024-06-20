@@ -22,8 +22,14 @@ type Datasets struct {
 type DATASET_DB_METHOD interface {
 	AddDatasetClass(*types.NewClass) error
 	FetchDatasetClasses() ([]*types.Fetch_DatasetClass, error)
-	UpdateDatasetClassData(int, int) error
+	UpdateDatasetClassInfo(*types.EditClass) error
+
+	// UpdateDatasetClassImgCount(int, int) error
 	DeleteDatasetClass(int) error
+}
+
+type InfoStruct struct{
+
 }
 
 	
@@ -59,16 +65,34 @@ func (sql *SQL) FetchDatasetClasses() ([]*types.Fetch_DatasetClass, error) {
 }
 
 
-func (sql *SQL) UpdateDatasetClassData(imgcount int, classID int) error {
+// func (sql *SQL) UpdateDatasetClassImgCount(imgcount int, classID int) error {
 
 
-	result := sql.DB.Table("datasets").Where("id = ?", classID).Update("count", imgcount)
+// 	result := sql.DB.Table("datasets").Where("id = ?", classID).Update("count", imgcount)
+// 	if result.Error != nil{
+// 		return result.Error
+// 	}
+
+// 	return nil
+// }
+
+func (sql *SQL) UpdateDatasetClassInfo(info *types.EditClass) error {
+
+
+	result := sql.DB.Table("datasets").Where("id = ?", info.ID).Updates(types.EditClass{
+		ScientificName: info.ScientificName,
+		Description: info.Description,
+		Status: info.Status,
+	})
+
 	if result.Error != nil{
 		return result.Error
 	}
 
 	return nil
 }
+
+
 
 
 func (sql *SQL) DeleteDatasetClass(class_id int) error {
