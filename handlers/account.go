@@ -234,8 +234,6 @@ func (h *AccountHandler) DeleteAccountHandler(w http.ResponseWriter, r *http.Req
 
 func (h *AccountHandler) SignOutHandler(w http.ResponseWriter, r *http.Request) error {
 
-	fmt.Println("WA BALOOO")
-
 	accessTokenCookie := &http.Cookie{
 		Name:     "access_token",
 		Value:    "",
