@@ -11,7 +11,7 @@ func DatasetsRoutes(router *http.ServeMux, datasetsHandler *handlers.DatasetsHan
 	adminAuth := datasetsHandler.JWT_METHOD.AdminAuthenticateMiddleware
 
 	router.HandleFunc("POST /add/dataset/class", adminAuth(ParseHTTPHandler(datasetsHandler.AddDatasetClassHandler)))
-	router.HandleFunc("POST /upload/images", adminAuth(ParseHTTPHandler(datasetsHandler.UploadImageDatasetHandler)))
+	// router.HandleFunc("POST /upload/images", adminAuth(ParseHTTPHandler(datasetsHandler.UploadImageDatasetHandler)))
 	router.HandleFunc("DELETE /delete/class/{class_id}/{className}", adminAuth(ParseHTTPHandler(datasetsHandler.DeleteDatasetClassHandler)))
 
 
