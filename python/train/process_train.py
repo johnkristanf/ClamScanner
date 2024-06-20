@@ -20,7 +20,7 @@ import train.callbacks as cb
 
 from ws_client import clients
 
-def load_dataset(DATASET_FOLDER: str) -> tuple[tf.data.Dataset, tf.data.Dataset,  tf.data.Dataset, int]:
+def load_dataset(DATASET_FOLDER: str) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset, int, list[str]]:
     image_size = (224, 224)
     batch_size = 32
 
@@ -42,7 +42,7 @@ def load_dataset(DATASET_FOLDER: str) -> tuple[tf.data.Dataset, tf.data.Dataset,
     val_ds = remaining_ds.take(val_size)
     test_ds = remaining_ds.skip(val_size)
 
-    print("Dataset classes:", dataset.class_names)
+    class_names = dataset.class_names
     num_classes = len(dataset.class_names)
 
     train_ds_size = len(list(train_ds))
@@ -52,8 +52,9 @@ def load_dataset(DATASET_FOLDER: str) -> tuple[tf.data.Dataset, tf.data.Dataset,
     print(f"Training dataset size: {train_ds_size} batches")
     print(f"Validation dataset size: {val_ds_size} batches")
     print(f"Test dataset size: {test_ds_size} batches")
+    print(f"Class Name: {class_names}")
 
-    return train_ds, val_ds, test_ds, num_classes
+    return train_ds, val_ds, test_ds, num_classes, class_names
 
 
 
@@ -80,20 +81,19 @@ def prepare(ds: tf.data.Dataset, shuffle=False, augment=False):
             buffer_size = dataset_size
             ds = ds.shuffle(buffer_size=buffer_size)
         else:
-            # Handle case where dataset size is unknown or zero
             ds = ds.shuffle(buffer_size=100)
 
     return ds.prefetch(buffer_size=tf.data.AUTOTUNE)
 
 
-async def send_training_update(epoch, logs):
-
+async def send_training_update(epoch, logs, class_names):
     data = {
         'epoch': epoch,
         'accuracy': logs.get('accuracy'),
         'val_accuracy': logs.get('val_accuracy'),
         'loss': logs.get('loss'),
-        'val_loss': logs.get('val_loss')
+        'val_loss': logs.get('val_loss'),
+        'class_names': class_names
     }
 
     message = json.dumps(data)
@@ -101,13 +101,18 @@ async def send_training_update(epoch, logs):
     await asyncio.gather(*tasks)
 
 
+
 class CustomCallback(tf.keras.callbacks.Callback):
+    def __init__(self, class_names):
+        super().__init__()
+        self.class_names = class_names
+
     def on_epoch_end(self, epoch, logs=None):
-        asyncio.run(send_training_update(epoch, logs))
+        asyncio.run(send_training_update(epoch, logs, self.class_names))
 
 
 
-def train_save_model(train_ds, validation_ds, num_classes: int, model_version: str):
+def train_save_model(train_ds, validation_ds, num_classes: int, class_names: list[str], model_version: str):
 
     base_model = ResNet50(
         include_top=False,
@@ -149,12 +154,13 @@ def train_save_model(train_ds, validation_ds, num_classes: int, model_version: s
 
 
     early_stopping, lr_scheduler, model_checkpoint = cb.training_callbacks(model_version=model_version)
-   
+    custom_callback = CustomCallback(class_names)
+
     fine_tune_history = model.fit(
         train_ds,
         epochs=20,
         validation_data=validation_ds,
-        callbacks=[early_stopping, lr_scheduler, model_checkpoint, CustomCallback()]
+        callbacks=[early_stopping, lr_scheduler, model_checkpoint, custom_callback]
     )
 
     model.summary()
@@ -167,13 +173,13 @@ def train_save_model(train_ds, validation_ds, num_classes: int, model_version: s
 
 
 def train_new_model(DATASET_FOLDER, model_version):
-    train_ds, val_ds, test_ds, num_classes = load_dataset(DATASET_FOLDER)
+    train_ds, val_ds, test_ds, num_classes, class_names = load_dataset(DATASET_FOLDER)
 
     train_ds = prepare(train_ds, shuffle=True, augment=True)
     val_ds =   prepare(val_ds)
     test_ds =  prepare(test_ds)
 
-    fine_tune_history = train_save_model(train_ds, val_ds, num_classes, model_version)
+    fine_tune_history = train_save_model(train_ds, val_ds, num_classes, class_names, model_version)
 
     eval.plot_accuracy_loss(fine_tune_history)
     eval.evaluate_model(test_ds, model_version)
