@@ -20,6 +20,13 @@ type Fetch_DatasetClass struct{
 	Count				int		`json:"count"`
 }
 
+type EditClass struct{
+	ID 					int64 	`json:"class_id"`
+	ScientificName		string	`json:"scientific_name"`
+	Description			string	`json:"description"`
+	Status				string	`json:"status"`
+
+}
 
 type Train struct{
 	Version		string `json:"version"`
