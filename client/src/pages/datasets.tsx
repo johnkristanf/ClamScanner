@@ -1,11 +1,10 @@
-import {  useEffect, useState } from "react";
+import { useState } from "react";
 import { SideBar } from "../components/navigation/sidebar";
 import { AddNewDatasetModal, InfoDatasetModal, UploadModal } from "../components/modal/datasets";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faExclamationCircle, faPlusCircle, faArrowLeft, faUpload} from "@fortawesome/free-solid-svg-icons";
-import ImagePagination  from "../components/datasets/pagination";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { FetchDatasetClassImages, FetchDatasetClasses } from "../http/get/datasets";
+import { FetchDatasetClasses } from "../http/get/datasets";
 import Swal from "sweetalert2";
 import { DeleteDatasetClass } from "../http/delete/dataset";
 import { DatasetClassTypes } from "../types/datasets";
@@ -102,7 +101,10 @@ function DataSetsPage() {
                                 isOpenInfoModal && classDetailsData ? (
                                     <>
                                         <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
-                                        <InfoDatasetModal classDetailsData={classDetailsData} setisOpenInfoModal={setisOpenInfoModal} />
+                                        <InfoDatasetModal 
+                                            classDetailsData={classDetailsData} 
+                                            setisOpenInfoModal={setisOpenInfoModal} 
+                                        />
                                     </>
                                 ): null
                             }
