@@ -1,6 +1,7 @@
 package database
 
 import (
+	"strings"
 	"time"
 
 	"github.com/johnkristanf/clamscanner/types"
@@ -37,12 +38,12 @@ func (sql *SQL) AddDatasetClass(newClass *types.NewClass) error {
 
 
 	dataset := &Datasets{
-		Name: newClass.Name,
-		ScientificName: newClass.ScientificName,
-		Description: newClass.Description,
-		LifeCycle: newClass.LifeCycle,
-		Status: newClass.Status,
-		Count: 0,
+		Name: 				strings.TrimSpace(newClass.Name),
+		ScientificName: 	strings.TrimSpace(newClass.ScientificName),
+		Description: 		strings.TrimSpace(newClass.Description),
+		LifeCycle:    		strings.TrimSpace(newClass.LifeCycle),
+		Status: 			strings.TrimSpace(newClass.Status),
+		Count: 				0,
 	}
 	 
 	result := sql.DB.Create(dataset)
