@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -81,7 +82,9 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 	var loginCrendentials *types.LoginCredentials
 	loginResponseChan := make(chan *LoginResponse)
 
-	h.JSON_METHOD.JsonDecode(r, &loginCrendentials)
+	if err := json.NewDecoder(r.Body).Decode(loginCrendentials); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
 
 	go func() {
 		defer close(loginResponseChan)
@@ -145,7 +148,9 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 func (h *AccountHandler) AdminLoginHandler(w http.ResponseWriter, r *http.Request) error {
 
 	var loginCrendentials *types.LoginCredentials
-	h.JSON_METHOD.JsonDecode(r, &loginCrendentials)
+	if err := json.NewDecoder(r.Body).Decode(loginCrendentials); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
 
 	adminData, err := h.DB_METHOD.AdminLogin(loginCrendentials)
 	if err != nil {
