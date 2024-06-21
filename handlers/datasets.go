@@ -3,7 +3,8 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	
+	"fmt"
+
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,15 +26,41 @@ type DatasetsHandlers struct {
 }
 
 
-var wg sync.WaitGroup
+func (h *DatasetsHandlers) requestPythonDSClass(path string, url string) error {
+	type Folder struct{
+		Path string `json:"folder_path"`
+	}
+
+	folder := Folder{
+       Path: path,
+    }
+
+	jsonData, err := json.Marshal(folder)
+    if err != nil {
+       return err
+    }
+
+    resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+    if err != nil {
+       return err
+    }
+    defer resp.Body.Close()
+
+	return nil
+}
+
 
 func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var newClassData *types.NewClass
+	var newClassData = &types.NewClass{}
 	errorChan := make(chan error, 2)
+	wg := &sync.WaitGroup{}
 
 
-	h.JSON_METHOD.JsonDecode(r, &newClassData)
+	if err := json.NewDecoder(r.Body).Decode(newClassData); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
+
 
     dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
 
@@ -49,7 +76,9 @@ func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http
     wg.Add(1)
     go func() {
         defer wg.Done()
-        if err := h.addPythonDSClass(dynamicFolderPath); err != nil {
+
+		url := "http://localhost:5000/add/dataset/class"
+        if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
             errorChan <- err
         }
     }()
@@ -71,41 +100,20 @@ func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http
 }
 
 
-func (h *DatasetsHandlers) addPythonDSClass(path string) error {
-	type Folder struct{
-		Path string `json:"folder_path"`
-	}
-
-	folder := Folder{
-       Path: path,
-    }
-
-	jsonData, err := json.Marshal(folder)
-    if err != nil {
-       return err
-    }
-
-    url := "http://localhost:5000/add/dataset/class"
-    resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-    if err != nil {
-       return err
-    }
-    defer resp.Body.Close()
-
-	return nil
-}
-
 
 func (h *DatasetsHandlers) EditDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var editClassInfo *types.EditClass
-	h.JSON_METHOD.JsonDecode(r, &editClassInfo)
+	var editClassInfo = &types.EditClass{}
+
+	if err := json.NewDecoder(r.Body).Decode(editClassInfo); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
 
 	if err := h.DB_METHOD.UpdateDatasetClassInfo(editClassInfo); err != nil{
 		return err
 	}
 
-	return nil
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Edited!")
 }
 
 
@@ -313,14 +321,15 @@ func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter,
 
 func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
-	errorChan := make(chan error, 1)
+	errorChan := make(chan error, 2)
+	wg := &sync.WaitGroup{}
+
 	classID, err := strconv.Atoi(r.PathValue("class_id"))
 	if err != nil {
 		return err
 	}
 
 	dynamicFolderPath := filepath.Join("datasets", r.PathValue("className"))
-
 
 	wg.Add(1)
     go func() {
@@ -334,7 +343,9 @@ func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *h
     wg.Add(1)
     go func() {
         defer wg.Done()
-        if err := h.deletePythonDSClass(dynamicFolderPath); err != nil {
+
+		url := "http://localhost:5000/delete/dataset/class"
+        if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
             errorChan <- err
         }
     }()
@@ -351,31 +362,8 @@ func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *h
         }
     }
 	
-	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "DELETE NA DOL")
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Deleted!")
 }
 
 
-func (h *DatasetsHandlers) deletePythonDSClass(path string) error {
-	type Folder struct{
-		Path string `json:"folder_path"`
-	}
-
-	folder := Folder{
-       Path: path,
-    }
-
-	jsonData, err := json.Marshal(folder)
-    if err != nil {
-       return err
-    }
-
-    url := "http://localhost:5000/delete/dataset/class"
-    resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-    if err != nil {
-       return err
-    }
-    defer resp.Body.Close()
-
-	return nil
-}
 
