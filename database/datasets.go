@@ -12,7 +12,6 @@ type Datasets struct {
 	Name            string `gorm:"not null"`
 	ScientificName  string `gorm:"not null"`
 	Description     string `gorm:"not null"`
-	LifeCycle       string `gorm:"not null"`
 	Status          string `gorm:"not null"`
 
 	Count           int `gorm:"not null"`
@@ -24,8 +23,6 @@ type DATASET_DB_METHOD interface {
 	AddDatasetClass(*types.NewClass) error
 	FetchDatasetClasses() ([]*types.Fetch_DatasetClass, error)
 	UpdateDatasetClassInfo(*types.EditClass) error
-
-	// UpdateDatasetClassImgCount(int, int) error
 	DeleteDatasetClass(int) error
 }
 
@@ -41,7 +38,6 @@ func (sql *SQL) AddDatasetClass(newClass *types.NewClass) error {
 		Name: 				strings.TrimSpace(newClass.Name),
 		ScientificName: 	strings.TrimSpace(newClass.ScientificName),
 		Description: 		strings.TrimSpace(newClass.Description),
-		LifeCycle:    		strings.TrimSpace(newClass.LifeCycle),
 		Status: 			strings.TrimSpace(newClass.Status),
 		Count: 				0,
 	}
