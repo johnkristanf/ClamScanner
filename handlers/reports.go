@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"encoding/json"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
@@ -138,7 +139,9 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 	errorChan := make(chan error, 1)
 	lastReportChan := make(chan int64, 1)
 
-	h.JSON_METHOD.JsonDecode(r, &reportedCases)
+	if err := json.NewDecoder(r.Body).Decode(reportedCases); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
 
 	go func() {
 
