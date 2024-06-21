@@ -24,7 +24,10 @@ export async function AddNewDatasetClass(data: DatasetClassTypes){
 
     try {
         return axios.post("http://localhost:8080/add/dataset/class", data, {
-            withCredentials: true
+            withCredentials: true,
+            headers: {
+                "Content-Type": "application/json"
+            }
         });
     } catch (error) {
         console.error(error);
@@ -35,7 +38,10 @@ export async function EditDatasetClass(data: DatasetClassTypes){
 
     try {
         return axios.post("http://localhost:8080/edit/dataset/class", data, {
-            withCredentials: true
+            withCredentials: true,
+            headers: {
+                "Content-Type": "application/json"
+            }
         });
     } catch (error) {
         console.error(error);
