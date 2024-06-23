@@ -47,18 +47,41 @@ type RetryStrategy func(int) time.Duration
 
 var clients = make(map[*Client]bool)
 
-func SendReportID(lastInsertedIDs int64) error {
+
+var retryConfig = RetryConfig{
+	MaxRetries:      5,
+	InitialInterval: 1 * time.Second,
+	MaxInterval:     10 * time.Second,
+	BackoffFactor:   2,
+}
+
+var retryStrategy = ExponentialBackoff(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
+
+
+func SendReportID(w http.ResponseWriter, r *http.Request, lastInsertedID int64) error {
 
 	for client := range clients {
 
-		if err := client.conn.WriteJSON(lastInsertedIDs); err != nil {
-			fmt.Printf("Error writing JSON data to client: %v\n", err)
+		if err := client.conn.WriteJSON(lastInsertedID); err != nil {
 
-			client.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			client.conn.Close()
-            delete(clients, client)
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				fmt.Println("WebSocket closed normally")
 
-			return err
+			} else if websocket.IsCloseError(err, websocket.CloseAbnormalClosure) {
+				fmt.Printf("WebSocket closed with abnormal closure: %v\n", err)
+
+			} else {
+				fmt.Printf("WebSocket closed with unexpected error: %v\n", err)
+			}
+
+
+			newConn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
+			if err != nil{
+				return fmt.Errorf("error in websocket connection %v", err)
+			}
+		
+			client.conn = newConn
+			clients[client] = true
 		}
 	}
 
@@ -96,7 +119,6 @@ func WSConnectWithRetry(w http.ResponseWriter, r *http.Request, retryConfig Retr
 			retryInterval := retryStrategy(attempt)
 			fmt.Printf("Retrying in %s...\n", retryInterval)
 			time.Sleep(retryInterval)
-
 		}
 
 	}
@@ -106,27 +128,16 @@ func WSConnectWithRetry(w http.ResponseWriter, r *http.Request, retryConfig Retr
 }
 
 func (h *ReportHandler) WebsocketConnHandler(w http.ResponseWriter, r *http.Request) error {
-    retryConfig := RetryConfig{
-        MaxRetries:      5,
-        InitialInterval: 1 * time.Second,
-        MaxInterval:     10 * time.Second,
-        BackoffFactor:   2,
-    }
+    
+    conn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
+    if err != nil{
+		return fmt.Errorf("error in websocket connection %v", err)
+	}
 
-    retryStrategy := ExponentialBackoff(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
+    client := &Client{conn: conn}
+    clients[client] = true
 
-    for {
-        conn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
-        if err != nil {
-            fmt.Printf("Failed to connect to WebSocket: %v\n", err)
-            continue
-        }
-
-        client := &Client{conn: conn}
-        clients[client] = true
-
-        return nil
-    }
+    return nil
 }
 
 // ------------------ END OF WEBSOCKET CONFIGURATIONS----------------------------
@@ -134,7 +145,7 @@ func (h *ReportHandler) WebsocketConnHandler(w http.ResponseWriter, r *http.Requ
 
 func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var reportedCases *types.Reported_Cases
+	var reportedCases = &types.Reported_Cases{}
 	errorChan := make(chan error, 1)
 	lastReportChan := make(chan int64, 1)
 
@@ -172,9 +183,8 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 				return err
 			}
 
-
-			if err := SendReportID(reportID); err != nil {
-				return err
+			if err := SendReportID(w, r, reportID); err != nil {
+				return fmt.Errorf("error writing json data to client: %v", err)
 			}
 
 	}
@@ -313,7 +323,7 @@ func (h *ReportHandler) UpdateReportStatusHandler(w http.ResponseWriter, r *http
 		return err
 	}
 
-	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Report Status Updated")
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Report Status Updated!")
 
 }
 
