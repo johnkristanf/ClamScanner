@@ -66,9 +66,9 @@ def prepare(ds: tf.data.Dataset, shuffle=False, augment=False):
           layers.RandomRotation(0.2),
           layers.RandomZoom(0.2),
           layers.RandomTranslation(0.1, 0.1),
-          layers.RandomContrast(0.3),
-          layers.RandomBrightness(0.3),
-          layers.GaussianNoise(0.3)
+          layers.RandomContrast(0.2),
+          layers.RandomBrightness(0.2),
+          layers.GaussianNoise(0.2)
         ])
 
         ds = ds.map(lambda x, y: (data_augmentation(x), y), num_parallel_calls=tf.data.AUTOTUNE)
