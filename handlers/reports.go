@@ -22,15 +22,14 @@ type ReportHandler struct {
 	REDIS_METHOD middlewares.REDIS_METHOD
 }
 
-func wsOrigin(r *http.Request) bool {
-	allowedOrigin := "http://localhost:1500"
-	return r.Header.Get("Origin") == allowedOrigin
+func WsOrigin(r *http.Request) bool {
+	return true
 }
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin:     wsOrigin,
+	CheckOrigin:     WsOrigin,
 }
 
 type Client struct {
@@ -55,6 +54,7 @@ func SendReportID(lastInsertedIDs int64) error {
 		if err := client.conn.WriteJSON(lastInsertedIDs); err != nil {
 			fmt.Printf("Error writing JSON data to client: %v\n", err)
 
+			client.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			client.conn.Close()
             delete(clients, client)
 
@@ -119,7 +119,6 @@ func (h *ReportHandler) WebsocketConnHandler(w http.ResponseWriter, r *http.Requ
         conn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
         if err != nil {
             fmt.Printf("Failed to connect to WebSocket: %v\n", err)
-            time.Sleep(retryStrategy(1))
             continue
         }
 
@@ -178,7 +177,7 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 				return err
 			}
 
-}
+	}
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Reported Successfully")
 }
