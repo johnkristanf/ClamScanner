@@ -14,45 +14,44 @@ import (
 )
 
 
-type MockDBMethod struct {
+type MockDatasetsDBMethod struct {
 	mock.Mock
 }
 
 
-func (m *MockDBMethod) AddDatasetClass(newClass *types.NewClass) error {
+func (m *MockDatasetsDBMethod) AddDatasetClass(newClass *types.NewClass) error {
 	args := m.Called(newClass)
 	return args.Error(0)
 }
 
-func (m *MockDBMethod) FetchDatasetClasses() ([]*types.Fetch_DatasetClass, error) {
+func (m *MockDatasetsDBMethod) FetchDatasetClasses() ([]*types.Fetch_DatasetClass, error) {
 	args := m.Called()
 	return args.Get(0).([]*types.Fetch_DatasetClass), args.Error(1)
 }
 
-func (m *MockDBMethod) UpdateDatasetClassInfo(editClass *types.EditClass) error {
+func (m *MockDatasetsDBMethod) UpdateDatasetClassInfo(editClass *types.EditClass) error {
 	args := m.Called(editClass)
 	return args.Error(0)
 }
 
-func (m *MockDBMethod) DeleteDatasetClass(classID int) error {
+func (m *MockDatasetsDBMethod) DeleteDatasetClass(classID int) error {
 	args := m.Called(classID)
 	return args.Error(0)
 }
 
 
-func setupHandlers() *DatasetsHandlers {
+func setupDatasetsHandlers() *DatasetsHandlers {
 	return &DatasetsHandlers{
-		DB_METHOD: new(MockDBMethod),
+		DB_METHOD: new(MockDatasetsDBMethod),
 		JSON_METHOD: new(mock_methods.MockJSONMethod),
 		JWT_METHOD: new(mock_methods.MockJWTMethod),
 		REDIS_METHOD: new(mock_methods.MockRedisMethod),
 	}
 }
 
+var datasetsHandler = setupDatasetsHandlers()
 
 func TestAddDatasetClassHandler(t *testing.T) {
-
-	handler := setupHandlers()
 
 	newClass := &types.NewClass{
 		Name: "Test ClassName",
@@ -68,8 +67,8 @@ func TestAddDatasetClassHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	mockDB := handler.DB_METHOD.(*MockDBMethod)
-	mockJSON := handler.JSON_METHOD.(*mock_methods.MockJSONMethod)
+	mockDB := datasetsHandler.DB_METHOD.(*MockDatasetsDBMethod)
+	mockJSON := datasetsHandler.JSON_METHOD.(*mock_methods.MockJSONMethod)
 
 	mockDB.On("AddDatasetClass", newClass).Return(nil)
 	mockJSON.On("JsonEncode", rr, http.StatusOK, "Dataset Class Added!").Run(func(args mock.Arguments) {
@@ -86,7 +85,7 @@ func TestAddDatasetClassHandler(t *testing.T) {
 
 
 	assert.Equal(t, http.MethodPost, req.Method)
-	err = handler.AddDatasetClassHandler(rr, req)
+	err = datasetsHandler.AddDatasetClassHandler(rr, req)
 
 	mockJSON.AssertExpectations(t)
 	mockDB.AssertExpectations(t)
@@ -98,8 +97,6 @@ func TestAddDatasetClassHandler(t *testing.T) {
 
 
 func TestEditDatasetClassHandler(t *testing.T) {
-
-	handler := setupHandlers()
 
 	editClassData := &types.EditClass{
 		ID: 4,
@@ -115,8 +112,8 @@ func TestEditDatasetClassHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	mockDB := handler.DB_METHOD.(*MockDBMethod)
-	mockJSON := handler.JSON_METHOD.(*mock_methods.MockJSONMethod)
+	mockDB := datasetsHandler.DB_METHOD.(*MockDatasetsDBMethod)
+	mockJSON := datasetsHandler.JSON_METHOD.(*mock_methods.MockJSONMethod)
 
 	mockDB.On("UpdateDatasetClassInfo", editClassData).Return(nil)
 	mockJSON.On("JsonEncode", rr, http.StatusOK, "Dataset Class Edited!").Run(func(args mock.Arguments) {
@@ -133,7 +130,7 @@ func TestEditDatasetClassHandler(t *testing.T) {
 
 
 	assert.Equal(t, http.MethodPost, req.Method)
-	err = handler.EditDatasetClassHandler(rr, req)
+	err = datasetsHandler.EditDatasetClassHandler(rr, req)
 
 	mockJSON.AssertExpectations(t)
 	mockDB.AssertExpectations(t)
@@ -147,16 +144,14 @@ func TestEditDatasetClassHandler(t *testing.T) {
 
 func TestFetchDatasetClassHandler(t *testing.T) {
 
-	handler := setupHandlers()
-
 	req, err := http.NewRequest(http.MethodGet, "/fetch/dataset/class", nil)
 	assert.NoError(t, err)
 
 
 	rr := httptest.NewRecorder()
 
-	mockDB := handler.DB_METHOD.(*MockDBMethod)
-	mockJSON := handler.JSON_METHOD.(*mock_methods.MockJSONMethod)
+	mockDB := datasetsHandler.DB_METHOD.(*MockDatasetsDBMethod)
+	mockJSON := datasetsHandler.JSON_METHOD.(*mock_methods.MockJSONMethod)
 
 	datasetClasses := []*types.Fetch_DatasetClass{
         {
@@ -182,7 +177,7 @@ func TestFetchDatasetClassHandler(t *testing.T) {
 
 
 	assert.Equal(t, http.MethodGet, req.Method)
-	err = handler.FetchDatasetClassHandler(rr, req)
+	err = datasetsHandler.FetchDatasetClassHandler(rr, req)
 
 	mockJSON.AssertExpectations(t)
 	mockDB.AssertExpectations(t)
@@ -195,8 +190,6 @@ func TestFetchDatasetClassHandler(t *testing.T) {
 
 
 func TestDeleteDatasetClassHandler(t *testing.T) {
-	
-	handler := setupHandlers()
 
 	classID := "4"
 	className := "mockClassName"
@@ -211,8 +204,8 @@ func TestDeleteDatasetClassHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	mockDB := handler.DB_METHOD.(*MockDBMethod)
-	mockJSON := handler.JSON_METHOD.(*mock_methods.MockJSONMethod)
+	mockDB := datasetsHandler.DB_METHOD.(*MockDatasetsDBMethod)
+	mockJSON := datasetsHandler.JSON_METHOD.(*mock_methods.MockJSONMethod)
 
 	mockDB.On("DeleteDatasetClass", 4).Return(nil)
 
@@ -230,7 +223,7 @@ func TestDeleteDatasetClassHandler(t *testing.T) {
 
 
 	assert.Equal(t, http.MethodDelete, req.Method)
-	err = handler.DeleteDatasetClassHandler(rr, req)
+	err = datasetsHandler.DeleteDatasetClassHandler(rr, req)
 
 	mockJSON.AssertExpectations(t)
 	mockDB.AssertExpectations(t)
