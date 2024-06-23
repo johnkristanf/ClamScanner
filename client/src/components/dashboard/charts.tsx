@@ -238,7 +238,7 @@ function DatasetClasses() {
                 <>
                     {datasetclasses.length === 0 ? (
                         <div className="h-[70%] w-full flex items-center justify-center">
-                            <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
+                            <div className="text-red-800 font-bold text-xl text-red-800 text-center">No dataset class images yet</div>
                         </div>
                     ) : (
                         <Chart
