@@ -62,12 +62,12 @@ func (m *MockJWTMethod) AdminAuthenticateMiddleware(next http.HandlerFunc) http.
 // ----------------------------------- MOCK REDIS METHODS --------------------------------------
 
 func (m *MockRedisMethod) SET(cachedData interface{}, cacheKey string, req *http.Request) error {
-	args := m.Called(cacheKey, req)
+	args := m.Called(cachedData, cacheKey, req)
 	return args.Error(0)
 }
 
 func (m *MockRedisMethod) GET(dest interface{}, cacheKey string, req *http.Request) error {
-	args := m.Called(cacheKey, req)
+	args := m.Called(dest, cacheKey, req)
 	return args.Error(0)
 }
 
