@@ -1,20 +1,19 @@
 package database
 
 import (
-	"strings"
 	"time"
 
 	"github.com/johnkristanf/clamscanner/types"
 )
 
 type Datasets struct {
-	ID              int64  `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_reportedID"`
-	Name            string `gorm:"not null"`
-	ScientificName  string `gorm:"not null"`
-	Description     string `gorm:"not null"`
-	Status          string `gorm:"not null"`
+	ID              int64   `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_reportedID"`
+	Name            string  `gorm:"not null"`
+	ScientificName  string  `gorm:"not null"`
+	Description     string  `gorm:"not null"`
+	Status          string  `gorm:"not null"`
 
-	Count           int `gorm:"not null"`
+	Count           int 	`gorm:"not null"`
 	CreatedAt 		time.Time `gorm:"not null;autoCreateTime"`
 	UpdatedAt 		time.Time `gorm:"not null;autoUpdateTime"`
 }
@@ -26,19 +25,15 @@ type DATASET_DB_METHOD interface {
 	DeleteDatasetClass(int) error
 }
 
-type InfoStruct struct{
-
-}
-
 	
 func (sql *SQL) AddDatasetClass(newClass *types.NewClass) error {
 
 
 	dataset := &Datasets{
-		Name: 				strings.TrimSpace(newClass.Name),
-		ScientificName: 	strings.TrimSpace(newClass.ScientificName),
-		Description: 		strings.TrimSpace(newClass.Description),
-		Status: 			strings.TrimSpace(newClass.Status),
+		Name: 				newClass.Name,
+		ScientificName: 	newClass.ScientificName,
+		Description: 		newClass.Description,
+		Status: 			newClass.Status,
 		Count: 				0,
 	}
 	 
