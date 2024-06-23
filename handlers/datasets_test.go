@@ -211,9 +211,8 @@ func TestDeleteDatasetClassHandler(t *testing.T) {
 
 	mockJSON.On("JsonEncode", rr, http.StatusOK, "Dataset Class Deleted!").Run(func(args mock.Arguments) {
 		w := args.Get(0).(http.ResponseWriter)
+		
 		status := args.Get(1).(int)
-
-		// the reason you get 2 here is because of the index of the string 0(Dataset) 1(Class) 2(Deleted!)
 		response := args.Get(2).(string)
 
 		w.WriteHeader(status)
@@ -246,26 +245,29 @@ func TestRequestPythonDSClass(t *testing.T){
 			Path string `json:"folder_path"`
 		}
 
+		mockPath := "python/path"
+
 		err := json.NewDecoder(r.Body).Decode(&folder)
 		assert.NoError(t, err)
-		assert.Equal(t, "mock/path", folder.Path)
+		assert.Equal(t, mockPath, folder.Path)
 
-		w.WriteHeader(http.StatusOK)
+
+		handler := &DatasetsHandlers{}
+	
+		urls := []string{
+			"http://localhost:5000/add/dataset/class",
+			"http://localhost:5000/delete/dataset/class",
+		} 
+
+		for _, url := range urls {
+			err := handler.requestPythonDSClass(mockPath, url)
+			assert.NoError(t, err)
+		}
 
 	}))
 
 	defer mockServer.Close()
 
 
-	handler := &DatasetsHandlers{}
 	
-	urls := []string{
-		"http://localhost:5000/add/dataset/class",
-		"http://localhost:5000/delete/dataset/class",
-	} 
-
-	for _, url := range urls {
-		err := handler.requestPythonDSClass("mock/path", url)
-		assert.NoError(t, err)
-	}
 }
