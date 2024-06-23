@@ -8,7 +8,7 @@ from keras._tf_keras.keras.optimizers import Adam
 
 print("WORKING DIR:", os.getcwd())
 
-model_path = os.path.abspath("./models/ClamScanner_best_v4.h5")
+model_path = os.path.abspath("./models/ClamScanner_best_v3.h5")
 
 def load_resnet_model():
     if not os.path.exists(model_path):
