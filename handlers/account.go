@@ -79,7 +79,7 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 	ctx, cancel := context.WithTimeout(r.Context(), time.Millisecond * 200)
 	defer cancel()
 
-	var loginCrendentials *types.LoginCredentials
+	var loginCrendentials = &types.LoginCredentials{}
 	loginResponseChan := make(chan *LoginResponse)
 
 	if err := json.NewDecoder(r.Body).Decode(loginCrendentials); err != nil{
@@ -145,9 +145,11 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
+// KANANG NAAY BLUE SA KILID ANG ILHANAN NGA NAAY NAILISAN DIHA NA LINE OF CODE
 func (h *AccountHandler) AdminLoginHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var loginCrendentials *types.LoginCredentials
+	var loginCrendentials = &types.LoginCredentials{}
+
 	if err := json.NewDecoder(r.Body).Decode(loginCrendentials); err != nil{
 		return fmt.Errorf("error in json decoding %d", err)
 	}
