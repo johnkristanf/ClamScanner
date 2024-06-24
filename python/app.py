@@ -66,8 +66,6 @@ def scan():
         filename = secure_filename(file.filename)
         file_path = os.path.join('./', filename)
         file.save(file_path)
-
-        print("file_path", file_path)
         
         mollusk_classified_result = predict.mollusk_predict(file_path)
         os.remove(file_path)
@@ -100,7 +98,7 @@ def train_model_async(data):
 def train():
     data = request.get_json()
     threading.Thread(target=train_model_async, args=(data,)).start()
-    return jsonify({"status": "Training started"})
+    return jsonify({"status": "Training started"}), 200
 
 
 @app.post("/add/dataset/class")
@@ -141,7 +139,7 @@ def delete_dataset():
     folder_path = data['folder_path']
 
     delete_dataset_class(folder_path)
-    return jsonify({"success": "Dataset Class Added!"}), 200
+    return jsonify({"success": "Dataset Class Deleted!"}), 200
 
 
 def run_flask():
