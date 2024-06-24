@@ -72,7 +72,7 @@ def scan():
         mollusk_classified_result = predict.mollusk_predict(file_path)
         os.remove(file_path)
         
-        return jsonify({"mollusk_classified_result": mollusk_classified_result})
+        return jsonify({"mollusk_classified_result": mollusk_classified_result}), 200
 
     except Exception as e:
         print("Error during image processing:", e)
