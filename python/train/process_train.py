@@ -20,6 +20,7 @@ import train.callbacks as cb
 
 from ws_client import clients
 
+
 def load_dataset(DATASET_FOLDER: str) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset, int, list[str]]:
     image_size = (224, 224)
     batch_size = 32
