@@ -145,7 +145,6 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-// KANANG NAAY BLUE SA KILID ANG ILHANAN NGA NAAY NAILISAN DIHA NA LINE OF CODE
 func (h *AccountHandler) AdminLoginHandler(w http.ResponseWriter, r *http.Request) error {
 
 	var loginCrendentials types.LoginCredentials
