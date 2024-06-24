@@ -79,17 +79,17 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 	ctx, cancel := context.WithTimeout(r.Context(), time.Millisecond * 200)
 	defer cancel()
 
-	var loginCrendentials = &types.LoginCredentials{}
+	var loginCrendentials types.LoginCredentials
 	loginResponseChan := make(chan *LoginResponse)
 
-	if err := json.NewDecoder(r.Body).Decode(loginCrendentials); err != nil{
+	if err := json.NewDecoder(r.Body).Decode(&loginCrendentials); err != nil{
 		return fmt.Errorf("error in json decoding %d", err)
 	}
 
 	go func() {
 		defer close(loginResponseChan)
 
-		userInfo, err := h.DB_METHOD.Login(loginCrendentials)
+		userInfo, err := h.DB_METHOD.Login(&loginCrendentials)
 
 		if err != nil {
 			loginResponseChan <- &LoginResponse{UserInfo: nil, Error: err}
@@ -148,13 +148,13 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 // KANANG NAAY BLUE SA KILID ANG ILHANAN NGA NAAY NAILISAN DIHA NA LINE OF CODE
 func (h *AccountHandler) AdminLoginHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var loginCrendentials = &types.LoginCredentials{}
+	var loginCrendentials types.LoginCredentials
 
-	if err := json.NewDecoder(r.Body).Decode(loginCrendentials); err != nil{
+	if err := json.NewDecoder(r.Body).Decode(&loginCrendentials); err != nil{
 		return fmt.Errorf("error in json decoding %d", err)
 	}
 
-	adminData, err := h.DB_METHOD.AdminLogin(loginCrendentials)
+	adminData, err := h.DB_METHOD.AdminLogin(&loginCrendentials)
 	if err != nil {
 		return h.JSON_METHOD.JsonEncode(w, http.StatusUnauthorized, "Invalid Email or Password")
 	}
