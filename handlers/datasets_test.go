@@ -75,8 +75,6 @@ func TestAddDatasetClassHandler(t *testing.T) {
 		w := args.Get(0).(http.ResponseWriter)
 
 		status := args.Get(1).(int)
-
-		// the reason you get 2 here is because of the index of the string 0(Dataset) 1(Class) 2(Added!)
 		response := args.Get(2).(string)
 
 		w.WriteHeader(status)
