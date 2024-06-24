@@ -18,200 +18,95 @@ import (
 )
 
 type DatasetsHandlers struct {
-	DB_METHOD    			database.DATASET_DB_METHOD
-	JSON_METHOD  			helpers.JSON_METHODS
-	JWT_METHOD   			middlewares.JWT_METHOD
-	REDIS_METHOD 			middlewares.REDIS_METHOD
-	IMAGE_HELPERS_METHODS 	helpers.IMAGES_HELPERS_METHODS
+	DB_METHOD             database.DATASET_DB_METHOD
+	JSON_METHOD           helpers.JSON_METHODS
+	JWT_METHOD            middlewares.JWT_METHOD
+	REDIS_METHOD          middlewares.REDIS_METHOD
+	IMAGE_HELPERS_METHODS helpers.IMAGES_HELPERS_METHODS
 }
 
+var wg sync.WaitGroup
 
 func (h *DatasetsHandlers) requestPythonDSClass(path string, url string) error {
-	type Folder struct{
+	type Folder struct {
 		Path string `json:"folder_path"`
 	}
 
 	folder := Folder{
-       Path: path,
-    }
+		Path: path,
+	}
 
 	jsonData, err := json.Marshal(folder)
-    if err != nil {
-       return err
-    }
+	if err != nil {
+		return err
+	}
 
-    resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-    if err != nil {
-       return err
-    }
-    defer resp.Body.Close()
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
 	return nil
 }
 
-
 func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var newClassData = &types.NewClass{}
-	errorChan := make(chan error, 2)
-	wg := &sync.WaitGroup{}
+	var newClassData types.NewClass
 
-
-	if err := json.NewDecoder(r.Body).Decode(newClassData); err != nil{
-		return fmt.Errorf("error in json decoding %d", err)
+	if err := json.NewDecoder(r.Body).Decode(&newClassData); err != nil {
+		return fmt.Errorf("error decoding JSON: %w", err)
 	}
 
+	dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
 
-    dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
+	errorChan := make(chan error, 2)
 
 	wg.Add(1)
-    go func() {
-        defer wg.Done()
-        if err := h.DB_METHOD.AddDatasetClass(newClassData); err != nil {
-            errorChan <- err
-        }
-    }()
+	go func() {
+		defer wg.Done()
+		if err := h.DB_METHOD.AddDatasetClass(&newClassData); err != nil {
+			errorChan <- err
+		}
+	}()
 
-	
-    wg.Add(1)
-    go func() {
-        defer wg.Done()
-
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		url := "http://localhost:5000/add/dataset/class"
-        if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
-            errorChan <- err
-        }
-    }()
+		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
+			errorChan <- err
+		}
+	}()
 
-
-    go func() {
-        wg.Wait()
-        close(errorChan)
-    }()
-
+	go func() {
+		wg.Wait()
+		close(errorChan)
+	}()
 
 	for err := range errorChan {
-        if err != nil {
-            return err
-        }
-    }
-	
+		if err != nil {
+			return err
+		}
+	}
+
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Added!")
 }
 
-
-
 func (h *DatasetsHandlers) EditDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var editClassInfo = &types.EditClass{}
+	var editClassInfo types.EditClass
 
-	if err := json.NewDecoder(r.Body).Decode(editClassInfo); err != nil{
+	if err := json.NewDecoder(r.Body).Decode(&editClassInfo); err != nil {
 		return fmt.Errorf("error in json decoding %d", err)
 	}
 
-	if err := h.DB_METHOD.UpdateDatasetClassInfo(editClassInfo); err != nil{
+	if err := h.DB_METHOD.UpdateDatasetClassInfo(&editClassInfo); err != nil {
 		return err
 	}
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Edited!")
 }
-
-
-// func (h *DatasetsHandlers) proccessUploadImage(files []*multipart.FileHeader, destFolder string, wg *sync.WaitGroup) error {
-// 	defer wg.Done()
-
-// 	for _, fileHeader := range files {
-// 		wg.Add(1)
-
-// 		file, err := fileHeader.Open()
-// 		if err != nil {
-// 			return err
-// 		}
-// 		defer file.Close()
-
-// 		if !h.IMAGE_HELPERS_METHODS.IsValidImage(file) {
-// 			continue
-// 		}
-
-// 		if _, err := file.Seek(0, io.SeekStart); err != nil {
-// 			return err
-// 		}
-
-// 		destFile, err := os.Create(filepath.Join(destFolder, fileHeader.Filename))
-// 		if err != nil {
-// 			return err
-// 		}
-// 		defer destFile.Close()
-
-// 		_, err = io.Copy(destFile, file)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-
-
-// func (h *DatasetsHandlers) UploadImageDatasetHandler(w http.ResponseWriter, r *http.Request) error {
-
-// 	var wg sync.WaitGroup
-
-// 	if err := r.ParseMultipartForm(100 * 1024 * 1024); err != nil {
-// 		return err
-// 	}
-
-// 	uploadErrChan := make(chan error, 1)
-
-// 	formDatasetClass := r.FormValue("datasetClass")
-// 	formDatasetClassID := r.FormValue("class_id")
-// 	formDatasetFiles := r.MultipartForm.File["images"]
-
-// 	fmt.Println("formDatasetClass: ", formDatasetClass)
-
-// 	destFolder := filepath.Join("datasets", formDatasetClass)
-
-// 	classID, err := strconv.Atoi(formDatasetClassID)
-// 	if err != nil {
-// 		return err
-// 	}
-
-
-// 	go func() {
-
-// 		defer close(uploadErrChan)
-
-// 		if err := h.proccessUploadImage(formDatasetFiles, destFolder, &wg); err != nil {
-// 			uploadErrChan <- err
-// 		}
-
-// 	}()
-
-// 	wg.Wait()
-
-// 	if err := <-uploadErrChan; err != nil {
-// 		if err.Error() == "invalid image type"{
-// 			return h.JSON_METHOD.JsonEncode(w, http.StatusUnsupportedMediaType, "Invalid Image Type Please Upload Another!")
-// 		} else {
-// 			return err
-// 		}
-// 	}
-
-
-// 	imgcount, err := h.IMAGE_HELPERS_METHODS.CountImages(destFolder)
-// 	if err != nil {
-// 		return err
-// 	}
-
-	
-// 	if err := h.DB_METHOD.UpdateDatasetClassData(imgcount, classID); err != nil {
-// 		return err
-// 	}
-
-
-// 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Uploaded")
-// }
 
 func (h *DatasetsHandlers) FetchDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
@@ -226,28 +121,26 @@ func (h *DatasetsHandlers) FetchDatasetClassHandler(w http.ResponseWriter, r *ht
 func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter, r *http.Request) error {
 
 	classFolderParam := r.PathValue("classFolderName")
-    folderPath := filepath.Join("datasets", classFolderParam)
+	folderPath := filepath.Join("datasets", classFolderParam)
 
-    if _, err := os.Stat(folderPath); os.IsNotExist(err) {
-        return err
-    }
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		return err
+	}
 
-    files, err := os.ReadDir(folderPath)
-    if err != nil {
-        return err
-    }
+	files, err := os.ReadDir(folderPath)
+	if err != nil {
+		return err
+	}
 
-    for _, file := range files {
+	for _, file := range files {
 
-        if !file.IsDir() && h.IMAGE_HELPERS_METHODS.IsImage(file.Name()) {
-            imagePath := filepath.Join(folderPath, file.Name())
+		if !file.IsDir() && h.IMAGE_HELPERS_METHODS.IsImage(file.Name()) {
+			imagePath := filepath.Join(folderPath, file.Name())
 			http.ServeFile(w, r, imagePath)
-        }
-    }
+		}
+	}
 
-
-    return nil
-    
+	return nil
 
 	// files, err := os.ReadDir(folderPath)
 	// if err != nil {
@@ -282,7 +175,6 @@ func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter,
 	// }
 
 	// return nil
-
 
 	// imageDataBufferMap := make(map[string][][]byte)
 	// var buffArray [][]byte
@@ -322,7 +214,6 @@ func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter,
 func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
 	errorChan := make(chan error, 2)
-	wg := &sync.WaitGroup{}
 
 	classID, err := strconv.Atoi(r.PathValue("class_id"))
 	if err != nil {
@@ -332,38 +223,32 @@ func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *h
 	dynamicFolderPath := filepath.Join("datasets", r.PathValue("className"))
 
 	wg.Add(1)
-    go func() {
-        defer wg.Done()
-        if err := h.DB_METHOD.DeleteDatasetClass(classID); err != nil {
-            errorChan <- err
-        }
-    }()
+	go func() {
+		defer wg.Done()
+		if err := h.DB_METHOD.DeleteDatasetClass(classID); err != nil {
+			errorChan <- err
+		}
+	}()
 
-	
-    wg.Add(1)
-    go func() {
-        defer wg.Done()
-
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		url := "http://localhost:5000/delete/dataset/class"
-        if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
-            errorChan <- err
-        }
-    }()
+		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
+			errorChan <- err
+		}
+	}()
 
 	go func() {
-        wg.Wait()
-        close(errorChan)
-    }()
-
+		wg.Wait()
+		close(errorChan)
+	}()
 
 	for err := range errorChan {
-        if err != nil {
-            return err
-        }
-    }
-	
+		if err != nil {
+			return err
+		}
+	}
+
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Deleted!")
 }
-
-
-
