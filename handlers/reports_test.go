@@ -267,7 +267,6 @@ func TestFetchAllReportsHandler(t *testing.T){
 
 
 func TestFetchYearlyReportByCityHandler(t *testing.T){
-
 	fetchCityReports := []*types.YearlyReportsPerCity{
 		{
 			City: "Panabo",
@@ -300,6 +299,8 @@ func TestFetchYearlyReportByCityHandler(t *testing.T){
 	mockJSON.On("JsonEncode", rr, http.StatusOK, fetchCityReports).Return(nil)
 
 	assert.Equal(t, http.MethodGet, req.Method)
+
+		
 	err = reportsHandler.FetchYearlyReportByCityHandler(rr, req)
 
 	mockDB.AssertExpectations(t)
@@ -308,7 +309,6 @@ func TestFetchYearlyReportByCityHandler(t *testing.T){
 
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rr.Code)
-
 }
 
 
