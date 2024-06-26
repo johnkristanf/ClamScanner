@@ -1,10 +1,9 @@
 import { useQueryClient } from "react-query";
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faListUl, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { SideBar } from "../components/navigation/sidebar";
-import { flushSync } from "react-dom";
 
 const ReportedCases = lazy(() => import("../components/reports/reported"));
 const Map = lazy(() => import("../components/reports/map"));
@@ -17,7 +16,6 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
     ws.onmessage = (event) => {
       const data: number = JSON.parse(event.data);
       setReports(data);
-      console.log("message json", data);
     };
 
     ws.onclose = () => {
@@ -59,7 +57,6 @@ const ReportsPage: React.FC = () => {
         queryClient.invalidateQueries('perMollusk_reports');
 
         if (Reports && Reports > 0) {
-            setOpenReportsModal(true);
             playAudioLoop();
 
             Swal.fire({
