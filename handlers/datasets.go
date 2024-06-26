@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"sync"
 
 	"github.com/johnkristanf/clamscanner/database"
 	"github.com/johnkristanf/clamscanner/helpers"
@@ -24,8 +23,6 @@ type DatasetsHandlers struct {
 	REDIS_METHOD          middlewares.REDIS_METHOD
 	IMAGE_HELPERS_METHODS helpers.IMAGES_HELPERS_METHODS
 }
-
-var wg sync.WaitGroup
 
 func (h *DatasetsHandlers) requestPythonDSClass(path string, url string) error {
 	type Folder struct {
@@ -60,34 +57,24 @@ func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http
 
 	dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
 
-	errorChan := make(chan error, 2)
+	errorChan := make(chan error, 1)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := h.DB_METHOD.AddDatasetClass(&newClassData); err != nil {
-			errorChan <- err
-		}
-	}()
+	if err := h.DB_METHOD.AddDatasetClass(&newClassData); err != nil {
+		return err
+	}
 
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer close(errorChan)
+		
 		url := "http://localhost:5000/add/dataset/class"
 		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
 			errorChan <- err
 		}
 	}()
 
-	go func() {
-		wg.Wait()
-		close(errorChan)
-	}()
 
-	for err := range errorChan {
-		if err != nil {
-			return err
-		}
+	if err := <- errorChan; err != nil {
+		return err
 	}
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Added!")
@@ -213,7 +200,7 @@ func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter,
 
 func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
-	errorChan := make(chan error, 2)
+	errorChan := make(chan error, 1)
 
 	classID, err := strconv.Atoi(r.PathValue("class_id"))
 	if err != nil {
@@ -222,32 +209,23 @@ func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *h
 
 	dynamicFolderPath := filepath.Join("datasets", r.PathValue("className"))
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := h.DB_METHOD.DeleteDatasetClass(classID); err != nil {
-			errorChan <- err
-		}
-	}()
+	if err := h.DB_METHOD.DeleteDatasetClass(classID); err != nil {
+		return err	
+	}
 
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer close(errorChan)
+
 		url := "http://localhost:5000/delete/dataset/class"
 		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
 			errorChan <- err
 		}
+
 	}()
 
-	go func() {
-		wg.Wait()
-		close(errorChan)
-	}()
-
-	for err := range errorChan {
-		if err != nil {
-			return err
-		}
+	
+	if err := <- errorChan; err != nil {
+		return err
 	}
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Deleted!")

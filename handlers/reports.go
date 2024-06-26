@@ -45,9 +45,6 @@ type RetryConfig struct {
 
 type RetryStrategy func(int) time.Duration
 
-var clients = make(map[*Client]bool)
-
-
 var retryConfig = RetryConfig{
 	MaxRetries:      5,
 	InitialInterval: 1 * time.Second,
@@ -55,6 +52,7 @@ var retryConfig = RetryConfig{
 	BackoffFactor:   2,
 }
 
+var clients = make(map[*Client]bool)
 var retryStrategy = ExponentialBackoff(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
 
 
@@ -63,17 +61,6 @@ func SendReportID(w http.ResponseWriter, r *http.Request, lastInsertedID int64) 
 	for client := range clients {
 
 		if err := client.conn.WriteJSON(lastInsertedID); err != nil {
-
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				fmt.Println("WebSocket closed normally")
-
-			} else if websocket.IsCloseError(err, websocket.CloseAbnormalClosure) {
-				fmt.Printf("WebSocket closed with abnormal closure: %v\n", err)
-
-			} else {
-				fmt.Printf("WebSocket closed with unexpected error: %v\n", err)
-			}
-
 
 			newConn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
 			if err != nil{
@@ -145,11 +132,11 @@ func (h *ReportHandler) WebsocketConnHandler(w http.ResponseWriter, r *http.Requ
 
 func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var reportedCases = &types.Reported_Cases{}
+	var reportedCases types.Reported_Cases
 	errorChan := make(chan error, 1)
 	lastReportChan := make(chan int64, 1)
 
-	if err := json.NewDecoder(r.Body).Decode(reportedCases); err != nil{
+	if err := json.NewDecoder(r.Body).Decode(&reportedCases); err != nil{
 		return fmt.Errorf("error in json decoding %d", err)
 	}
 
@@ -158,7 +145,7 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 		defer close(errorChan)
 		defer close(lastReportChan)
 
-		lastReportedID, err := h.DB_METHOD.InsertReport(reportedCases)
+		lastReportedID, err := h.DB_METHOD.InsertReport(&reportedCases)
 		if err != nil {
 			errorChan <- err
 		}

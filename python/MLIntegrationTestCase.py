@@ -32,8 +32,8 @@ class MLIntegrationTestCase(unittest.TestCase):
             self.assertIn("mollusk_classified_result", response.json, f"Failed on image {i}")
 
 
-    # error sa testing kay walay images imong datasets folder kapoy nag upload 
-    # ugma napod hahahahaha 
+    # error sa integration testing kay walay images imong datasets folder 
+    # kapoy nag upload ugma napod hahahahaha 
     def test_train_model(self):
         data = {
             "version": "1.0"
