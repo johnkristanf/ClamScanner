@@ -18,7 +18,6 @@ def DB_DATASETS(app: Flask):
         name = Column(String, nullable=False)
         scientific_name = Column(String, nullable=False)
         description = Column(Text, nullable=False)
-        life_cycle = Column(String, nullable=False)
         status = Column(String, nullable=False)
         count = Column(Integer, nullable=False)
         created_at = Column(DateTime(timezone=True), server_default=func.now())

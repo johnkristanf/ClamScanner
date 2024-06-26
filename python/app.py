@@ -121,12 +121,16 @@ def upload_images():
         return jsonify({"error": "No files part in the request"}), 400
 
     images = request.files.getlist('images')
-    dest_folder = os.path.join("datasets", dataset_class)
+    dest_folder = os.path.join("./datasets", dataset_class)
 
     process_image_uploading(images, dest_folder)
     img_count = count_images(dest_folder)
     
+    print("img_count: ", img_count)
     update_dataset_class_data(img_count, class_id)
+    print("updated successfulyy")
+
+
 
     return 'Image Uploaded Successfull', 200
 
