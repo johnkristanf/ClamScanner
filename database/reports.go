@@ -10,16 +10,15 @@ type Reported_Cases struct {
 	ID          int64   `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_reportedID"`
     Longitude   float32 `gorm:"not null"`
     Latitude    float32 `gorm:"not null"`
-    City        string  
-    Province    string  
+    City        string  `gorm:"index"` 
+    Province    string  `gorm:"index"` 
     District    string  
-    ReportedAt  string  `gorm:"not null"`
+    ReportedAt  string  `gorm:"not null;index"` 
     MolluskType string  `gorm:"not null"`
     Status      string  `gorm:"not null;default:In Progress"`
 	
     UserID      int64   `gorm:"not null"`
 }
-
 type REPORTED_DB_METHOD interface {
 	InsertReport(*types.Reported_Cases) (int64, error)
 
@@ -81,14 +80,15 @@ func (sql *SQL) FetchReportedCases() ([]*types.Fetch_Cases, error) {
 func (sql *SQL) FetchPerCityReports() ([]*types.YearlyReportsPerCity, error) {
 
 	var yearlyReports []*types.YearlyReportsPerCity
-	
-	query := `SELECT city, EXTRACT(YEAR FROM TO_TIMESTAMP(reported_at, 'Month DD, YYYY HH:MI PM')) AS year, COUNT(id) AS reports_count 
-              FROM reported_cases 
-              GROUP BY city, year`
 
-	if result := sql.DB.Raw(query).Scan(&yearlyReports); result.Error != nil {
-		return nil, result.Error
-	}
+	result := sql.DB.Table("reported_cases").
+		Select(`city, EXTRACT(YEAR FROM TO_TIMESTAMP(reported_at, 'Month DD, YYYY HH:MI PM')) AS year, COUNT(id) AS reports_count`).
+		Group("city, year").
+		Find(&yearlyReports);
+
+		if result.Error != nil {
+			return nil, result.Error
+		}	
 
 	return yearlyReports, nil
 	
@@ -98,14 +98,16 @@ func (sql *SQL) FetchPerCityReports() ([]*types.YearlyReportsPerCity, error) {
 func (sql *SQL) FetchPerProvinceReports() ([]*types.YearlyReportsPerProvince, error) {
 	
 	var yearlyReports []*types.YearlyReportsPerProvince
-	
-	query := `SELECT province, EXTRACT(YEAR FROM TO_TIMESTAMP(reported_at, 'Month DD, YYYY HH:MI PM')) AS year, COUNT(id) AS reports_count 
-              FROM reported_cases 
-              GROUP BY province, year`
 
-	if result := sql.DB.Raw(query).Scan(&yearlyReports); result.Error != nil {
-		return nil, result.Error
-	}
+	result := sql.DB.Table("reported_cases").
+		Select(`province, EXTRACT(YEAR FROM TO_TIMESTAMP(reported_at, 'Month DD, YYYY HH:MI PM')) AS year, COUNT(id) AS reports_count `).
+		Group("province, year").
+		Find(&yearlyReports);
+
+		if result.Error != nil {
+			return nil, result.Error
+		}	
+		
 
 	return yearlyReports, nil
 }
@@ -116,9 +118,9 @@ func (sql *SQL) FetchReportsPerMollusk() ([]*types.ReportsPerMollusk, error){
 	var reports []*types.ReportsPerMollusk
 
 	result := sql.DB.Table("reported_cases").
-				Select("mollusk_type, COUNT(id) AS mollusk_count").
-				Group("mollusk_type").
-				Find(&reports)
+		Select("mollusk_type, COUNT(id) AS mollusk_count").
+		Group("mollusk_type").
+		Find(&reports)
 
 	if result.Error != nil{
 		return nil, result.Error
@@ -130,8 +132,9 @@ func (sql *SQL) FetchReportsPerMollusk() ([]*types.ReportsPerMollusk, error){
 
 func (sql *SQL) DeleteReportCases(report_id int64) error {
 
-	if result := sql.DB.Delete(&Reported_Cases{}, report_id); result.Error != nil {
-		return result.Error
+	query := "DELETE FROM reported_cases WHERE id = ?"
+	if err := sql.DB.Exec(query, report_id).Error; err != nil {
+		return err
 	}
 
 	return nil
@@ -140,7 +143,7 @@ func (sql *SQL) DeleteReportCases(report_id int64) error {
 
 func (sql *SQL) UpdateReportStatus(report_id int64) error {
 
-	result := sql.DB.Model(&Reported_Cases{}).Where("id = ?", report_id).Update("status", "Resolved")
+	result := sql.DB.Table("reported_cases").Where("id = ?", report_id).Update("status", "Resolved")
 	if result.Error != nil{
 		return result.Error 
 	}
