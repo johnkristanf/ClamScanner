@@ -6,6 +6,7 @@ import { DatasetClassTypes } from "../../types/datasets";
 import { useMutation, useQueryClient } from "react-query";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
+import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 
 
 
@@ -246,29 +247,38 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
     className: string,
     class_id: number,
     setisOpenUpload: React.Dispatch<React.SetStateAction<boolean>>
-}){
+}) {
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [uploadedFile, setuploadedFile] = useState<FileList | null | undefined>();
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            const fileList = Array.from(files);
+            setUploadedFiles(fileList);
+        }
+    };
 
+    const handleRemoveFile = (fileToRemove: File) => {
+        const updatedFiles = uploadedFiles.filter(file => file !== fileToRemove);
+        setUploadedFiles(updatedFiles);
+    };
 
     const Upload = async () => {
-
-        if(uploadedFile && (className && class_id)){
-            setIsLoading(true)
+        if (uploadedFiles.length > 0 && className && class_id) {
+            setIsLoading(true);
 
             const formData = new FormData();
-            for (const file of uploadedFile) {
+            uploadedFiles.forEach(file => {
                 formData.append('images', file);
-            }
-    
-            formData.append("datasetClass", className)
-            formData.append("class_id", String(class_id))
-        
-            const isUploaded = await UploadNewImage(formData)
+            });
+            formData.append("datasetClass", className);
+            formData.append("class_id", String(class_id));
 
-            if(isUploaded){
-                setIsLoading(false)
+            const isUploaded = await UploadNewImage(formData);
+
+            if (isUploaded) {
+                setIsLoading(false);
 
                 Swal.fire({
                     title: "Images Uploaded",
@@ -276,96 +286,122 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
                     icon: "success",
                     confirmButtonColor: "#3085d6",
                 }).then(result => {
-
-                    const { isConfirmed, isDismissed } = result
-
-                    if(isConfirmed || isDismissed){
-                        window.location.href = '/datasets'
+                    if (result.isConfirmed || result.isDismissed) {
+                        window.location.href = '/datasets';
                     }
-                })
-    
-                setisOpenUpload(false)
-            }
-        
-        }
-    }
-    
+                });
 
-    return(
+                setisOpenUpload(false);
+            }
+        }
+    };
+
+    return (
         <>
             <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
-
+            
             <div className="flex w-full justify-center items-center">
-
-                <div className="flex justify-center w-[35%] h-[60%] bg-white rounded-md fixed top-5" style={{ zIndex: 7000 }}>
-
+                <div className={`flex justify-center w-[35%] ${uploadedFiles.length <= 0 ? "h-[65%]": "h-[75%]" }  bg-white rounded-md fixed top-5`} style={{ zIndex: 7000 }}>
+                    
                     <div className="flex flex-col items-center justify-center gap-5">
-
                         <h1 className="font-semibold text-3xl">Upload New Dataset Images</h1>
-
                         <p className="font-semibold text-sm ">Unsupported image type and corrupted will get discarded</p>
                         <p className="font-semibold text-sm ">Supported Image Type: jpg, jpeg, png</p>
 
+                        {
+                            uploadedFiles.length <= 0 && (
+                                    <div className="border-2 border-gray-300 border-dashed rounded-md px-6 py-4">
+                                        <label htmlFor="fileInput" className="cursor-pointer">
+                                            <svg
+                                                className="w-12 h-12 text-gray-400 mx-auto"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                                />
+                                            </svg>
+                                            <p className="text-xs text-gray-500">Drag and drop files here or click to browse</p>
+                                            <input
+                                                id="fileInput"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".svg, .png, .jpg, .jpeg, .gif"
+                                                multiple
+                                                onChange={handleFileChange}
+                                            />
+                                        </label>
+                                    </div>
+                            )
+                        }
 
-                        <div className="border-2 border-gray-300 border-dashed rounded-md px-6 py-4">
-
-                            <label htmlFor="fileInput" className="cursor-pointer">
-                            <svg
-                                className="w-12 h-12 text-gray-400 mx-auto"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                            </svg>
-                            <p className="text-xs text-gray-500">Drag and drop files here or click to browse</p>
-
-                            <input
-                                id="fileInput"
-                                type="file"
-                                className="hidden"
-                                accept=".svg, .png, .jpg, .jpeg, .gif"
-                                multiple
-                                onChange={(e) => setuploadedFile(e.target.files)}
-                            />
-                            
-                            </label>
-                        </div>
+                       
 
                         <div className="flex flex-col gap-2 w-full">
 
-                            <button 
-                                disabled={isLoading}
-                                onClick={() => Upload()}
-                                className={`font-bold rounded-md p-2 w-full hover:opacity-75 ${ isLoading ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-900 text-white'} `}
-                                >
+                            <div className="flex flex-col gap-2 w-full">
 
+                                {uploadedFiles.length > 0 && (
+
+                                    <>
+
+                                        <h2 className="text-lg font-semibold">Selected Files:</h2>
+
+                                        <div className="border border-gray-300 rounded-md p-2 h-40 overflow-y-scroll">
+
+                                            {uploadedFiles.map((file, index) => (
+                                                <div key={index} className="flex items-center gap-2 mt-2">
+
+                                                    <div className="relative w-full">
+                                                        <img
+                                                            src={URL.createObjectURL(file)}
+                                                            alt={file.name}
+                                                            className="h-32 w-full object-cover rounded-md relative"
+                                                        />
+
+                                                        <button
+                                                            className="text-red-600 hover:text-red-800 absolute top-0 right-2"
+                                                            onClick={() => handleRemoveFile(file)}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTimes} className="text-3xl" />
+                                                        </button>
+                                                    </div>
+                                                  
+                                                  
+
+                                                </div>
+                                            ))}
+
+                                        </div>
+
+                                    </>
+                                )}
+
+                            </div>
+                            <button
+                                disabled={isLoading || uploadedFiles.length === 0}
+                                onClick={Upload}
+                                className={`font-bold rounded-md p-2 w-full hover:opacity-75 ${isLoading ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-900 text-white'
+                                    } `}
+                            >
                                 {isLoading ? 'Uploading...' : 'Upload'}
-
                             </button>
-
-                            <button 
+                            <button
                                 disabled={isLoading}
                                 onClick={() => setisOpenUpload(false)}
-                                className={`${ isLoading ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white'} font-bold rounded-md p-2 w-full hover:opacity-75`}
-                                >
+                                className={`${isLoading ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white'
+                                    } font-bold rounded-md p-2 w-full hover:opacity-75`}
+                            >
                                 Cancel
                             </button>
                         </div>
-
-                      
-      
                     </div>
-
                 </div>
             </div>
-           
         </>
-        
-    )
+    );
 }
