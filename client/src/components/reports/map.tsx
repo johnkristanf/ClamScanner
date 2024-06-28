@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import { FetchMapReports } from '../../http/get/reports';
 import { useQuery } from 'react-query';
 import { ReportedCasesTypes } from '../../types/reported';
-import { MapProps, SetViewOnClickProps } from '../../types/map';
+import { SetViewOnClickProps } from '../../types/map';
 
 const redIcon = new L.Icon({
   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
