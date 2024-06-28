@@ -36,7 +36,7 @@ export const SideBar: React.FC<SideBarProps> = ({ setisSidebarOpen }) => {
 function Logo(){
   return(
     <div className="flex items-center gap-4 w-full mt-6">
-      <img src="/public/img/clam_logo.png" width={60} alt="ClamScanner Nav Logo" />
+      <img src="/img/clam_logo.png" width={60} alt="ClamScanner Nav Logo" />
       <h1 className="text-white font-bold text-3xl">Clam Scanner</h1>
     </div>
   )
