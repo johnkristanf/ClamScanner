@@ -76,7 +76,7 @@ func (m *MockRedisMethod) DELETE(cacheKey string, req *http.Request) error {
 	return args.Error(0)
 }
 
-func (m *MockRedisMethod) DELETEBYKEY(cacheKey [4]string, req *http.Request) error {
+func (m *MockRedisMethod) DELETEBYKEY(cacheKey [5]string, req *http.Request) error {
 	args := m.Called(cacheKey, req)
 	return args.Error(0)
 }

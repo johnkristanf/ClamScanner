@@ -1,5 +1,5 @@
 import { FieldErrors, LiteralUnion } from "react-hook-form";
-import { LoginCredentials, SignupCredentials } from "../types/account";
+import {SignupCredentials } from "../types/account";
 
 function ValidateErrors(field: string, type: LiteralUnion<"required" | "min" | "max" | "maxLength" | "minLength" | "validate" | "value" | "setValueAs" | "shouldUnregister" | "onChange" | "onBlur" | "disabled" | "deps" | "pattern" | "valueAsNumber" | "valueAsDate", string> | undefined){
 
@@ -30,9 +30,8 @@ export const SignupValidation = (errors: FieldErrors<SignupCredentials>) => {
 
         switch (fieldName) {
             case 'firstname':
-                return ValidateErrors('firstname', errors.firstname?.type);
+                return ValidateErrors('fullname', errors.fullname?.type);
             case 'lastname':
-                return ValidateErrors('lastname', errors.lastname?.type);
             case 'email':
                 return ValidateErrors('email', errors.email?.type);
             case 'password':
