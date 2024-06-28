@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/johnkristanf/clamscanner/types"
@@ -23,6 +24,8 @@ type REPORTED_DB_METHOD interface {
 	InsertReport(*types.Reported_Cases) (int64, error)
 
 	FetchReportedCases() ([]*types.Fetch_Cases, error)
+	FetchMapReportedCases(string, string) ([]*types.Fetch_Cases, error)
+	
 	FetchPerCityReports() ([]*types.YearlyReportsPerCity, error)
 	FetchPerProvinceReports() ([]*types.YearlyReportsPerProvince, error)
 	FetchReportsPerMollusk() ([]*types.ReportsPerMollusk, error)
@@ -75,6 +78,30 @@ func (sql *SQL) FetchReportedCases() ([]*types.Fetch_Cases, error) {
 
 	return cases, nil
 }
+
+
+
+func (sql *SQL) FetchMapReportedCases(month string, mollusk string) ([]*types.Fetch_Cases, error) {
+
+	var cases []*types.Fetch_Cases
+
+	result := sql.DB.Table("reported_cases").
+		Select(`reported_cases.id, reported_cases.longitude, reported_cases.latitude, reported_cases.city, reported_cases.province, reported_cases.district, reported_cases.reported_at, reported_cases.mollusk_type, reported_cases.status,
+		users.id AS user_id, users.full_name AS reporter_name, users.address AS reporter_address`).
+
+		Joins("INNER JOIN users ON reported_cases.user_id = users.id").
+		Where("reported_at ILIKE ? AND mollusk_type = ? ", "%"+month+"%", mollusk).
+		Find(&cases)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	fmt.Println("cases in db: ", cases)
+
+	return cases, nil
+}
+
 
 
 func (sql *SQL) FetchPerCityReports() ([]*types.YearlyReportsPerCity, error) {
