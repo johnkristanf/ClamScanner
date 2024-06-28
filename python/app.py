@@ -118,6 +118,7 @@ def train_model_async(data):
 
     return 'Trained Successfully'
 
+
 @app.post("/train/model")
 def train():
     data = request.get_json()

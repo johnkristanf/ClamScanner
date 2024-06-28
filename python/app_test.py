@@ -5,7 +5,25 @@ from PIL import Image
 from app import app
 from werkzeug.datastructures import FileStorage
 
+import websockets
+import threading
+import asyncio
+
+from ws_client import clients
+
+
 class APITestCase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.app_thread = threading.Thread(target=app.run, kwargs={'port': 5000})
+        cls.app_thread.start()
+        asyncio.sleep(1)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.app_thread.join()
+
 
     def setUp(self):
         app.config['TESTING'] = True
@@ -83,6 +101,22 @@ class APITestCase(unittest.TestCase):
             response = self.client.post("/upload/dataset/images", data=data, content_type='multipart/form-data')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data.decode(), 'Image Uploaded Successfull')
+
+
+    async def connect_websocket(self, uri):
+        async with websockets.connect(uri) as websocket:
+            await websocket.send("Hello, WebSocket!")
+       
+            self.assertEqual(len(clients), 1)
+            self.assertEqual(clients[0], websocket)
+
+            await websocket.close()
+
+            self.assertEqual(len(clients), 0)
+
+    def test_websocket_connection(self):
+        uri = "ws://localhost:5000/ws"
+        asyncio.run(self.connect_websocket(uri))
 
 if __name__ == "__main__":
     unittest.main()
