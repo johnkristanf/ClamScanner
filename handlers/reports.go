@@ -164,7 +164,7 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 			
 		case reportID := <- lastReportChan:
 
-			reportKeys := [4]string{"reports", "reports_city", "reports_province", "reports_per_mollusk"}
+			reportKeys := [5]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map"}
 
 			if err := h.REDIS_METHOD.DELETEBYKEY(reportKeys, r); err != nil {
 				return err
@@ -203,6 +203,26 @@ func (h *ReportHandler) FetchAllReportsHandler(w http.ResponseWriter, r *http.Re
 	}
 
 
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
+
+}
+
+func (h *ReportHandler) FetchMapReportsHandler(w http.ResponseWriter, r *http.Request) error {
+
+	month := r.PathValue("month")
+	mollusk := r.PathValue("mollusk")
+
+	var cases []*types.Fetch_Cases
+	
+	cases, err := h.DB_METHOD.FetchMapReportedCases(month, mollusk)
+	if err != nil {
+		return err
+	}
+
+	if err := h.REDIS_METHOD.SET(cases, "reports_map", r); err != nil {
+		return err
+	}
+	
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
 
 }
@@ -328,7 +348,7 @@ func (h *ReportHandler) DeleteReportHandler(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	reportKeys := [4]string{"reports", "reports_city", "reports_province", "reports_per_mollusk"}
+	reportKeys := [5]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map"}
 
 	if err := h.REDIS_METHOD.DELETEBYKEY(reportKeys, r); err != nil {
 		return err
