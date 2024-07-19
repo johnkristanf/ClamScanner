@@ -3,6 +3,7 @@ import { Charts } from "../components/dashboard/charts";
 import { SideBar } from "../components/navigation/sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
+import ChatBot from "../components/chat/chatbot";
 
 
 function DashboardPage(){
@@ -31,6 +32,9 @@ function DashboardPage(){
                 </div>   
 
             </div>
+
+            <ChatBot />
+            
 
         </div>
     );

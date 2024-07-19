@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
 import { FetchModelType } from '../types/datasets';
 import { TrainModel } from '../http/post/train';
+import ChatBot from '../components/chat/chatbot';
 
 const socket = new WebSocket('ws://127.0.0.1:8000/ws');
 
@@ -188,6 +189,8 @@ const ModelsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ChatBot />
     </div>
   );
 };

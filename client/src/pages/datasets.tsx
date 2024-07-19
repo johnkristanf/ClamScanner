@@ -8,6 +8,7 @@ import { FetchDatasetClasses } from "../http/get/datasets";
 import Swal from "sweetalert2";
 import { DeleteDatasetClass } from "../http/delete/dataset";
 import { DatasetClassTypes } from "../types/datasets";
+import ChatBot from "../components/chat/chatbot";
 
 
 
@@ -185,6 +186,8 @@ function DataSetsPage() {
 
                 </div>
             </div>
+
+            <ChatBot />
         </div>
     );
 }
