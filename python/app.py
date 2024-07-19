@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from upload.ds_ops import add_new_dataset_class, delete_dataset_class
 from upload.upload_ds_image import process_image_uploading, DB_DATASETS, count_images
+from chat import ChatBot
 
 from train.process_train import train_new_model
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -38,6 +39,11 @@ def dataset_db_update():
     update_dataset_class_data = DB_DATASETS(app)
 
 dataset_db_update()
+
+def init_chatbot():
+    global chatbot 
+    chatbot = ChatBot()
+init_chatbot()
 
 
 @app.post("/add/dataset/class")
@@ -143,6 +149,22 @@ def scan():
     except Exception as e:
         print("Error during image processing:", e)
         return jsonify({"error": "Image processing failed"}), 500
+    
+
+@app.post("/message/chatbot")
+def chat():
+    try:
+        data = request.json
+        user_input = data.get("message")
+
+        if user_input:
+            response = chatbot.get_responses(user_input)
+            return jsonify({"response": response}), 200
+
+    except Exception as e:
+        print("Error during chat process:", e)
+        error_response = "An error occurred while processing your request. Please try again later or contact support for assistance."
+        return jsonify({"error_occured": error_response}), 500
 
 
 def run_flask():
