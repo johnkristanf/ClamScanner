@@ -32,6 +32,7 @@ function ChatBot(): JSX.Element {
               height={70}
               className='hover:cursor-pointer mb-3'
             />
+            
             {showTooltip && (
               <div className='absolute bottom-16 right-2 bg-white text-black p-2 rounded shadow w-[28rem] font-semibold'>
                 Greetings! Let's chat! Click me to get assistance from Jake, your AI buddy!
@@ -110,16 +111,13 @@ function ChatBox({ setShowChatBox }: { setShowChatBox: React.Dispatch<React.SetS
               {conversation.slice(0).reverse().map((chat, index) => (
                 <div key={index} className={`flex mb-2 ${chat.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`rounded-lg p-2 max-w-2/3 ${chat.sender === 'user' ? 'bg-blue-600 ml-auto' : 'bg-gray-600 mr-auto'}`}>
-                    <p className="text-sm">{chat.text}</p>
+                    <p className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{chat.text}</p>
                   </div>
                 </div>
               ))}
-
             </div>
         )
       }
-
-      
 
       <div className="p-4">
 
@@ -155,7 +153,6 @@ function SampleBotQuestions({setMessage}: {
     {question: "Guide on getting a good performing model"},
   ]
 
-
   return(
     <div className='w-[90%] flex justify-evenly gap-3 mt-5 font-semibold'>
        {
@@ -166,10 +163,9 @@ function SampleBotQuestions({setMessage}: {
                 onClick={() => setMessage(item.question)}
               >
                 <h1> {item.question} </h1>
-
               </div>
-              ))
-            }
+          ))
+        }
     </div>
   )
 }
