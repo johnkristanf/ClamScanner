@@ -8,9 +8,9 @@ from flask_cors import CORS
 from ws_client import clients
 from fastapi.middleware.cors import CORSMiddleware
 
-from upload.ds_ops import add_new_dataset_class, delete_dataset_class
+from upload.ds_ops import DatasetOperations
 from upload.upload_ds_image import process_image_uploading, DB_DATASETS, count_images
-from chat import ChatBot
+from chat import ChatBotService
 
 from train.process_train import train_new_model
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -34,16 +34,10 @@ ws_app.add_middleware(
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 DATASET_FOLDER = os.path.abspath('datasets')
 
-def dataset_db_update():
-    global update_dataset_class_data 
-    update_dataset_class_data = DB_DATASETS(app)
+update_dataset_class_data = DB_DATASETS(app)
 
-dataset_db_update()
-
-def init_chatbot():
-    global chatbot 
-    chatbot = ChatBot()
-init_chatbot()
+chatbot = ChatBotService()
+dataset_ops = DatasetOperations()
 
 
 @app.post("/add/dataset/class")
@@ -52,7 +46,7 @@ def add_dataset():
     
     folder_path = data['folder_path']
 
-    add_new_dataset_class(folder_path)
+    dataset_ops.add_new_dataset_class(folder_path)
     return jsonify({"success": "Dataset Class Added!"}), 200
 
 
@@ -72,10 +66,7 @@ def upload_images():
 
     process_image_uploading(images, dest_folder)
     img_count = count_images(dest_folder)
-    
-    print("img_count: ", img_count)
     update_dataset_class_data(img_count, class_id)
-    print("updated successfulyy")
 
     return 'Image Uploaded Successfull', 200
 
@@ -86,7 +77,7 @@ def delete_dataset():
     
     folder_path = data['folder_path']
 
-    delete_dataset_class(folder_path)
+    dataset_ops.delete_dataset_class(folder_path)
     return jsonify({"success": "Dataset Class Deleted!"}), 200
 
 
