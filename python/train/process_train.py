@@ -11,6 +11,14 @@ from keras._tf_keras.keras.applications.resnet import preprocess_input
 
 from keras._tf_keras.keras.optimizers import Adam
 
+# import tensorflow as tf
+# from tensorflow.keras import layers, regularizers, Sequential
+# from tensorflow.keras.preprocessing import image_dataset_from_directory
+# from tensorflow.keras.applications import ResNet50
+# from tensorflow.keras.applications.resnet import preprocess_input
+# from tensorflow.keras.optimizers import Adam
+# from tensorflow.keras.models import load_model
+
 import json
 
 import asyncio

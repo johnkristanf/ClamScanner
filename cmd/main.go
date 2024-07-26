@@ -88,7 +88,7 @@ func main() {
 	)
 
 	s := http.Server{
-		Addr:    "0.0.0.0:8080",
+		Addr:    ":8080",
 		Handler: stack(router),
 	}
 

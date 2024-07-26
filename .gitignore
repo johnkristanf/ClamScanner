@@ -12,3 +12,5 @@ python/models
 
 *.keras
 *.h5
+
+python/.envpython/.env

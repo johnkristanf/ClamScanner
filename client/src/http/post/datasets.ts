@@ -4,7 +4,7 @@ import { DatasetClassTypes } from "../../types/datasets";
 export async function UploadNewImage(uploadFormData: FormData): Promise<boolean | undefined>{
 
     try {
-        const response = await axios.post("http://127.0.0.1:5000/upload/dataset/images", uploadFormData, {
+        const response = await axios.post("http://localhost:5000/upload/dataset/images", uploadFormData, {
             headers: { 
                 'Content-Type': 'multipart/form-data'
             }
