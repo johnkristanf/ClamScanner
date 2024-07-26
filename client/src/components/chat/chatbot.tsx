@@ -149,8 +149,8 @@ function SampleBotQuestions({setMessage}: {
 
   const sampleQuestions = [
     {question: "Display the total Dataset Images"},
-    {question: "Show All Reports Per Province"},
-    {question: "Guide on getting a good performing model"},
+    {question: "Count the reports in all Provinces"},
+    {question: "How to get a good performing classification model?"},
   ]
 
   return(
