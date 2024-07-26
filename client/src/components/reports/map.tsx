@@ -15,7 +15,7 @@ const redIcon = new L.Icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 
 const greenIcon = new L.Icon({
@@ -24,24 +24,22 @@ const greenIcon = new L.Icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   tooltipAnchor: [16, -28],
-  shadowSize: [41, 41]
+  shadowSize: [41, 41],
 });
 
 const redCircleOptions: L.CircleMarkerOptions = {
-  color: 'red', 
-  fillColor: 'transparent', 
+  color: 'red',
+  fillColor: 'transparent',
   fillOpacity: 0,
-  weight: 1 
+  weight: 1,
 };
 
 const greenCircleOptions: L.CircleMarkerOptions = {
-  color: 'green', 
-  fillColor: 'transparent', 
+  color: 'green',
+  fillColor: 'transparent',
   fillOpacity: 0,
-  weight: 1 
+  weight: 1,
 };
-
-
 
 function SetViewOnClick({ MapCoor }: SetViewOnClickProps) {
   const map = useMap();
@@ -50,10 +48,13 @@ function SetViewOnClick({ MapCoor }: SetViewOnClickProps) {
   return null;
 }
 
+const monthNames = [
+  'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+];
 
 function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
-
-  const [selectedMonth, setSelectedMonth] = useState<string>('January');
+  const currentMonth = new Date().getMonth();
+  const [selectedMonth, setSelectedMonth] = useState<string>(monthNames[currentMonth]);
   const [selectedMollusk, setSelectedMollusk] = useState<string>('Scaly Clam');
 
   const { data: reports } = useQuery(
@@ -61,36 +62,28 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
     () => FetchMapReports({ month: selectedMonth, mollusk: selectedMollusk })
   );
 
-  console.log("reports map data: ", reports)
+  console.log("reports map data: ", reports);
 
   return (
     <div className="h-screen w-full mt-10 pb-20">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-gray-700 font-bold text-3xl">Clam Scanner Reported Mollusk Map</h1>
-        
+
         <div className="flex items-end justify-center gap-5 w-1/2">
           <div className="flex flex-col justify-center w-1/2 gap-2">
             <h1 className="font-bold text-center">Filter Reports by</h1>
 
             <div className="flex gap-5">
-
               <select
                 className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
               >
-                <option>January</option>
-                <option>February</option>
-                <option>March</option>
-                <option>April</option>
-                <option>May</option>
-                <option>June</option>
-                <option>July</option>
-                <option>August</option>
-                <option>September</option>
-                <option>October</option>
-                <option>November</option>
-                <option>December</option>
+                {monthNames.map((month) => (
+                  <option key={month} value={month}>
+                    {month}
+                  </option>
+                ))}
               </select>
 
               <select
@@ -101,12 +94,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
                 <option>Scaly Clam</option>
                 <option>Tiger Cowrie</option>
                 <option>BullMouth Helmet</option>
-                <option>Mussel</option>
-                <option>Blood Clam</option>
-                <option>Oyster</option>
-                <option>Horn Snail</option>
               </select>
-
             </div>
           </div>
           <button onClick={() => setOpenReportsModal(true)} className="rounded-md p-2 text-white font-bold bg-blue-900 w-full hover:opacity-75 hover:cursor-pointer">
@@ -116,7 +104,6 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
       </div>
 
       <div className="relative w-full h-full flex justify-center z-10">
-
         <MapContainer center={MapCoor} zoom={9} scrollWheelZoom={false} attributionControl={false} className="w-full h-full">
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <SetViewOnClick MapCoor={MapCoor} />
@@ -130,22 +117,22 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
                 <Marker
                   position={[data.latitude, data.longitude]}
                   eventHandlers={{
-                    click: () => setMapCoor([data.latitude, data.longitude])
+                    click: () => setMapCoor([data.latitude, data.longitude]),
                   }}
                   icon={icon}
                 >
                   <Tooltip>
                     {data.reporter_name} <br />
                     {data.mollusk_type} <br />
-                    {data.city}{data.district}, {data.province} <br /> 
+                    {data.city}{data.district}, {data.province} <br />
                     {data.reportedAt} <br />
                     {data.latitude}° N, {data.longitude}° E
                   </Tooltip>
                 </Marker>
 
-                <CircleMarker 
-                  center={[data.latitude, data.longitude]} 
-                  pathOptions={circleOptions} 
+                <CircleMarker
+                  center={[data.latitude, data.longitude]}
+                  pathOptions={circleOptions}
                   radius={8}
                 />
               </div>
@@ -153,7 +140,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
           })}
         </MapContainer>
 
-        <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg" style={{zIndex: 9999}}>
+        <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg" style={{ zIndex: 9999 }}>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <img src="/img/red_marker.png" width={20} height={30} />
