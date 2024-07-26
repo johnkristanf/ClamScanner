@@ -1,80 +1,98 @@
 import os
-from database.db import db_conn
+import shutil
+
 from werkzeug.utils import secure_filename
-
-from sqlalchemy import Column, Integer, String, Text, DateTime
-from sqlalchemy.sql import func
 from werkzeug.datastructures import FileStorage
-from flask import Flask
 
-def DB_DATASETS(app: Flask):
+from database.db_connect import get_connection
+import psycopg2 
 
-    db = db_conn(app)
-
-    class Datasets(db.Model):
-        __tablename__ = 'datasets' 
-
-        id = Column(Integer, primary_key=True, autoincrement=True)
-        name = Column(String, nullable=False)
-        scientific_name = Column(String, nullable=False)
-        description = Column(Text, nullable=False)
-        status = Column(String, nullable=False)
-        count = Column(Integer, nullable=False)
-        created_at = Column(DateTime(timezone=True), server_default=func.now())
-        updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-        def __repr__(self):
-            return f"<Datasets(name={self.name}, scientific_name={self.scientific_name}, count={self.count})>"
+class DatasetDatabaseOperations:
+    def __init__(self) :
+        self.connection_pool = get_connection()
         
+    def update_dataset_class_data(self, imgcount, classID):
+        conn = None
+        cur = None
 
-    def update_dataset_class_data(imgcount, classID):
         try:
-            dataset = Datasets.query.filter_by(id=classID).first()
-            if not dataset:
-                raise ValueError(f"Dataset with id {classID} not found")
+            conn = self.connection_pool.getconn()
+            cur = conn.cursor()
+            
+            update_query = """
+                UPDATE datasets
+                SET count = %s
+                WHERE id = %s;
+            """
+            
+            cur.execute(update_query, (imgcount, classID))
+            conn.commit()
 
-            dataset.count = imgcount
-            db.session.commit()
-            return None  # No error occurred
+            updated_rows = cur.rowcount
+            print(f"{updated_rows} row(s) updated.")
+        
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(f"Error: {error}")
+            if conn:
+                conn.rollback()
+            return None
+        
+        finally:
+            if cur: 
+                cur.close()
+                
+            if conn:
+                self.connection_pool.putconn(conn)
+                
+
+
+
+class DatasetImageUploadMethod:
+    def __init__(self):
+        self.extensions = ['.jpg', '.jpeg', '.png']
+
+    def count_images(self, folder_path):
+        count = 0
+        files = os.listdir(folder_path)
+        for file_name in files:
+            file_path = os.path.join(folder_path, file_name)
+            print(f"Saving file count to: {file_path}")
+
+            if os.path.isfile(file_path) and self.is_image(file_name):
+                count += 1
+        return count
+    
+
+    def is_image(self, file_name):
+        ext = os.path.splitext(file_name)[1].lower()
+        return ext in self.extensions
+    
+
+    def process_image_uploading(self, images: list[FileStorage], dest_folder: str):
+        for file in images:
+            if file.filename == '':
+                continue
+            
+            if file and self.is_image(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(dest_folder, filename)
+                file.save(file_path)
+                
+
+    def allowed_file(self, filename):
+        return '.' in filename and filename.split('.', 1)[1].lower() in self.extensions
+    
+
+    def add_new_dataset_class(self, folder_path: str):
+        try:
+            os.makedirs(folder_path, exist_ok=True)
         except Exception as e:
-            db.session.rollback()
-            return str(e)
-        
-
-    return update_dataset_class_data 
-        
+            print(f"Error creating directory {folder_path}: {e}")
 
 
-def count_images(folder_path):
-    count = 0
-
-    files = os.listdir(folder_path)
-
-    for file_name in files:
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path) and is_image(file_name):
-            count += 1
-
-    return count
-
-def is_image(file_name):
-    image_extensions = ['.jpg', '.jpeg', '.png'] 
-    ext = os.path.splitext(file_name)[1].lower()
-    return ext in image_extensions
-
-
-def process_image_uploading(images: list[FileStorage], dest_folder: str):
-    for file in images:
-        if file.filename == '':
-            continue
-
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(dest_folder, filename)
-            file.save(file_path)
-
-    
-    
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    def delete_dataset_class(self, folder_path: str):
+        try:
+            if os.path.exists(folder_path):
+                shutil.rmtree(folder_path)
+        except Exception as e:
+            print(f"Error occurred while removing folder '{folder_path}': {str(e)}")
