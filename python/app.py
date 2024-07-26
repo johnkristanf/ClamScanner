@@ -1,29 +1,25 @@
 import os
-import predict
-
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
+from fastapi.responses import JSONResponse
 
-from flask_cors import CORS
-from ws_client import clients
 from fastapi.middleware.cors import CORSMiddleware
-
-from upload.ds_ops import DatasetOperations
-from upload.upload_ds_image import process_image_uploading, DB_DATASETS, count_images
-from chat import ChatBotService
-
-from train.process_train import train_new_model
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-
+from fastapi import WebSocket, WebSocketDisconnect
 import threading
 import uvicorn
 
 
-ws_app = FastAPI()
-app = Flask(__name__)
-CORS(app)
+from ws_client import clients
 
-ws_app.add_middleware(
+from upload.upload_ds_image import DatasetDatabaseOperations, DatasetImageUploadMethod
+from ML.chat import ChatBotService
+from ML.predict import ClamPrediction
+from train.process_train import train_new_model
+
+app = FastAPI()
+
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  
     allow_credentials=True,
@@ -31,146 +27,129 @@ ws_app.add_middleware(
     allow_headers=["*"], 
 )
 
+load_dotenv('.env')
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 DATASET_FOLDER = os.path.abspath('datasets')
 
-update_dataset_class_data = DB_DATASETS(app)
-
 chatbot = ChatBotService()
-dataset_ops = DatasetOperations()
+dataset_db_ops = DatasetDatabaseOperations()
+dataset_upload_ops = DatasetImageUploadMethod()
+predict = ClamPrediction()
+
 
 
 @app.post("/add/dataset/class")
-def add_dataset():
-    data = request.get_json()
-    
-    folder_path = data['folder_path']
+async def add_dataset(data: dict):
+    folder_path = data.get('folder_path')
+    dataset_upload_ops.add_new_dataset_class(folder_path)
+    return JSONResponse(content={"success": "Dataset Class Added!"}, status_code=200)
 
-    dataset_ops.add_new_dataset_class(folder_path)
-    return jsonify({"success": "Dataset Class Added!"}), 200
+
+
+@app.post("/delete/dataset/class")
+async def delete_dataset(data: dict):
+    folder_path = data.get('folder_path')
+    dataset_upload_ops.delete_dataset_class(folder_path)
+    return JSONResponse(content={"success": "Dataset Class Deleted!"}, status_code=200)
 
 
 
 @app.post("/upload/dataset/images")
-def upload_images():
-    dataset_class = request.form.get('datasetClass')
-    class_id = request.form.get('class_id')
-
-    if 'images' not in request.files:
-        return jsonify({"error": "No files part in the request"}), 400
-
-    images = request.files.getlist('images')
-    dest_folder = os.path.join("datasets", dataset_class)
-
+async def upload_images(datasetClass: str = Form(...), 
+    class_id: str = Form(...), 
+    images: list[UploadFile] = File(...)
+):
+    dest_folder = os.path.join("datasets", datasetClass)
     os.makedirs(dest_folder, exist_ok=True)
 
-    process_image_uploading(images, dest_folder)
-    img_count = count_images(dest_folder)
-    update_dataset_class_data(img_count, class_id)
-
-    return 'Image Uploaded Successfull', 200
-
-
-@app.post("/delete/dataset/class")
-def delete_dataset():
-    data = request.get_json()
+    for file in images:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(dest_folder, filename)
+        with open(file_path, "wb") as buffer:
+            buffer.write(file.file.read())
     
-    folder_path = data['folder_path']
+    img_count = dataset_upload_ops.count_images(dest_folder)
+    dataset_db_ops.update_dataset_class_data(img_count, class_id)
+    
+    return JSONResponse(content={"message": "Image Uploaded Successfully"}, status_code=200)
 
-    dataset_ops.delete_dataset_class(folder_path)
-    return jsonify({"success": "Dataset Class Deleted!"}), 200
 
-
-@ws_app.websocket("/ws")
+@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     clients.append(websocket)
-    print(f"Client connected: {websocket.client}")
     try:
         while True:
             message = await websocket.receive_text()
             print(f"Received message: {message}")
     except WebSocketDisconnect:
         print(f"Client disconnected: {websocket.client}")
+        clients.remove(websocket)
     except Exception as e:
         print(f"Error: {e}")
-    finally:
         clients.remove(websocket)
-        print(f"Client removed: {websocket.client}")
 
-
-def train_model_async(data):
-    model_version = data.get('version')
-    print("model_version:", model_version)
-
-    train_acc, val_acc, train_loss, val_loss = train_new_model(DATASET_FOLDER, model_version)
-
-    data = {
-        "version": f'ClamScanner_v{model_version}',
-        "train_accuracy": train_acc,
-        "validation_accuracy": val_acc,
-        "train_loss": train_loss,
-        "validation_loss": val_loss
-    }
-
-    return 'Trained Successfully'
 
 
 @app.post("/train/model")
-def train():
-    data = request.get_json()
-    threading.Thread(target=train_model_async, args=(data,)).start()
-    return jsonify({"status": "Training started"}), 200
+async def train(data: dict):
+    
+    def train_model_async(data):
+        model_version = data.get('version')
+        train_acc, val_acc, train_loss, val_loss = train_new_model(DATASET_FOLDER, model_version)
+        return {
+            "version": f'ClamScanner_v{model_version}',
+            "train_accuracy": train_acc,
+            "validation_accuracy": val_acc,
+            "train_loss": train_loss,
+            "validation_loss": val_loss
+        }
+
+    thread = threading.Thread(target=train_model_async, args=(data,))
+    thread.start()
+    return JSONResponse(content={"status": "Training started"}, status_code=200)
+
 
 
 @app.post("/image/scan")
-def scan():
+async def scan(request: Request):
     try:
-        file = predict.load_validate_image_file(request, jsonify)
+        form = await request.form()
+        file = form.get('file')
+        if file is None:
+            raise HTTPException(status_code=400, detail="No file part in the request")
 
         filename = secure_filename(file.filename)
         file_path = os.path.join('./', filename)
-        file.save(file_path)
-        
+        with open(file_path, "wb") as buffer:
+            buffer.write(file.file.read())
+
         mollusk_classified_result = predict.mollusk_predict(file_path)
         os.remove(file_path)
-        
-        return jsonify({"mollusk_classified_result": mollusk_classified_result}), 200
 
+        return JSONResponse(content={"mollusk_classified_result": mollusk_classified_result}, status_code=200)
+    
     except Exception as e:
         print("Error during image processing:", e)
-        return jsonify({"error": "Image processing failed"}), 500
-    
+        return JSONResponse(content={"error": "Image processing failed"}, status_code=500)
+
+
 
 @app.post("/message/chatbot")
-def chat():
+async def chat(data: dict):
     try:
-        data = request.json
         user_input = data.get("message")
-
         if user_input:
             response = chatbot.get_responses(user_input)
-            return jsonify({"response": response}), 200
-
+            return JSONResponse(content={"response": response}, status_code=200)
+        
+        else:
+            raise HTTPException(status_code=400, detail="No message provided")
     except Exception as e:
         print("Error during chat process:", e)
-        error_response = "An error occurred while processing your request. Please try again later or contact support for assistance."
-        return jsonify({"error_occured": error_response}), 500
+        return JSONResponse(content={"error_occured": "An error occurred while processing your request. Please try again later or contact support for assistance."}, status_code=500)
 
 
-def run_flask():
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
-
-def run_fastapi():
-    uvicorn.run(ws_app, port=8000)
-
-
-if __name__ == '__main__':
-    flask_thread = threading.Thread(target=run_flask)
-    fastapi_thread = threading.Thread(target=run_fastapi)
-
-    flask_thread.start()
-    fastapi_thread.start()
-
-    flask_thread.join()
-    fastapi_thread.join()
+if __name__ == "__main__":
+    uvicorn.run(app, port=5000, log_level="info")
