@@ -88,7 +88,6 @@ function UserInfo(){
 
   useEffect(() => {
     FetchAdminData().then(data => {
-      console.log("data", data)
       setAdminData(data)
     })
   }, [])
