@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"os"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
@@ -23,12 +25,15 @@ type Admin struct {
 }
 
 func DBconfig() (*SQL, error) {
+
+	portInt, _ := strconv.Atoi(os.Getenv("DB_PORT"))
+
 	var (
-		host     = "localhost"
-		port     = 5432
-		user     = "postgres"
-		password = "johntorremocha"
-		dbname   = "clamscanner"
+		host     = os.Getenv("DB_HOST")
+		port     = portInt
+		user     = os.Getenv("DB_USER")
+		password = os.Getenv("DB_PASSWORD")
+		dbname   = os.Getenv("DB_NAME")
 	)
 
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -61,14 +66,14 @@ func DBconfig() (*SQL, error) {
 func MigrateAdminAccount(db *gorm.DB) error {
 	
     var admin Admin
-    result := db.Where("email = ?", "admin@gmail.com").First(&admin)
+    result := db.Where("email = ?", os.Getenv("ADMIN_EMAIL")).First(&admin)
     if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
         return result.Error
     }
 
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("ADMIN_PASSWORD")), bcrypt.DefaultCost)
 		if err != nil{
 			return err
 		}
