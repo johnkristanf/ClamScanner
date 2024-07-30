@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/johnkristanf/clamscanner/database"
@@ -11,6 +12,7 @@ import (
 	"github.com/johnkristanf/clamscanner/helpers"
 	"github.com/johnkristanf/clamscanner/middlewares"
 	"github.com/johnkristanf/clamscanner/routes"
+	"github.com/joho/godotenv"
 )
 
 
@@ -25,12 +27,17 @@ func main() {
 
 	router := http.NewServeMux()
 
+	err := godotenv.Load()
+    if err != nil {
+        log.Fatalf("Error loading .env file: %v", err)
+    }
+
 	db, err := database.DBconfig()
 	if err != nil {
 		fmt.Printf("error in db config: %v \n", err)
 	}
 	
-	redis, err := middlewares.REDIS("http://localhost:6379")
+	redis, err := middlewares.REDIS(os.Getenv("REDIS_URI"))
 	if err != nil {
 		fmt.Printf("error in redis: %v \n", err)
 	}
