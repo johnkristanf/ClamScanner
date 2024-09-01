@@ -10,25 +10,36 @@ const ReportedCases = lazy(() => import("../components/reports/reported"));
 const Map = lazy(() => import("../components/reports/map"));
 
 const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<number | undefined>>) => {
-    const ws = new WebSocket("ws://localhost:8080/ws/conn");
+    let ws: WebSocket | null = null;
 
-    ws.onopen = () => console.log("WebSocket Connected");
+    const connect = () => {
+        ws = new WebSocket("ws://localhost:8080/ws/conn");
 
-    ws.onmessage = (event) => {
-      const data: number = JSON.parse(event.data);
-      setReports(data);
+        ws.onopen = () => {
+            console.log("WebSocket Connected");
+        };
+
+        ws.onmessage = (event) => {
+            const data: number = JSON.parse(event.data);
+            setReports(data);
+        };
+
+        ws.onclose = (event) => {
+            console.log(`WebSocket closed: ${event.reason}`);
+            setTimeout(connect, 2000);
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            if (ws) ws.close();
+            
+            setTimeout(connect, 2000);
+        };
     };
 
-    ws.onclose = () => {
-        console.log('WebSocket closed');
-        setTimeout(() => InitializeWSConnection(setReports), 2000);
-    };
-  
-    ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setTimeout(() => InitializeWSConnection(setReports), 2000);
-    };
-}
+    connect();
+};
+
 
 const ReportsPage: React.FC = () => {
     const queryClient = useQueryClient();
