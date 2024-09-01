@@ -38,9 +38,9 @@ export function Charts() {
 
 function ReportedPerCity() {
     const reports_query = useQuery("perCity_reports", FetchYearlyReportsPerCity);
-    const reports: YearlyReportPerCity[] = reports_query.data?.data ?? [];
+    const reports: YearlyReportPerCity[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
   
-    const cities = Array.from(new Set(reports.map(report => report.city)));
+    const cities = Array.from(new Set(reports && reports.map(report => report.city)));
   
     const data: (string | number)[][] = [["Year", ...cities]];
   
@@ -100,9 +100,9 @@ function ReportedPerCity() {
 
 function ReportedPerProvince() {
     const reports_query = useQuery("perProvince_reports", FetchYearlyReportsPerProvince);
-    const reports: YearlyReportPerProvince[] = reports_query.data?.data ?? [];
+    const reports: YearlyReportPerProvince[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
     
-    const provinces = Array.from(new Set(reports.map(report => report.province)));
+    const provinces = Array.from(new Set(reports && reports.map(report => report.province)));
   
     const data: (string | number)[][] = [["Year", ...provinces]];
   
