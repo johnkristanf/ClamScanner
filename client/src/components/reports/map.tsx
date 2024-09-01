@@ -57,12 +57,16 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   const [selectedMonth, setSelectedMonth] = useState<string>(monthNames[currentMonth]);
   const [selectedMollusk, setSelectedMollusk] = useState<string>('Scaly Clam');
 
-  const { data: reports } = useQuery(
+  const reports_query = useQuery(
     ['reported_cases', selectedMonth, selectedMollusk],
     () => FetchMapReports({ month: selectedMonth, mollusk: selectedMollusk })
   );
 
+  const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
+
+
   console.log("reports map data: ", reports);
+  console.log("reports_query ", reports_query);
 
   return (
     <div className="h-screen w-full mt-10 pb-20">
@@ -108,7 +112,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <SetViewOnClick MapCoor={MapCoor} />
 
-          {reports?.data.map((data: ReportedCasesTypes) => {
+          {reports?.map((data) => {
             const icon = data.status === 'Resolved' ? greenIcon : redIcon;
             const circleOptions = data.status === 'Resolved' ? greenCircleOptions : redCircleOptions;
 
