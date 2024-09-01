@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 
 export function FetchPersonnelAccounts(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("http://localhost:8080/personnel/accounts", {
+        return axios.get("http://107.21.85.163:8080/personnel/accounts", {
             withCredentials: true
         });
     } catch (error) {
@@ -16,7 +16,7 @@ export function FetchPersonnelAccounts(): Promise<AxiosResponse<any, any>> {
 export async function FetchAdminData() {
 
     try {
-        const response = await axios.get("http://localhost:8080/admin/data", {
+        const response = await axios.get("http://107.21.85.163:8080/admin/data", {
             withCredentials: true
         });
 
@@ -31,7 +31,7 @@ export async function FetchAdminData() {
 export async function SignOut() {
 
     try {
-        const response = await axios.post("http://localhost:8080/signout", {}, {
+        const response = await axios.post("http://107.21.85.163:8080/signout", {}, {
             withCredentials: true
         });
 

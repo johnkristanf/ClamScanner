@@ -3,7 +3,7 @@ import { FetchMapReportsParams } from "../../types/map";
 
 export function FetchReports(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("http://localhost:8080/fetch/reports", {
+        return axios.get("http://107.21.85.163:8080/fetch/reports", {
             withCredentials: true
         });
     } catch (error) {
@@ -15,7 +15,7 @@ export function FetchReports(): Promise<AxiosResponse<any, any>> {
 
 export function FetchMapReports({ month, mollusk }: FetchMapReportsParams): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get(`http://localhost:8080/fetch/map/reports/${month}/${encodeURIComponent(mollusk)}`, {
+        return axios.get(`http://107.21.85.163:8080/fetch/map/reports/${month}/${encodeURIComponent(mollusk)}`, {
             withCredentials: true
         });
     } catch (error) {
@@ -28,7 +28,7 @@ export function FetchMapReports({ month, mollusk }: FetchMapReportsParams): Prom
 
 export function FetchYearlyReportsPerCity(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("http://localhost:8080/fetch/reports/city", {
+        return axios.get("http://107.21.85.163:8080/fetch/reports/city", {
             withCredentials: true
         });
     } catch (error) {
@@ -39,7 +39,7 @@ export function FetchYearlyReportsPerCity(): Promise<AxiosResponse<any, any>> {
 
 export function FetchYearlyReportsPerProvince(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("http://localhost:8080/fetch/reports/province", {
+        return axios.get("http://107.21.85.163:8080/fetch/reports/province", {
             withCredentials: true
         });
     } catch (error) {
@@ -51,7 +51,7 @@ export function FetchYearlyReportsPerProvince(): Promise<AxiosResponse<any, any>
 
 export function FetchReportsPerMollusk(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("http://localhost:8080/fetch/reports/mollusk", {
+        return axios.get("http://107.21.85.163:8080/fetch/reports/mollusk", {
             withCredentials: true
         });
     } catch (error) {

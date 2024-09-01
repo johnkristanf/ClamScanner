@@ -15,7 +15,7 @@ export async function FetchDatasetClassesDashboard(): Promise<AxiosResponse | an
 
 export function FetchDatasetClasses(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("http://localhost:8080/fetch/dataset/class", {
+        return axios.get("http://107.21.85.163:8080/fetch/dataset/class", {
             withCredentials: true
         });
     } catch (error) {
@@ -42,7 +42,7 @@ export async function FetchDatasetClassImages(classFolderName: string) {
     console.log("classFolderName", classFolderName)
 
     try {
-        const response = await axios.get(`http://localhost:8080/fetch/images/${encodeURIComponent(classFolderName)}`, {
+        const response = await axios.get(`http://107.21.85.163:8080/fetch/images/${encodeURIComponent(classFolderName)}`, {
             withCredentials: true
         });
         return response.data
