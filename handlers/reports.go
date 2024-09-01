@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 	"encoding/json"
+	"math/rand"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
@@ -53,7 +54,7 @@ var retryConfig = RetryConfig{
 }
 
 var clients = make(map[*Client]bool)
-var retryStrategy = ExponentialBackoff(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
+var retryStrategy = ExponentialBackoffWithJitter(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
 
 
 func SendReportID(w http.ResponseWriter, r *http.Request, lastInsertedID int64) error {
@@ -76,55 +77,70 @@ func SendReportID(w http.ResponseWriter, r *http.Request, lastInsertedID int64) 
 }
 
 
-func ExponentialBackoff(initialInterval, maxInterval time.Duration, backOffFactor float64) RetryStrategy {
+func ExponentialBackoffWithJitter(initialInterval, maxInterval time.Duration, backOffFactor float64) RetryStrategy {
 	return func(attempt int) time.Duration {
+		baseInterval := float64(initialInterval) * (backOffFactor * float64(attempt))
 
-		interval := float64(initialInterval) * (backOffFactor * float64(attempt))
-
-		if interval > float64(maxInterval) {
-			interval = float64(maxInterval)
+		if baseInterval > float64(maxInterval) {
+			baseInterval = float64(maxInterval)
 		}
 
-		return time.Duration(interval)
+		jitter := rand.Float64() * float64(initialInterval)
+		intervalWithJitter := baseInterval + jitter
+
+		return time.Duration(intervalWithJitter)
 	}
 }
 
 func WSConnectWithRetry(w http.ResponseWriter, r *http.Request, retryConfig RetryConfig, retryStrategy RetryStrategy) (conn *websocket.Conn, err error) {
+	conn, err = upgrader.Upgrade(w, r, nil)
+	if err == nil {
+		return conn, nil
+	}
 
 	for attempt := 1; attempt <= retryConfig.MaxRetries; attempt++ {
-		fmt.Printf("Attempting to Reconnect to Websocket (attempt: %d)\n", attempt)
+		retryInterval := retryStrategy(attempt)
+		fmt.Printf("Retrying in %s...\n", retryInterval)
+		time.Sleep(retryInterval)
 
 		conn, err = upgrader.Upgrade(w, r, nil)
 		if err == nil {
 			fmt.Println("Connected successfully")
 			return conn, nil
 		}
-
-		fmt.Println("Failed to connect error: ", err)
-
-		if attempt < retryConfig.MaxRetries {
-			retryInterval := retryStrategy(attempt)
-			fmt.Printf("Retrying in %s...\n", retryInterval)
-			time.Sleep(retryInterval)
-		}
-
+		fmt.Printf("Attempt %d failed: %v\n", attempt, err)
 	}
 
 	return nil, fmt.Errorf("failed to connect after %d attempts", retryConfig.MaxRetries)
-
 }
 
 func (h *ReportHandler) WebsocketConnHandler(w http.ResponseWriter, r *http.Request) error {
-    
-    conn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
-    if err != nil{
+
+	conn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
+	if err != nil {
 		return fmt.Errorf("error in websocket connection %v", err)
 	}
 
-    client := &Client{conn: conn}
-    clients[client] = true
+	client := &Client{conn: conn}
+	clients[client] = true
 
-    return nil
+	// Handle disconnection
+	go func() {
+		defer func() {
+			client.conn.Close()
+			delete(clients, client)
+		}()
+
+		for {
+			_, _, err := client.conn.ReadMessage()
+			if err != nil {
+				fmt.Printf("Client disconnected: %v\n", err)
+				return
+			}
+		}
+	}()
+
+	return nil
 }
 
 // ------------------ END OF WEBSOCKET CONFIGURATIONS----------------------------

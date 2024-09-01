@@ -66,7 +66,7 @@ func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http
 	go func() {
 		defer close(errorChan)
 		
-		url := "http://localhost:5000/add/dataset/class"
+		url := os.Getenv("ADD_DS_URI")
 		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
 			errorChan <- err
 		}
@@ -216,7 +216,7 @@ func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *h
 	go func() {
 		defer close(errorChan)
 
-		url := "http://localhost:5000/delete/dataset/class"
+		url := os.Getenv("DELETE_DS_URI")
 		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
 			errorChan <- err
 		}

@@ -9,7 +9,6 @@ from fastapi import WebSocket, WebSocketDisconnect
 import threading
 import uvicorn
 
-
 from ws_client import clients
 
 from upload.upload_ds_image import DatasetDatabaseOperations, DatasetImageUploadMethod
@@ -56,7 +55,8 @@ async def delete_dataset(data: dict):
 
 
 @app.post("/upload/dataset/images")
-async def upload_images(datasetClass: str = Form(...), 
+async def upload_images(
+    datasetClass: str = Form(...), 
     class_id: str = Form(...), 
     images: list[UploadFile] = File(...)
 ):
@@ -113,26 +113,31 @@ async def train(data: dict):
 
 
 @app.post("/image/scan")
-async def scan(request: Request):
-    try:
-        form = await request.form()
-        file = form.get('file')
-        if file is None:
-            raise HTTPException(status_code=400, detail="No file part in the request")
+async def scan(captured_image_file: UploadFile = File(...)):
+    file_path = None
 
-        filename = secure_filename(file.filename)
+    try:
+        filename = secure_filename(captured_image_file.filename)
         file_path = os.path.join('./', filename)
+        
         with open(file_path, "wb") as buffer:
-            buffer.write(file.file.read())
+            buffer.write(captured_image_file.file.read())
 
         mollusk_classified_result = predict.mollusk_predict(file_path)
-        os.remove(file_path)
+        response_data = {
+            "mollusk_classified_result": mollusk_classified_result
+        }
+        print(f'response_data {response_data}')
+        return JSONResponse(content=response_data, status_code=200)
 
-        return JSONResponse(content={"mollusk_classified_result": mollusk_classified_result}, status_code=200)
-    
     except Exception as e:
         print("Error during image processing:", e)
         return JSONResponse(content={"error": "Image processing failed"}, status_code=500)
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
 
 
 
@@ -152,4 +157,4 @@ async def chat(data: dict):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=5000, log_level="info")
+    uvicorn.run(app, port=5000, host='0.0.0.0', log_level="info")

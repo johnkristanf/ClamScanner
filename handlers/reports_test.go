@@ -120,7 +120,7 @@ func TestSendReportID(t *testing.T) {
 			BackoffFactor:   2,
 		}
 
-		retryStrategy := ExponentialBackoff(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
+		retryStrategy := ExponentialBackoffWithJitter(retryConfig.InitialInterval, retryConfig.MaxInterval, retryConfig.BackoffFactor)
 		
 		conn, err := WSConnectWithRetry(w, r, retryConfig, retryStrategy)
 		assert.NoError(t, err)

@@ -79,7 +79,7 @@ func MigrateAdminAccount(db *gorm.DB) error {
 		}
 
         result := db.Create(&Admin{
-            Email:     "admin@gmail.com",
+            Email:      os.Getenv("ADMIN_EMAIL"),
             Password: 	string(hashedPassword), 
             CreatedAt: 	time.Now(),
             UpdatedAt: 	time.Now(),
