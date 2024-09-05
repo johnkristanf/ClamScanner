@@ -4,7 +4,7 @@ import { DatasetClassTypes } from "../../types/datasets";
 export async function UploadNewImage(uploadFormData: FormData): Promise<boolean | undefined>{
 
     try {
-        const response = await axios.post("http://107.21.85.163:5000/upload/dataset/images", uploadFormData, {
+        const response = await axios.post("https://clamscanner.com/py/upload/dataset/images", uploadFormData, {
             headers: { 
                 'Content-Type': 'multipart/form-data'
             }
@@ -23,7 +23,7 @@ export async function UploadNewImage(uploadFormData: FormData): Promise<boolean 
 export async function AddNewDatasetClass(data: DatasetClassTypes){
 
     try {
-        return axios.post("http://107.21.85.163:8080/add/dataset/class", data, {
+        return axios.post("https://clamscanner.com/go/add/dataset/class", data, {
             withCredentials: true,
             headers: {
                 "Content-Type": "application/json"
