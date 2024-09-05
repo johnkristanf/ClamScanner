@@ -13,7 +13,7 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
     let ws: WebSocket | null = null;
 
     const connect = () => {
-        ws = new WebSocket("wss://https://clamscanner.com/go/ws/conn");
+        ws = new WebSocket("wss://clamscanner.com/go/ws/conn");
 
         ws.onopen = () => {
             console.log("WebSocket Connected");
