@@ -99,7 +99,7 @@ func main() {
 		Handler: stack(router),
 	}
 
-	log.Println("Go Server is listening on port 8080")
+	log.Println("Go Server HTTPS is listening on port 8080")
 	if err := s.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}

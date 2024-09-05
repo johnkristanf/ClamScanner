@@ -156,5 +156,5 @@ async def chat(data: dict):
         return JSONResponse(content={"error_occured": "An error occurred while processing your request. Please try again later or contact support for assistance."}, status_code=500)
 
 if __name__ == "__main__":
-    print("Fast API Server Listens to Port 5000")
+    print("Fast API Server HTTPS Listens to Port 5000")
     uvicorn.run(app, port=5000, host='0.0.0.0')
