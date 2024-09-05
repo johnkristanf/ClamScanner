@@ -57,7 +57,7 @@ function ChatBox({ setShowChatBox }: { setShowChatBox: React.Dispatch<React.SetS
       setConversation(prevConversation => [...prevConversation, userMessage]);
 
       try {
-        const res = await axios.post<{ response: string }>('http://127.0.0.1:5000/message/chatbot', { message });
+        const res = await axios.post<{ response: string }>('https://clamscanner.com/py/message/chatbot', { message });
         simulateTypingEffect(res.data.response);
       } catch (error) {
         console.error("There was an error sending the message!", error);
