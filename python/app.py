@@ -18,13 +18,16 @@ from train.process_train import train_new_model
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  
-    allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"], 
-)
+# comment this out cause the nginx configuration 
+# is handling the cors to avoid duplication error
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  
+#     allow_credentials=True,
+#     allow_methods=["*"],  
+#     allow_headers=["*"], 
+# )
 
 load_dotenv('.env')
 

@@ -11,7 +11,7 @@ import { FetchModelType } from '../types/datasets';
 import { TrainModel } from '../http/post/train';
 import ChatBot from '../components/chat/chatbot';
 
-const socket = new WebSocket('ws://127.0.0.1:5000/ws');
+const socket = new WebSocket('wss://https://clamscanner.com/py/ws');
 
 socket.onopen = () => {
   console.log('WebSocket Connected');
