@@ -37,7 +37,7 @@ export async function AddNewDatasetClass(data: DatasetClassTypes){
 export async function EditDatasetClass(data: DatasetClassTypes){
 
     try {
-        return axios.post("http://107.21.85.163:8080/edit/dataset/class", data, {
+        return axios.post("https://clamscanner.com/go/edit/dataset/class", data, {
             withCredentials: true,
             headers: {
                 "Content-Type": "application/json"
