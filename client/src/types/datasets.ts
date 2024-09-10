@@ -22,3 +22,16 @@ export type FetchModelType = {
     validation_loss: number,
     trained_at: string
 }
+
+
+export type ImageData = {
+    key: string,
+    url: string
+}
+
+
+export type DeleteImageDataTypes = { 
+    selectedKeys: string[], 
+    class_id: number, 
+    datasetClass: string 
+}

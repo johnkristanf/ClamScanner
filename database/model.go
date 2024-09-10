@@ -63,7 +63,14 @@ func (sql *SQL) FetchModels() ([]*types.FetchModelDetails, error) {
 
 	var models []*types.FetchModelDetails
 	
-	query := `SELECT id, version, algorithm_used, accuracy, loss, to_char(trained_at, 'FMMonth DD, YYYY HH12:MI AM') as trained_at  FROM models` 
+	query := `	SELECT 
+					id, 
+					version, 
+					train_accuracy, 
+					train_loss, 
+					to_char(trained_at, 'FMMonth DD, YYYY HH12:MI AM') as trained_at  
+				FROM 
+					models` 
 
 	if result := sql.DB.Raw(query).Scan(&models); result.Error != nil {
 		return nil, result.Error

@@ -26,9 +26,8 @@ type Capture struct {
 
 type FetchModelDetails struct {
 	ID        		int64  		`json:"model_id"`
-	Version        string  		`json:"version"`
-	Algorithm_Used string  		`json:"algorithm_used"`
-	Accuracy       float32 		`json:"val_accuracy"`
-	Loss           float32 		`json:"val_loss"`
+	Version         string  	`json:"version"`
+	TrainAccuracy   float32 	`json:"train_acc"`
+	TrainLoss       float32 	`json:"train_loss"`
 	TrainedAt      string		`json:"trained_at"`
 }

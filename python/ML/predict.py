@@ -1,10 +1,25 @@
 import os
+import boto3
 import numpy as np
+from dotenv import load_dotenv
 
 from PIL import Image
 from keras._tf_keras.keras.applications.resnet import preprocess_input
 from keras._tf_keras.keras.saving import load_model
 from keras._tf_keras.keras.optimizers import Adam
+
+load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+
+
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    region_name='us-east-1'
+)
+
+BUCKET_NAME = 'clamscanner-bucket'
+DATASET_PREFIX = 'datasets/'
 
 
 class ClamPrediction():
@@ -26,8 +41,16 @@ class ClamPrediction():
 
 
     def load_dataset_classes(self):
-        CLASSES = [file.name for file in os.scandir("datasets") if file.is_dir()]
+        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=DATASET_PREFIX, Delimiter='/')
+        CLASSES = []
+
+        for content in response['CommonPrefixes']:
+            folder_name = content['Prefix'].replace(DATASET_PREFIX, '').strip('/')
+            if folder_name:
+                CLASSES.append(folder_name)
+
         return CLASSES
+
 
 
     def resize_and_preprocess_image(self, image_path):

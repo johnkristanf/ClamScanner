@@ -173,20 +173,20 @@ func (h *AccountHandler) AdminLoginHandler(w http.ResponseWriter, r *http.Reques
 		Name:     "access_token",
 		Value:    access_token,
 		Path:     "/",
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(3 * time.Hour),
 		HttpOnly: true,
-		Secure: true,
+		Secure: false,
 	}
 
 	refreshTokenCookie := &http.Cookie{
 		Name:     "refresh_token",	
 		Value:    refresh_token,
 		Path:     "/",
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(3 * 24 * time.Hour),
 		HttpOnly: true,
-		Secure: true,
+		Secure: false,
 	}
 
 	http.SetCookie(w, accessTokenCookie)
@@ -247,10 +247,10 @@ func (h *AccountHandler) SignOutHandler(w http.ResponseWriter, r *http.Request) 
 		Value:    "",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	}
 
 	refreshTokenCookie := &http.Cookie{
@@ -258,10 +258,10 @@ func (h *AccountHandler) SignOutHandler(w http.ResponseWriter, r *http.Request) 
 		Value:    "",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 	}
 
 	http.SetCookie(w, accessTokenCookie)

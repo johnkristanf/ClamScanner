@@ -246,8 +246,11 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
 export function UploadModal({ className, class_id, setisOpenUpload }: {
     className: string,
     class_id: number,
-    setisOpenUpload: React.Dispatch<React.SetStateAction<boolean>>
+    setisOpenUpload: React.Dispatch<React.SetStateAction<boolean>>,
 }) {
+
+    const queryClient = useQueryClient();
+
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
@@ -285,12 +288,9 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
                     text: "New Images Uploaded Successfully",
                     icon: "success",
                     confirmButtonColor: "#3085d6",
-                }).then(result => {
-                    if (result.isConfirmed || result.isDismissed) {
-                        window.location.href = '/datasets';
-                    }
-                });
+                })
 
+                queryClient.invalidateQueries('dataset_images');
                 setisOpenUpload(false);
             }
         }
@@ -301,11 +301,13 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
             <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
             
             <div className="flex w-full justify-center items-center">
-                <div className={`flex justify-center w-[35%] ${uploadedFiles.length <= 0 ? "h-[65%]": "h-[75%]" }  bg-white rounded-md fixed top-5`} style={{ zIndex: 7000 }}>
+                <div className={`flex justify-center w-[35%] ${uploadedFiles.length <= 0 ? "h-[68%]": "h-[80%]" }  bg-white rounded-md fixed top-5`} style={{ zIndex: 7000 }}>
                     
                     <div className="flex flex-col items-center justify-center gap-5">
                         <h1 className="font-semibold text-3xl">Upload New Dataset Images</h1>
                         <p className="font-semibold text-sm ">Unsupported image type and corrupted will get discarded</p>
+                        <p className="font-semibold text-sm ">Repeated image will also get discarded</p>
+
                         <p className="font-semibold text-sm ">Supported Image Type: jpg, jpeg, png</p>
 
                         {

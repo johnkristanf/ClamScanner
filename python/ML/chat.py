@@ -3,41 +3,62 @@ import os
 import random
 import joblib
 import glob
+import boto3
+from dotenv import load_dotenv
 
 from database.chatbot_db_operations import ChatBotDatabaseOperations
 
 PIPELINE_PATH = os.path.abspath("./models/nlp_pipeline.pkl")
 LABEL_ENCODER_PATH = os.path.abspath("./models/label_encoder.pkl")
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    region_name='us-east-1'
+)
+
+BUCKET_NAME = 'clamscanner-bucket'
+DATASET_PREFIX = 'datasets/'
+
 class DatasetCountResponse:
     def __init__(self):
-        self.DATASET_ROOT_FOLDER = os.path.abspath('datasets')
-        self.extensions = ('*.jpg', '*.jpeg', '*.png')
+        self.extensions = ('jpg', 'jpeg', 'png')
+
 
     def count_total_dataset_images(self):
-        total_count = 0 
+        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=DATASET_PREFIX)
 
-        for subfolder in os.listdir(self.DATASET_ROOT_FOLDER):
-            subfolder_path = os.path.join(self.DATASET_ROOT_FOLDER, subfolder)
+        if 'Contents' in response:
+            total_count = sum(
+                1
+                for obj in response['Contents']
+                if obj['Key'].lower().endswith(self.extensions)
+            )
 
-            if os.path.isdir(subfolder_path):
-                for ext in self.extensions:
-                    files = glob.glob(os.path.join(subfolder_path, ext))
-                    total_count += len(files)
+            return total_count
 
-        return total_count
+
+        return 0
     
-    def count_dataset_images_class(self, subfolder):
-        total_count = 0 
+    def count_dataset_images_class(self, class_name):
+        prefix = f"{DATASET_PREFIX}{class_name}/"
+        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
 
-        subfolder_path = os.path.join(self.DATASET_ROOT_FOLDER, subfolder)
+        if 'Contents' in response:
+            total_count = sum(
+                1
+                for obj in response['Contents']
+                if obj['Key'].lower().endswith(self.extensions)
+            )
 
-        if os.path.isdir(subfolder_path):
-            for ext in self.extensions:
-                files = glob.glob(os.path.join(subfolder_path, ext))
-                total_count += len(files)
+            return total_count
 
-        return total_count
+
+        return 0
+    
        
 
 class ChatClasses:

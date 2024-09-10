@@ -11,7 +11,7 @@ import { FetchModelType } from '../types/datasets';
 import { TrainModel } from '../http/post/train';
 import ChatBot from '../components/chat/chatbot';
 
-const socket = new WebSocket('wss://clamscanner.com/py/ws');
+const socket = new WebSocket('ws://localhost:5000/ws');
 
 socket.onopen = () => {
   console.log('WebSocket Connected');
@@ -20,6 +20,8 @@ socket.onopen = () => {
 socket.onerror = (error) => {
   console.error('WebSocket error:', error);
 };
+
+
 
 interface TrainingMetrics {
   epochs: number[];

@@ -25,34 +25,109 @@ import asyncio
 
 import train.evaluate as eval
 import train.callbacks as cb
+from database.train_db_operations import TrainDatabaseOperations
 
 from ws_client import clients
 
+import os
+import boto3
+import numpy as np
 
-def load_dataset(DATASET_FOLDER: str) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset, int, list[str]]:
-    image_size = (224, 224)
-    batch_size = 32
+from dotenv import load_dotenv
 
-    dataset = image_dataset_from_directory(
-        DATASET_FOLDER,
-        image_size=image_size,
-        batch_size=batch_size,
-        seed=123,
-        label_mode='int',
-    ) 
+
+from io import BytesIO
+from PIL import Image
+
+load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    region_name='us-east-1'
+)
+
+BUCKET_NAME = 'clamscanner-bucket'
+DATASET_PREFIX = 'datasets/'
+train = TrainDatabaseOperations()
+
+
+def fetch_class_name_from_s3():
+    response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=DATASET_PREFIX, Delimiter='/')
+    class_names = []
+
+    for content in response['CommonPrefixes']:
+        folder_name = content['Prefix'].replace(DATASET_PREFIX, '').strip('/')
+        if folder_name:
+            class_names.append(folder_name)
+
+    return class_names
+
+
+def fetch_s3_images(dataset_class):
+    images = []
+    labels = []
+
+    response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=f"datasets/{dataset_class}/")
+
+    if 'Contents' in response:
+        for obj in response['Contents']:
+            key = obj['Key']
+
+            if key.lower().endswith(('jpg', 'jpeg', 'png')):
+                response = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
+                image_data = response['Body'].read()
+                img = Image.open(BytesIO(image_data)).convert('RGB')
+                img = img.resize((224, 224))
+
+                img = np.expand_dims(np.array(img), axis=0)
+                img = preprocess_input(img)  
+
+                images.append(img)
+                labels.append(dataset_class)
+
+    return images, labels
+
+
+def load_dataset_s3():
+    images = []
+    labels = []
+
+    class_names = fetch_class_name_from_s3()
+    class_to_idx = {class_name: idx for idx, class_name in enumerate(class_names)}
+
+    for class_name in class_names:
+        class_images, class_labels = fetch_s3_images(class_name)
+        images.extend(class_images)
+        labels.extend([class_to_idx[class_name]] * len(class_images))
+
+    images = np.concatenate(images, axis=0)
+    labels = np.array(labels)
+
+    batch_size=32
+    dataset = tf.data.Dataset.from_tensor_slices((images, labels)).batch(batch_size)
+
+    return dataset, len(class_names), class_names
+
+
+
+
+
+
+def load_dataset() -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset, int, list[str]]:
+
+    dataset, num_classes, class_names = load_dataset_s3()
 
     dataset_size = len(dataset)
     train_size = int(0.7 * dataset_size)
-    val_test_size = (dataset_size - train_size) // 2
-    val_size = test_size = val_test_size
+    val_size = test_size = (dataset_size - train_size) // 2
+
 
     train_ds = dataset.take(train_size)
     remaining_ds = dataset.skip(train_size)
     val_ds = remaining_ds.take(val_size)
     test_ds = remaining_ds.skip(val_size)
-
-    class_names = dataset.class_names
-    num_classes = len(dataset.class_names)
 
     train_ds_size = len(list(train_ds))
     val_ds_size = len(list(val_ds))
@@ -174,15 +249,15 @@ def train_save_model(train_ds, validation_ds, num_classes: int, class_names: lis
 
     model.summary()
 
-    model.save(f'ClamScanner_v{model_version}.keras')
+    model.save(f'./models/ClamScanner_v{model_version}.keras')
 
     return fine_tune_history
 
 
 
 
-def train_new_model(DATASET_FOLDER, model_version):
-    train_ds, val_ds, test_ds, num_classes, class_names = load_dataset(DATASET_FOLDER)
+def train_new_model(model_version):
+    train_ds, val_ds, test_ds, num_classes, class_names = load_dataset()
 
     train_ds = prepare(train_ds, shuffle=True, augment=True)
     val_ds =   prepare(val_ds)
@@ -190,13 +265,23 @@ def train_new_model(DATASET_FOLDER, model_version):
 
     fine_tune_history = train_save_model(train_ds, val_ds, num_classes, class_names, model_version)
 
-    eval.plot_accuracy_loss(fine_tune_history)
-    eval.evaluate_model(test_ds, model_version)
+    # eval.plot_accuracy_loss(fine_tune_history)
+    # eval.evaluate_model(test_ds, model_version)
 
     
     train_acc = fine_tune_history.history['accuracy']
     val_acc = fine_tune_history.history['val_accuracy']
     train_loss = fine_tune_history.history['loss']
     val_loss = fine_tune_history.history['val_loss']
+
+    data = {
+        'version': model_version,
+        'train_acc': train_acc[-1],
+        'val_acc': val_acc[-1],
+        'train_loss': train_loss[-1],
+        'val_loss': val_loss[-1],
+    }
+
+    train.insert_train_metrics(data)
 
     return train_acc, val_acc, train_loss, val_loss

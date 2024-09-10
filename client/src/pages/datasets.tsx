@@ -4,11 +4,12 @@ import { AddNewDatasetModal, InfoDatasetModal, UploadModal } from "../components
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faExclamationCircle, faPlusCircle, faArrowLeft, faUpload} from "@fortawesome/free-solid-svg-icons";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { FetchDatasetClasses } from "../http/get/datasets";
+import { FetchDatasetClasses, FetchDatasetClassImages } from "../http/get/datasets";
 import Swal from "sweetalert2";
 import { DeleteDatasetClass } from "../http/delete/dataset";
 import { DatasetClassTypes } from "../types/datasets";
 import ChatBot from "../components/chat/chatbot";
+import ImagePagination from "../components/datasets/pagination";
 
 
 
@@ -23,10 +24,11 @@ function DataSetsPage() {
     const [isOpenUpload, setisOpenUpload] = useState<boolean>(false);
     const [isOpenInfoModal, setisOpenInfoModal] = useState<boolean>(false);
 
-    const [classDetailsData, setclassDetailsData] = useState<DatasetClassTypes>()
+    const [classDetailsData, setclassDetailsData] = useState<DatasetClassTypes>();
 
-    const dataset_query = useQuery("dataset_classes", FetchDatasetClasses);
-    const datasets: DatasetClassTypes[] = dataset_query.data?.data;
+
+    const { data: dataset_query } = useQuery("dataset_classes", FetchDatasetClasses);
+    const datasets: DatasetClassTypes[] = dataset_query?.data;
 
     const mutate = useMutation(DeleteDatasetClass, {
 
@@ -40,8 +42,22 @@ function DataSetsPage() {
             confirmButtonColor: "#3085d6",
           });
     
-        }
+        },
+
+        onMutate: () => {
+            Swal.fire({
+              title: 'Deleting...',
+              text: 'Please wait while the dataset class are being deleted.',
+              icon: 'info',
+              allowOutsideClick: false,
+              showConfirmButton: false,
+              willOpen: () => {
+                Swal.showLoading();
+              },
+            });
+          },
     });
+
 
     
     const DeleteDatasetClassPopup = (class_id: number, className:string) => {
@@ -158,7 +174,9 @@ function DataSetsPage() {
                                                         
                                                         <tbody>
                                                             <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                    
                                                                 <td className="py-4 px-6">{data.name}</td>
+
                                                                 <td className="py-4 px-6 flex gap-3">
                                                                     <button
                                                                         onClick={() => handleDetailsData(data)}
@@ -193,20 +211,6 @@ function DataSetsPage() {
 }
 
 
-// const proccessImageBytes = (imgSrc: string) => {
-//     const binary = atob(imgSrc);
-//     const binaryArray = new Uint8Array(binary.length)
-
-//     for (let index = 0; index < binaryArray.length; index++) {
-//         binaryArray[index] = binary.charCodeAt(index)
-//     }
-
-//     const blob = new Blob([binaryArray], { type: 'image/jpeg' })
-//     return URL.createObjectURL(blob)
-
-// }
-
-
 function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, setisOpenInfoModal}: {
     classDetailsData: DatasetClassTypes 
     setDatasetDetails: React.Dispatch<React.SetStateAction<boolean>>,
@@ -214,43 +218,19 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
     setisOpenInfoModal: React.Dispatch<React.SetStateAction<boolean>>,
 }){
 
+    const { isLoading, data: images_query } = useQuery(
+        ["dataset_images", classDetailsData.name],
+        () => FetchDatasetClassImages(classDetailsData.name),
+        {
+          enabled: !!classDetailsData.name,
+          refetchOnWindowFocus: false,
+        }
+    );
+      
+    const image = images_query?.data;
 
-
-    // const [imagesURL, setImagesURLs] = useState<string[]>();
-    // const classFolderName = classDetailsData.name;
-    // const imagesQuery = useQuery(["datasetImages", classFolderName], () => FetchDatasetClassImages(classFolderName));
-    // const datasetImages: string[] = imagesQuery.data?.data;
-    // console.log("datasetImages", datasetImages)
-
-
-    // useEffect(() => {
-
-    //     const fetchData = async () => {
-    //         try {
-
-    //             const imageData = await FetchDatasetClassImages(classFolderName);
-    //             setImagesURLs(imageData)
-    //             console.log("imageData", imageData)
-
-    //             const urlArray: string[] = []
-
-    //             imageData.images.map((data: string) => {
-    //                 const url = proccessImageBytes(data)
-    //                 urlArray.push(url)
-    //             })
-
-    //             setImagesURLs(urlArray)
-
-    //             console.log("urlArray", urlArray)
-
-    //         } catch (error) {
-    //             console.error(error);
-    //         }
-    //     };
+    console.log("image: ", image)
     
-    //     fetchData();
-    // }, [classFolderName]);
-
 
 
     return(
@@ -275,7 +255,7 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
 
                     <div className="flex flex-col mb-2">
                         <h1 className="text-white font-bold text-4xl">{classDetailsData?.name}</h1>
-                        <h1 className="text-white font-semibold text-md" >Dataset Images: {classDetailsData?.count}</h1>
+                        <h1 className="text-white font-semibold text-md" > Status: {classDetailsData.status} </h1>
                     </div>
 
                 </div>
@@ -303,7 +283,20 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
 
             </div>
 
-            {/* { imagesURL && <ImagePagination datasetImages={imagesURL} itemsPerPage={5} /> } */}
+            { isLoading && (
+                <div className="flex justify-center mt-12">
+                    <h1 className="text-white text-2xl font-semibold">Loading Images....</h1> 
+                </div>
+            )}
+
+            { image && (
+                <ImagePagination 
+                    datasetImages={image.image_data} 
+                    itemsPerPage={10} 
+                    class_id={classDetailsData.class_id}
+                    datasetClass={classDetailsData.name}
+                /> 
+            )}
 
 
         </div>

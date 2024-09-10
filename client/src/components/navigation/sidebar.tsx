@@ -19,7 +19,7 @@ export const SideBar: React.FC<SideBarProps> = ({ setisSidebarOpen }) => {
         <FontAwesomeIcon
           onClick={() => setisSidebarOpen(false)} 
           icon={faBars} 
-          className="font-bold text-4xl hover:opacity-75 hover:cursor-pointer absolute top-2 left-2 text-white"
+          className="font-bold text-4xl hover:opacity-75 hover:cursor-pointer fixed top-2 left-2 text-white"
         />
 
         <Logo/>  

@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"bytes"
 	"encoding/json"
-	"fmt"
 
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -55,28 +57,11 @@ func (h *DatasetsHandlers) AddDatasetClassHandler(w http.ResponseWriter, r *http
 		return fmt.Errorf("error decoding JSON: %w", err)
 	}
 
-	dynamicFolderPath := filepath.Join("datasets", newClassData.Name)
-
-	errorChan := make(chan error, 1)
-
 	if err := h.DB_METHOD.AddDatasetClass(&newClassData); err != nil {
 		return err
 	}
 
-	go func() {
-		defer close(errorChan)
-		
-		url := os.Getenv("ADD_DS_URI")
-		if err := h.requestPythonDSClass(dynamicFolderPath, url); err != nil {
-			errorChan <- err
-		}
-	}()
-
-
-	if err := <- errorChan; err != nil {
-		return err
-	}
-
+	
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Dataset Class Added!")
 }
 
@@ -105,6 +90,7 @@ func (h *DatasetsHandlers) FetchDatasetClassHandler(w http.ResponseWriter, r *ht
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, datasets)
 }
 
+
 func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter, r *http.Request) error {
 
 	classFolderParam := r.PathValue("classFolderName")
@@ -129,74 +115,8 @@ func (h *DatasetsHandlers) FetchDatasetClassImagesHandler(w http.ResponseWriter,
 
 	return nil
 
-	// files, err := os.ReadDir(folderPath)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// for _, file := range files {
-
-	// 	if !file.IsDir() && isImage(file.Name()) {
-
-	// 		imagePath := filepath.Join(folderPath, file.Name())
-	// 		imageData, err := os.ReadFile(imagePath)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-
-	// 		contentType := http.DetectContentType(imageData)
-	// 		w.Header().Set("Content-Type", contentType)
-
-	// 		_, err = w.Write(imageData)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-
-	// 		if f, ok := w.(http.Flusher); ok {
-	// 			f.Flush()
-	// 		}
-
-	// 		fmt.Println("File: ", file.Name(), "is send successfully")
-
-	// 	}
-	// }
-
-	// return nil
-
-	// imageDataBufferMap := make(map[string][][]byte)
-	// var buffArray [][]byte
-
-	// files, err := os.ReadDir(folderPath)
-	// if err != nil{
-	// 	return err
-	// }
-
-	// for _, file := range files {
-
-	//     if !file.IsDir() && isImage(file.Name()) {
-
-	//         imagePath := filepath.Join(folderPath, file.Name())
-
-	//         imageData, err := os.ReadFile(imagePath)
-	//         if err != nil {
-	//             fmt.Println("Error reading file:", err)
-	//             continue
-	//         }
-
-	// 		buffArray = append(buffArray, imageData)
-
-	// 		fmt.Println("Image", file.Name(), "sent successfully")
-
-	//     }
-	// }
-
-	// imageDataBufferMap["images"] = buffArray
-
-	// fmt.Println("imageDataBufferMap", imageDataBufferMap)
-
-	// return h.JSON_METHOD.JsonEncode(w, http.StatusOK, imageDataBufferMap)
-
 }
+
 
 func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *http.Request) error {
 
@@ -207,7 +127,9 @@ func (h *DatasetsHandlers) DeleteDatasetClassHandler(w http.ResponseWriter, r *h
 		return err
 	}
 
-	dynamicFolderPath := filepath.Join("datasets", r.PathValue("className"))
+	path := filepath.Join("datasets", r.PathValue("className") + "/")
+
+	dynamicFolderPath := strings.ReplaceAll(path, "\\", "/")
 
 	if err := h.DB_METHOD.DeleteDatasetClass(classID); err != nil {
 		return err	

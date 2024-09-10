@@ -15,7 +15,7 @@ export async function FetchDatasetClassesDashboard(): Promise<AxiosResponse | an
 
 export function FetchDatasetClasses(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("https://clamscanner.com/go/fetch/dataset/class", {
+        return axios.get("http://localhost:8080/fetch/dataset/class", {
             withCredentials: true
         });
     } catch (error) {
@@ -25,31 +25,19 @@ export function FetchDatasetClasses(): Promise<AxiosResponse<any, any>> {
 }
 
 
-// export function FetchDatasetClassImages(classFolderName: string): Promise<AxiosResponse<any, any>> {
-//     console.log("classFolderName", classFolderName)
-//     try {
-//         return axios.get(`http://localhost:8080/fetch/images/${encodeURIComponent(classFolderName)}`);
-//     } catch (error) {
-//         console.error(error);
-//         return Promise.reject(error); 
-//     }
-// }
 
 
-
-
-export async function FetchDatasetClassImages(classFolderName: string) {
-    console.log("classFolderName", classFolderName)
+export async function FetchDatasetClassImages(datasetClass: string): Promise<AxiosResponse<any, any>>  {
+    console.log("classFolderName", datasetClass)
 
     try {
-        const response = await axios.get(`https://clamscanner.com/go/fetch/images/${encodeURIComponent(classFolderName)}`, {
+        return axios.get(`http://localhost:5000/fetch/images/${encodeURIComponent(datasetClass)}`, {
             withCredentials: true
         });
-        return response.data
-
 
     } catch (error) {
         console.error(error);
+        return Promise.reject(error); 
     }
 }
 

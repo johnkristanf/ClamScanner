@@ -9,7 +9,7 @@ import websockets
 import threading
 import asyncio
 
-from ws_client import clients
+from python.ws_s3_client import clients
 
 
 class APITestCase(unittest.TestCase):
