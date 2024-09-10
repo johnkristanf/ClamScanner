@@ -14,3 +14,5 @@ python/models
 *.h5
 
 python/.envpython/.env
+
+.env
