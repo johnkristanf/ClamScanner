@@ -84,7 +84,6 @@ function DataSetsPage() {
 
                     {isOpenAddModal && (
                         <>
-                            <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
                             <AddNewDatasetModal setisOpenAddModal={setIsOpenAddModal} />
                         </>
                     )}

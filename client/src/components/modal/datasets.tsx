@@ -62,6 +62,10 @@ export const AddNewDatasetModal = ({setisOpenAddModal}: {
 
     return(
 
+        <>
+        
+        <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
+
         <div className="flex flex-col bg-white rounded-md items-center fixed top-0 w-[40%] p-5" style={{zIndex: 7000}}>
             
             <h1 className="text-black font-bold text-2xl mb-5">Add New Dataset Class</h1>
@@ -107,6 +111,9 @@ export const AddNewDatasetModal = ({setisOpenAddModal}: {
 
 
         </div>
+
+        </>
+
     )
 }
 
