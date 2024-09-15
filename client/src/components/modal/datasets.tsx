@@ -44,7 +44,20 @@ export const AddNewDatasetModal = ({setisOpenAddModal}: {
     const onSubmit = (data: DatasetClassTypes) => mutate(data)
     
 
-    if(isLoading) return <div>Fetching Dataset Clasess....</div>
+    if(isLoading){
+        Swal.fire({
+            title: 'Adding...',
+            text: 'Please wait while the new dataset class is being added.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        return;
+    }
 
 
     return(
