@@ -11,7 +11,7 @@ import { Chart } from 'react-google-charts';
 import { TrainModel } from '../http/post/train';
 import ChatBot from '../components/chat/chatbot';
 
-const socket = new WebSocket('ws://localhost:5000/ws');
+const socket = new WebSocket('wss://clamscanner.com/py/ws');
 
 socket.onopen = () => {
   console.log('WebSocket Connected');
