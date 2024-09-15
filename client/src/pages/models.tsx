@@ -3,11 +3,11 @@ import { ModelTable } from '../components/models/model_table';
 import { SideBar } from '../components/navigation/sidebar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faRobot } from '@fortawesome/free-solid-svg-icons';
-import { ModelDetailsModal } from '../components/modal/models';
+// import { ModelDetailsModal } from '../components/modal/models';
 import { useMutation } from 'react-query';
 import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
-import { FetchModelType } from '../types/datasets';
+// import { FetchModelType } from '../types/datasets';
 import { TrainModel } from '../http/post/train';
 import ChatBot from '../components/chat/chatbot';
 
@@ -32,8 +32,8 @@ interface TrainingMetrics {
 
 const ModelsPage: React.FC = () => {
   const [isSidebarOpen, setisSidebarOpen] = useState<boolean>(false);
-  const [isModelDetailsModalOpen, setIsModelDetailsModalOpen] = useState<boolean>(false);
-  const [modelDetails, setModelDetails] = useState<FetchModelType>();
+  // const [isModelDetailsModalOpen, setIsModelDetailsModalOpen] = useState<boolean>(false);
+  // const [modelDetails, setModelDetails] = useState<FetchModelType>();
   const [numberOfTrainedModels, setNumberOfTrainedModels] = useState<number | undefined>(undefined);
   const [trainingMetrics, setTrainingMetrics] = useState<TrainingMetrics>({
     epochs: [],
@@ -135,9 +135,9 @@ const ModelsPage: React.FC = () => {
     <div className="flex flex-col h-full w-full">
       {isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} />}
 
-      {isModelDetailsModalOpen && modelDetails && (
+      {/* {isModelDetailsModalOpen && modelDetails && (
         <ModelDetailsModal setisModelDetailsOpen={setIsModelDetailsModalOpen} modelDetails={modelDetails} />
-      )}
+      )} */}
 
       <div className="h-full w-full flex flex-col items-start p-8">
           <FontAwesomeIcon
@@ -188,8 +188,6 @@ const ModelsPage: React.FC = () => {
 
             {trainingMetrics.epochs.length == 0 && (
               <ModelTable
-                setisModelDetailsModal={setIsModelDetailsModalOpen}
-                setModelDetails={setModelDetails}
                 setNumberOfTrainedModels={setNumberOfTrainedModels}
               />
             )}

@@ -21,11 +21,8 @@ export function ModelDetailsModal({ setisModelDetailsOpen, modelDetails }:{
                     <h1 className="font-bold text-4xl text-center"> {modelDetails.version} </h1>
 
                     <h1 className="font-semibold text-lg">Convolutional Neural Network</h1>
-                    <h1 className="font-semibold text-lg">Training Accuracy: {modelDetails.train_accuracy}%</h1>
-                    <h1 className="font-semibold text-lg">Validation Accuracy: {modelDetails.validation_accuracy}%</h1>
-
+                    <h1 className="font-semibold text-lg">Training Accuracy: {modelDetails.train_acc}%</h1>
                     <h1 className="font-semibold text-lg">Training Loss: {modelDetails.train_loss}%</h1>
-                    <h1 className="font-semibold text-lg">Validation Loss: {modelDetails.validation_loss}%</h1>
 
                     <button 
                         onClick={() => setisModelDetailsOpen(false)}

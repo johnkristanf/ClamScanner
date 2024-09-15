@@ -3,9 +3,7 @@ import { FetchModels } from "../../http/get/model";
 import { FetchModelType } from "../../types/datasets";
 
 
-export function ModelTable({ setisModelDetailsModal, setModelDetails, setNumberOfTrainedModels }: {
-    setisModelDetailsModal: React.Dispatch<React.SetStateAction<boolean>>,
-    setModelDetails: React.Dispatch<React.SetStateAction<FetchModelType | undefined>>,
+export function ModelTable({ setNumberOfTrainedModels }: {
     setNumberOfTrainedModels:  React.Dispatch<React.SetStateAction<number | undefined>>
 }){
 
