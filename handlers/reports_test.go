@@ -50,8 +50,8 @@ func (m *MockReportsDBMethod) FetchReportedCases() ([]*types.Fetch_Cases, error)
 	return args.Get(0).([]*types.Fetch_Cases), args.Error(1)
 }
 
-func (m *MockReportsDBMethod) FetchMapReportedCases(month string, mollusk string) ([]*types.Fetch_Cases, error) {
-	args := m.Called(month, mollusk)
+func (m *MockReportsDBMethod) FetchMapReportedCases(month string, mollusk string, status string) ([]*types.Fetch_Cases, error) {
+	args := m.Called(month, mollusk, status)
 	return args.Get(0).([]*types.Fetch_Cases), args.Error(1)
 }
 

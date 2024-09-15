@@ -88,10 +88,11 @@ func main() {
 	routes.DatasetsRoutes(router, datasetsHandler)
 	routes.ModelRoutes(router, modelHandler)
 
+	// remove AllowCors when you push to production cause the nginx configuration 
+	// is handling the cors to avoid duplication error
 	
 	stack := middlewares.Use(
 		middlewares.Logger,
-		middlewares.AllowCors,
 	)
 
 	s := http.Server{

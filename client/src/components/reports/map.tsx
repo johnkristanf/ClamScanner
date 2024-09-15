@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Tooltip, useMap, Marker, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import '/public/map.css';
@@ -8,6 +8,7 @@ import { FetchMapReports } from '../../http/get/reports';
 import { useQuery } from 'react-query';
 import { ReportedCasesTypes } from '../../types/reported';
 import { SetViewOnClickProps } from '../../types/map';
+import Swal from 'sweetalert2';
 
 const redIcon = new L.Icon({
   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
@@ -56,14 +57,39 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   const currentMonth = new Date().getMonth();
   const [selectedMonth, setSelectedMonth] = useState<string>(monthNames[currentMonth]);
   const [selectedMollusk, setSelectedMollusk] = useState<string>('Scaly Clam');
+  const [selectedStatus, setSelectedStatus] = useState<string>('Resolved');
 
   const reports_query = useQuery(
     ['reported_cases', selectedMonth, selectedMollusk],
-    () => FetchMapReports({ month: selectedMonth, mollusk: selectedMollusk })
+    () => FetchMapReports({ month: selectedMonth, mollusk: selectedMollusk, status: selectedStatus }),
+    {
+      onSuccess: () => {
+        Swal.close(); 
+      },
+      onError: () => {
+        Swal.close(); 
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to fetch reports!',
+        });
+      },
+    }
   );
 
   const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
 
+  useEffect(() => {
+    if (reports_query.isFetching) {
+      Swal.fire({
+        title: 'Loading reports...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+    }
+  }, [reports_query.isFetching]);
 
   console.log("reports map data: ", reports);
   console.log("reports_query ", reports_query);
@@ -74,10 +100,20 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
         <h1 className="text-gray-700 font-bold text-3xl">Clam Scanner Reported Mollusk Map</h1>
 
         <div className="flex items-end justify-center gap-5 w-1/2">
-          <div className="flex flex-col justify-center w-1/2 gap-2">
+          <div className="flex flex-col justify-center w-full gap-2">
             <h1 className="font-bold text-center">Filter Reports by</h1>
 
-            <div className="flex gap-5">
+            <div className="flex gap-2">
+
+              <select
+                className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option>In Progress</option>
+                <option>Resolved</option>
+              </select>
+
               <select
                 className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2"
                 value={selectedMonth}

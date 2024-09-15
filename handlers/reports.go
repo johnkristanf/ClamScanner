@@ -227,10 +227,11 @@ func (h *ReportHandler) FetchMapReportsHandler(w http.ResponseWriter, r *http.Re
 
 	month := r.PathValue("month")
 	mollusk := r.PathValue("mollusk")
+	status := r.PathValue("status")
 
 	var cases []*types.Fetch_Cases
 	
-	cases, err := h.DB_METHOD.FetchMapReportedCases(month, mollusk)
+	cases, err := h.DB_METHOD.FetchMapReportedCases(month, mollusk, status)
 	if err != nil {
 		return err
 	}

@@ -24,7 +24,7 @@ type REPORTED_DB_METHOD interface {
 	InsertReport(*types.Reported_Cases) (int64, error)
 
 	FetchReportedCases() ([]*types.Fetch_Cases, error)
-	FetchMapReportedCases(string, string) ([]*types.Fetch_Cases, error)
+	FetchMapReportedCases(string, string, string) ([]*types.Fetch_Cases, error)
 	
 	FetchPerCityReports() ([]*types.YearlyReportsPerCity, error)
 	FetchPerProvinceReports() ([]*types.YearlyReportsPerProvince, error)
@@ -81,7 +81,7 @@ func (sql *SQL) FetchReportedCases() ([]*types.Fetch_Cases, error) {
 
 
 
-func (sql *SQL) FetchMapReportedCases(month string, mollusk string) ([]*types.Fetch_Cases, error) {
+func (sql *SQL) FetchMapReportedCases(month string, mollusk string, status string) ([]*types.Fetch_Cases, error) {
 
 	var cases []*types.Fetch_Cases
 
@@ -90,7 +90,7 @@ func (sql *SQL) FetchMapReportedCases(month string, mollusk string) ([]*types.Fe
 		users.id AS user_id, users.full_name AS reporter_name, users.address AS reporter_address`).
 
 		Joins("INNER JOIN users ON reported_cases.user_id = users.id").
-		Where("reported_at ILIKE ? AND mollusk_type = ? ", "%"+month+"%", mollusk).
+		Where("reported_at ILIKE ? AND mollusk_type = ? AND status = ?", "%"+month+"%", mollusk, status).
 		Find(&cases)
 
 	if result.Error != nil {

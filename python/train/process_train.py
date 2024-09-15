@@ -17,11 +17,12 @@ from keras._tf_keras.keras.optimizers import Adam
 # from tensorflow.keras.applications import ResNet50
 # from tensorflow.keras.applications.resnet import preprocess_input
 # from tensorflow.keras.optimizers import Adam
-# from tensorflow.keras.models import load_model
+# from tensorflow.keras.models import load_mode
 
 import json
 
 import asyncio
+import threading
 
 import train.evaluate as eval
 import train.callbacks as cb
@@ -170,29 +171,36 @@ def prepare(ds: tf.data.Dataset, shuffle=False, augment=False):
     return ds.prefetch(buffer_size=tf.data.AUTOTUNE)
 
 
-async def send_training_update(epoch, logs, class_names):
-    data = {
-        'epoch': epoch,
-        'accuracy': logs.get('accuracy'),
-        'val_accuracy': logs.get('val_accuracy'),
-        'loss': logs.get('loss'),
-        'val_loss': logs.get('val_loss'),
-        'class_names': class_names
-    }
-
-    message = json.dumps(data)
-    tasks = [client.send_text(message) for client in clients]
-    await asyncio.gather(*tasks)
-
-
 
 class CustomCallback(tf.keras.callbacks.Callback):
     def __init__(self, class_names):
         super().__init__()
         self.class_names = class_names
 
+    async def send_training_update(self, epoch, logs):
+        data = {
+            'epoch': epoch,
+            'accuracy': logs.get('accuracy'),
+            'val_accuracy': logs.get('val_accuracy'),
+            'loss': logs.get('loss'),
+            'val_loss': logs.get('val_loss'),
+            'class_names': self.class_names
+        }
+        message = json.dumps(data)
+        tasks = [client.send_text(message) for client in clients]
+        await asyncio.gather(*tasks)
+
     def on_epoch_end(self, epoch, logs=None):
-        asyncio.run(send_training_update(epoch, logs, self.class_names))
+        asyncio.run(self.send_training_update(epoch, logs))
+
+    def on_train_end(self, logs=None):
+        async def send_train_completion_message():
+            completion_message = json.dumps({'completion_message': 'Training Completed!'})
+            tasks = [client.send_text(completion_message) for client in clients]
+            await asyncio.gather(*tasks)
+
+        asyncio.run(send_train_completion_message())
+
 
 
 
@@ -284,4 +292,4 @@ def train_new_model(model_version):
 
     train.insert_train_metrics(data)
 
-    return train_acc, val_acc, train_loss, val_loss
+    return None

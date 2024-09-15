@@ -14,194 +14,162 @@ import ImagePagination from "../components/datasets/pagination";
 
 
 function DataSetsPage() {
-
     const queryClient = useQueryClient();
 
-    const [isSidebarOpen, setisSidebarOpen] = useState<boolean>(false)
+    const [isSidebarOpen, setisSidebarOpen] = useState<boolean>(false);
     const [datasetDetails, setDatasetDetails] = useState<boolean>(false);
-
     const [isOpenAddModal, setIsOpenAddModal] = useState<boolean>(false);
     const [isOpenUpload, setisOpenUpload] = useState<boolean>(false);
     const [isOpenInfoModal, setisOpenInfoModal] = useState<boolean>(false);
-
     const [classDetailsData, setclassDetailsData] = useState<DatasetClassTypes>();
 
-
-    const { data: dataset_query } = useQuery("dataset_classes", FetchDatasetClasses);
+    const { data: dataset_query, isLoading } = useQuery("dataset_classes", FetchDatasetClasses);
     const datasets: DatasetClassTypes[] = dataset_query?.data;
 
     const mutate = useMutation(DeleteDatasetClass, {
-
         onSuccess: () => {
-          queryClient.invalidateQueries('dataset_classes');
-    
-          Swal.fire({
-            title: "Deleted!",
-            text: "Class Deleted Successfully",
-            icon: "success",
-            confirmButtonColor: "#3085d6",
-          });
-    
+            queryClient.invalidateQueries('dataset_classes');
+            Swal.fire({
+                title: "Deleted!",
+                text: "Class Deleted Successfully",
+                icon: "success",
+                confirmButtonColor: "#3085d6",
+            });
         },
-
         onMutate: () => {
             Swal.fire({
-              title: 'Deleting...',
-              text: 'Please wait while the dataset class are being deleted.',
-              icon: 'info',
-              allowOutsideClick: false,
-              showConfirmButton: false,
-              willOpen: () => {
-                Swal.showLoading();
-              },
+                title: 'Deleting...',
+                text: 'Please wait while the dataset class is being deleted.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                },
             });
-          },
+        },
     });
 
-
-    
-    const DeleteDatasetClassPopup = (class_id: number, className:string) => {
-    
+    const DeleteDatasetClassPopup = (class_id: number, className: string) => {
         Swal.fire({
-          title: "Are you sure?",
-          text: "All uploaded images will be deleted",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#800000",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Yes, delete it!"
-    
+            title: "Are you sure?",
+            text: "All uploaded images will be deleted",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#800000",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
         }).then((result) => {
-          if (result.isConfirmed) mutate.mutate({class_id: class_id, className: className})
+            if (result.isConfirmed) mutate.mutate({ class_id: class_id, className: className });
         });
-    
     };
 
     const handleDetailsData = (data: DatasetClassTypes) => {
-        setDatasetDetails(true)
-        setclassDetailsData(data)
-    }
+        setDatasetDetails(true);
+        setclassDetailsData(data);
+    };
 
     return (
         <div className="w-full h-full flex flex-col">
-
-            { isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} /> }
+            {isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} />}
 
             <div className="h-full w-full p-8">
-
                 <FontAwesomeIcon
-                    onClick={() => setisSidebarOpen(true)} 
-                    icon={faBars} 
-                    className="font-bold text-3xl hover:opacity-75 hover:cursor-pointer"
+                   onClick={() => setisSidebarOpen(true)} 
+                   icon={faBars} 
+                   className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
                 />
 
                 <div className="h-full w-full p-5 bg-gray-600 flex flex-col items-center gap-8 mt-12 rounded-md">
 
-                            {isOpenAddModal && (
-                                <>
-                                    <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
-                                    <AddNewDatasetModal setisOpenAddModal={setIsOpenAddModal} />
-                                </>
-                            )}
+                    {isOpenAddModal && (
+                        <>
+                            <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
+                            <AddNewDatasetModal setisOpenAddModal={setIsOpenAddModal} />
+                        </>
+                    )}
 
-                            { isOpenUpload && classDetailsData ? (
-                                        <UploadModal 
-                                                className={classDetailsData?.name}
-                                                class_id={classDetailsData?.class_id} 
-                                                setisOpenUpload={setisOpenUpload}
-                                                />
-                                        ): null
-                            }
+                    {isOpenUpload && classDetailsData ? (
+                        <UploadModal
+                            className={classDetailsData?.name}
+                            class_id={classDetailsData?.class_id}
+                            setisOpenUpload={setisOpenUpload}
+                        />
+                    ) : null}
 
+                    {isOpenInfoModal && classDetailsData ? (
+                        <>
+                            <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
+                            <InfoDatasetModal
+                                classDetailsData={classDetailsData}
+                                setisOpenInfoModal={setisOpenInfoModal}
+                            />
+                        </>
+                    ) : null}
 
-                            {
-                                isOpenInfoModal && classDetailsData ? (
-                                    <>
-                                        <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
-                                        <InfoDatasetModal 
-                                            classDetailsData={classDetailsData} 
-                                            setisOpenInfoModal={setisOpenInfoModal} 
-                                        />
-                                    </>
-                                ): null
-                            }
+                    {!datasetDetails && (
+                        <div className="flex justify-between w-full">
+                            <h1 className="text-white font-bold text-2xl">Clam Scanner Dataset Classes</h1>
+                            <button
+                                onClick={() => setIsOpenAddModal(true)}
+                                className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                <FontAwesomeIcon icon={faPlusCircle} /> Add New Class
+                            </button>
+                        </div>
+                    )}
 
-                            
+                    {isLoading ? (
+                        <div className="w-full flex justify-center text-white font-semibold text-2xl">
+                            <h1>Loading Dataset Classes...</h1>
+                        </div>
+                    ) : (
+                        <div className="flex gap-16 w-full h-full flex-wrap">
+                            {datasetDetails && classDetailsData ? (
+                                <DataSetDetails
+                                    classDetailsData={classDetailsData}
+                                    setDatasetDetails={setDatasetDetails}
+                                    setisOpenUpload={setisOpenUpload}
+                                    setisOpenInfoModal={setisOpenInfoModal}
+                                />
+                            ) : null}
 
-                            {!datasetDetails && (
+                            {datasets?.map((data) => (
+                                <div key={data.class_id}>
+                                    {!datasetDetails && (
+                                        <div className="rounded-md h-[8%] w-[30%] bg-white">
+                                            <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
+                                                <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
+                                                    <tr>
+                                                        <th scope="col" className="py-3 px-6">Class</th>
+                                                        <th scope="col" className="py-3 px-6">Actions</th>
+                                                    </tr>
+                                                </thead>
 
-                                        <div className="flex justify-between w-full">
-                                            <h1 className="text-white font-bold text-2xl">Clam Scanner Dataset Classes</h1>
-                                            <button
-                                                onClick={() => setIsOpenAddModal(true)}
-                                                className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
-                                                <FontAwesomeIcon icon={faPlusCircle}/> Add New Class
-                                            </button>
+                                                <tbody>
+                                                    <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                        <td className="py-4 px-6">{data.name}</td>
+                                                        <td className="py-4 px-6 flex gap-3">
+                                                            <button
+                                                                onClick={() => handleDetailsData(data)}
+                                                                className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                                                Details
+                                                            </button>
+
+                                                            <button
+                                                                onClick={() => DeleteDatasetClassPopup(data.class_id, data.name)}
+                                                                className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                                                Delete
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
-                            )}
-
-                           
-
-                            <div className="flex gap-16 w-full h-full flex-wrap">
-
-                                    {datasetDetails && classDetailsData ? (
-
-                                        <DataSetDetails 
-                                            classDetailsData={classDetailsData}
-                                            setDatasetDetails={setDatasetDetails} 
-                                            setisOpenUpload={setisOpenUpload}
-                                            setisOpenInfoModal={setisOpenInfoModal}
-                                        />
-
-                                    ) : null}
-
-                                    {datasets?.map((data) => (
-
-                                        <div key={data.class_id}>
-
-
-                                            {!datasetDetails && ( 
-
-                                                <div className="rounded-md h-[8%] w-[30%] bg-white">
-
-                                                    <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
-                                                        <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
-                                                            <tr>
-                                                                <th scope="col" className="py-3 px-6">Class</th>
-                                                                <th scope="col" className="py-3 px-6">Actions</th>
-                                                            </tr>
-                                                        </thead>
-                                                        
-                                                        <tbody>
-                                                            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                                                    
-                                                                <td className="py-4 px-6">{data.name}</td>
-
-                                                                <td className="py-4 px-6 flex gap-3">
-                                                                    <button
-                                                                        onClick={() => handleDetailsData(data)}
-                                                                        className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75" >
-                                                                        Details
-                                                                    </button>
-
-                                                                    <button
-                                                                        onClick={() => DeleteDatasetClassPopup(data.class_id, data.name)}
-                                                                        className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75" >
-                                                                        Delete
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            )}
-                                        </div>
-                                ))}
+                                    )}
+                                </div>
+                            ))}
                             </div>
-
-
-                   
-
+                        )}
                 </div>
             </div>
 
@@ -209,6 +177,7 @@ function DataSetsPage() {
         </div>
     );
 }
+
 
 
 function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, setisOpenInfoModal}: {

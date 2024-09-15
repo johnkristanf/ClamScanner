@@ -16,3 +16,5 @@ python/models
 python/.envpython/.env
 
 .env
+
+*.pem

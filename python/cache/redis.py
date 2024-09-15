@@ -49,12 +49,12 @@ class RedisCachingMethods:
         raise redis.ConnectionError("Max retries reached. Unable to connect to Redis.")
     
 
-    def SET(self, key, value, expiration):
+    def SET(self, key, value):
         try:
             value = json.dumps(value)
             redis_client = self.get_redis_connection()
 
-            redis_client.set(key, value, ex=expiration)
+            redis_client.set(key, value)
             print(f"Cached set value under key: {key}")
 
         except redis.RedisError as e:
@@ -78,13 +78,29 @@ class RedisCachingMethods:
             return None
         
 
-    def APPEND_TO_CACHED_URLS(self, key, new_data, expiration):
+    def APPEND_TO_CACHED_URLS(self, key, new_data):
         cached_value = self.GET(key)
         if cached_value is None:
             cached_value = []
         
         cached_value.append(new_data)
-        self.SET(key, cached_value, expiration)
+        self.SET(key, cached_value)
+
+
+    def COUNT_TOTAL_DATASET(self):
+        redis_client = self.get_redis_connection()
+        total_images = 0
+
+        dataset_keys = redis_client.keys('datasets/*/image_urls')
+
+        for key in dataset_keys:
+            cached_data = redis_client.get(key)
+
+            if cached_data:
+                images_data = json.loads(cached_data)
+                total_images += len(images_data)
+
+        return total_images
         
 
     def DELETE(self, key):

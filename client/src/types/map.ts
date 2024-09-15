@@ -12,4 +12,5 @@ export interface MapProps {
 export interface FetchMapReportsParams {
     month: string;
     mollusk: string;
+    status: string;
 }

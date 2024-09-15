@@ -13,9 +13,9 @@ export function FetchReports(): Promise<AxiosResponse<any, any>> {
 }
 
 
-export function FetchMapReports({ month, mollusk }: FetchMapReportsParams): Promise<AxiosResponse<any, any>> {
+export function FetchMapReports({ month, mollusk, status }: FetchMapReportsParams): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get(`https://clamscanner.com/go/fetch/map/reports/${month}/${encodeURIComponent(mollusk)}`, {
+        return axios.get(`https://clamscanner.com/go/fetch/map/reports/${month}/${encodeURIComponent(mollusk)}/${encodeURIComponent(status)}`, {
             withCredentials: true
         });
     } catch (error) {

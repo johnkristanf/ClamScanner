@@ -28,13 +28,13 @@ app = FastAPI()
 # comment this out when you push to production cause the nginx configuration 
 # is handling the cors to avoid duplication error
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  
-    allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"], 
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  
+#     allow_credentials=True,
+#     allow_methods=["*"],  
+#     allow_headers=["*"], 
+# )
 
 load_dotenv('.env')
 
@@ -187,18 +187,15 @@ async def upload_images(
 
         # use this for low to medium dataset size and changes are frequent (development)
 
-        expiration = 3600
-
         for result in upload_results:
             if result:
                 presigned_url = s3.generate_presigned_url(
                     'get_object',
                     Params={'Bucket': BUCKET_NAME, 'Key': result['s3_key']},
-                    ExpiresIn=3600
                 )
                 
                 new_image_data = {'key': result['s3_key'], 'url': presigned_url}
-                redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data, expiration)
+                redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data)
         
         return JSONResponse(content={"message": "Image Uploaded Successfully"}, status_code=201)
 
@@ -220,7 +217,6 @@ async def fetch_images(datasetClass: str):
         
 
     prefix = f"{DATASET_PREFIX}/{datasetClass}/"
-    expiration = 3600
 
     response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
 
@@ -231,14 +227,13 @@ async def fetch_images(datasetClass: str):
                 'url': s3.generate_presigned_url(
                             'get_object',
                             Params={'Bucket': BUCKET_NAME, 'Key': obj['Key']},
-                            ExpiresIn=expiration
                         ) 
             }
            
             for obj in response['Contents'] if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))
         ]
 
-        redis.SET(cache_key, image_data, expiration)
+        redis.SET(cache_key, image_data)
 
         return JSONResponse(content={"image_data": image_data}, status_code=200)
     
@@ -299,14 +294,14 @@ async def train(data: dict):
     
     def train_model_async(data):
         model_version = data.get('version')
-        train_acc, val_acc, train_loss, val_loss = train_new_model(model_version)
-        return {
-            "version": f'ClamScanner_v{model_version}',
-            "train_accuracy": train_acc,
-            "validation_accuracy": val_acc,
-            "train_loss": train_loss,
-            "validation_loss": val_loss
-        }
+        train_new_model(model_version)
+        # return {
+        #     "version": f'ClamScanner_v{model_version}',
+        #     "train_accuracy": train_acc,
+        #     "validation_accuracy": val_acc,
+        #     "train_loss": train_loss,
+        #     "validation_loss": val_loss
+        # }
 
     thread = threading.Thread(target=train_model_async, args=(data,))
     thread.start()

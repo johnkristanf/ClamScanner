@@ -46,7 +46,7 @@ function AccountsCardsList({ setisSidebarOpen }: { setisSidebarOpen: React.Dispa
                 <FontAwesomeIcon
                     onClick={() => setisSidebarOpen(true)} 
                     icon={faBars} 
-                    className="font-bold text-3xl hover:opacity-75 hover:cursor-pointer"
+                    className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
                 />
 
                 <div className="flex flex-col bg-gray-600 rounded-md h-full w-full p-5 gap-5">

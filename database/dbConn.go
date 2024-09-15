@@ -55,7 +55,7 @@ func DBconfig() (*SQL, error) {
 
 	db.AutoMigrate(&User{}, &Reported_Cases{}, &Admin{}, &Datasets{}, &Model{})
 
-	if err := MigrateAdminAccount(db); err != nil{
+	if err := SeedAdminAccount(db); err != nil{
 		return nil, err
 	}
 
@@ -63,7 +63,7 @@ func DBconfig() (*SQL, error) {
 }
 
 
-func MigrateAdminAccount(db *gorm.DB) error {
+func SeedAdminAccount(db *gorm.DB) error {
 	
     var admin Admin
     result := db.Where("email = ?", os.Getenv("ADMIN_EMAIL")).First(&admin)

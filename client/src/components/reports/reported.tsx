@@ -77,8 +77,9 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
           {data.city} {data.district}, {data.province}
         </td>
         
-        <td className="py-4 px-6">{data.reportedAt}</td>
         <td className="py-4 px-6">{data.mollusk_type}</td>
+        <td className="py-4 px-6">{data.status}</td>
+        <td className="py-4 px-6">{data.reportedAt}</td>
 
         <td className="py-4 px-6 flex gap-3">
 
@@ -155,8 +156,9 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
               <th scope="col" className="py-3 px-6">Reporter Name</th>
               <th scope="col" className="py-3 px-6">Reporter Address</th>
               <th scope="col" className="py-3 px-6">Reported Place</th>
-              <th scope="col" className="py-3 px-6">Reported Date</th>
               <th scope="col" className="py-3 px-6">Mollusk Type</th>
+              <th scope="col" className="py-3 px-6">Status</th>
+              <th scope="col" className="py-3 px-6">Reported Date</th>
               <th scope="col" className="py-3 px-6">Actions</th>
             </tr>
           </thead>

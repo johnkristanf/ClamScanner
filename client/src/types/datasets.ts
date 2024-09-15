@@ -16,10 +16,8 @@ export type DeleteDatasetClassType = {
 export type FetchModelType = {
     model_id: number
     version: string,
-    train_accuracy: number,
-    validation_accuracy: number,
+    train_acc: number,
     train_loss: number,
-    validation_loss: number,
     trained_at: string
 }
 

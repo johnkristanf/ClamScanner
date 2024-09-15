@@ -16,7 +16,7 @@ def training_callbacks(model_version: str) -> tuple[EarlyStopping, ReduceLROnPla
     )
 
     model_checkpoint = ModelCheckpoint(
-        filepath=f'ClamScanner_best_v{model_version}.keras',
+        filepath=f'./models/ClamScanner_best_v{model_version}.keras',
         monitor='val_loss',
         save_best_only=True
     )

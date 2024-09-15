@@ -13,7 +13,7 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
     let ws: WebSocket | null = null;
 
     const connect = () => {
-        ws = new WebSocket("wss://clamscanner.com/go/ws/conn");
+        ws = new WebSocket("ws://localhost:8080/ws/conn");
 
         ws.onopen = () => {
             console.log("WebSocket Connected");
@@ -123,8 +123,9 @@ const ReportsPage: React.FC = () => {
                     <FontAwesomeIcon
                         onClick={() => setisSidebarOpen(true)} 
                         icon={faBars} 
-                        className="font-bold text-3xl hover:opacity-75 hover:cursor-pointer"
+                        className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
                     />
+
                     <audio ref={alertRef} controls style={{display: 'none'}}>
                         <source src="/public/Drop.mp3" type="audio/mpeg" />
                         Your browser does not support the audio element.

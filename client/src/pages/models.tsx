@@ -4,7 +4,7 @@ import { SideBar } from '../components/navigation/sidebar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faRobot } from '@fortawesome/free-solid-svg-icons';
 import { ModelDetailsModal } from '../components/modal/models';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
 import { FetchModelType } from '../types/datasets';
@@ -21,8 +21,6 @@ socket.onerror = (error) => {
   console.error('WebSocket error:', error);
 };
 
-
-
 interface TrainingMetrics {
   epochs: number[];
   accuracy: number[];
@@ -33,11 +31,9 @@ interface TrainingMetrics {
 }
 
 const ModelsPage: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-
+  const [isSidebarOpen, setisSidebarOpen] = useState<boolean>(false);
   const [isModelDetailsModalOpen, setIsModelDetailsModalOpen] = useState<boolean>(false);
   const [modelDetails, setModelDetails] = useState<FetchModelType>();
-
   const [numberOfTrainedModels, setNumberOfTrainedModels] = useState<number | undefined>(undefined);
   const [trainingMetrics, setTrainingMetrics] = useState<TrainingMetrics>({
     epochs: [],
@@ -48,58 +44,76 @@ const ModelsPage: React.FC = () => {
     class_names: []
   });
 
+  const [isTrainingComplete, setIsTrainingComplete] = useState<boolean>(false); 
+  const [hasTrainingError, setHasTrainingError] = useState<boolean>(false); 
+
   useEffect(() => {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+
+      console.log("ws reponse data:", data)
+
+      if(data.completion_message){
+        setIsTrainingComplete(true); 
+        setHasTrainingError(false); 
+      }
+
       setTrainingMetrics((prevMetrics) => ({
-
         epochs: [...prevMetrics.epochs, data.epoch],
-
         accuracy: [...prevMetrics.accuracy, data.accuracy],
         val_accuracy: [...prevMetrics.val_accuracy, data.val_accuracy],
-
         loss: [...prevMetrics.loss, data.loss],
         val_loss: [...prevMetrics.val_loss, data.val_loss],
-
         class_names: data.class_names
       }));
     };
   }, []);
 
-  const queryClient = useQueryClient();
-
-  const { isLoading, mutate } = useMutation(TrainModel, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('train_model');
-    },
-    onError: (error) => {
-      console.error('Training error:', error);
-    },
-  });
-
-  useEffect(() => {
-
-    if (isLoading) {
-
+  const { mutate } = useMutation(TrainModel, {
+    onMutate: () => {
       Swal.fire({
-        title: 'Training will take a several moments to finish!',
+        title: 'Training will take several moments to finish!',
         allowOutsideClick: false,
         allowEscapeKey: false,
-
         position: 'top-end',
         backdrop: false,
         width: '500px',
         didOpen: () => {
           Swal.showLoading();
         },
+      });
+    },
+    
+    onError: (error) => {
+      console.error('Training error:', error);
+      setIsTrainingComplete(true); 
+      setHasTrainingError(true); 
 
+      Swal.fire({
+        icon: 'error',
+        title: 'Training Failed',
+        text: 'There was an error during the training process. Please try again.',
+      });
+    },
+  });
+
+  useEffect(() => {
+    if(isTrainingComplete){
+
+      Swal.fire({
+        icon: "success",
+        title: "Training Has Completed",
       });
 
-    }
+      trainingMetrics.epochs.length = 0
+      setIsTrainingComplete(false)
+      setHasTrainingError(false)
+    } 
 
-  }, [isLoading]);
+  }, [isTrainingComplete])
 
-  const newModelVersion = numberOfTrainedModels !== undefined ? (numberOfTrainedModels + 1).toString() : '1';
+
+  const newModelVersion = numberOfTrainedModels != undefined ? (numberOfTrainedModels + 1).toString() : '1';
 
   let chartData: (string | number)[][] = [];
 
@@ -115,22 +129,22 @@ const ModelsPage: React.FC = () => {
     chartData.unshift(['Epoch', 'Accuracy', 'Val Accuracy', 'Loss', 'Val Loss']);
   }
 
-  console.log("trainingMetrics: ", trainingMetrics)
+  console.log("trainingMetrics: ", trainingMetrics);
 
   return (
     <div className="flex flex-col h-full w-full">
-      {isSidebarOpen && <SideBar setisSidebarOpen={setIsSidebarOpen} />}
+      {isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} />}
 
       {isModelDetailsModalOpen && modelDetails && (
         <ModelDetailsModal setisModelDetailsOpen={setIsModelDetailsModalOpen} modelDetails={modelDetails} />
       )}
 
       <div className="h-full w-full flex flex-col items-start p-8">
-        <FontAwesomeIcon
-          onClick={() => setIsSidebarOpen(true)}
-          icon={faBars}
-          className="font-bold text-3xl hover:opacity-75 hover:cursor-pointer"
-        />
+          <FontAwesomeIcon
+            onClick={() => setisSidebarOpen(true)} 
+            icon={faBars} 
+            className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
+          />
 
         <div className="w-full flex justify-center">
           <div className="w-[80%] bg-gray-600 rounded-md p-5 flex flex-col gap-5">
@@ -144,24 +158,7 @@ const ModelsPage: React.FC = () => {
               </button>
             </div>
 
-            {
-              trainingMetrics.class_names.length > 0 && (
-                <div className="w-full text-white font-bold flex gap-3 text-lg">
-                  <h1>Dataset Class Names:</h1>
-                  {trainingMetrics.class_names.join(', ')}
-                </div>
-              )
-            }
-
-          
-
-            <ModelTable
-              setisModelDetailsModal={setIsModelDetailsModalOpen}
-              setModelDetails={setModelDetails}
-              setNumberOfTrainedModels={setNumberOfTrainedModels}
-            />
-
-            {trainingMetrics.epochs.length > 0 && (
+            {trainingMetrics && trainingMetrics.epochs.length > 0 && !hasTrainingError && !isTrainingComplete && (
               <div className="w-full bg-white p-5 rounded-md">
                 <Chart
                   width="100%"
@@ -187,6 +184,14 @@ const ModelsPage: React.FC = () => {
                   }}
                 />
               </div>
+            )}
+
+            {trainingMetrics.epochs.length == 0 && (
+              <ModelTable
+                setisModelDetailsModal={setIsModelDetailsModalOpen}
+                setModelDetails={setModelDetails}
+                setNumberOfTrainedModels={setNumberOfTrainedModels}
+              />
             )}
           </div>
         </div>
