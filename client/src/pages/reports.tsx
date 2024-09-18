@@ -53,8 +53,17 @@ const ReportsPage: React.FC = () => {
     const alertRef = useRef<HTMLAudioElement>(null);
 
     const playAudioLoop = () => {
-        if (alertRef.current) {
-            alertRef.current.play(); 
+        if (alertRef.current && alertRef.current.paused) {
+            alertRef.current.play().catch(error => {
+                console.error('Error playing the audio:', error);
+            });
+        }
+    };
+    
+    const stopAudioLoop = () => {
+        if (alertRef.current && !alertRef.current.paused) {
+            alertRef.current.pause();
+            alertRef.current.loop = false;
         }
     };
 
@@ -79,19 +88,19 @@ const ReportsPage: React.FC = () => {
                 cancelButtonColor: "#000000",
                 confirmButtonText: "View Reports"
             }).then((result) => {
-                if (result.isConfirmed) setOpenReportsModal(true);
+                if (result.isConfirmed){
+                    stopAudioLoop();  
+                    setOpenReportsModal(true);
+                } 
                     
                 if (result.isDismissed || result.isDenied) {
-                    if (alertRef.current) {
-                        alertRef.current.pause();
-                        alertRef.current.loop = false; 
-                    } 
+                    stopAudioLoop();  
                 }
             });
         } else {
             if (alertRef.current) {
-                alertRef.current.pause(); // Pause audio
-                alertRef.current.loop = false; // Set loop to false
+                alertRef.current.pause(); 
+                alertRef.current.loop = false; 
             }
         }
     }, [Reports]);

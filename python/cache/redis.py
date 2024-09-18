@@ -4,19 +4,25 @@ import time
 import json
 
 from urllib.parse import urlparse
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+# load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
 
 class RedisCachingMethods:
 
     def get_pool(self):
         try:
-            redis_url = os.getenv("REDIS_URI", "redis://localhost:6379")
+            redis_url = os.getenv("REDIS_URI")
             parsed_url = urlparse(redis_url)
+
+            print(f"Redis URI: {redis_url}")
+            print(f"Redis parsed_url URI: {parsed_url}")
             
             host = parsed_url.hostname
             port = parsed_url.port
+
+            print(f"Redis host: {host}")
+            print(f"Redis port: {port}")
 
             return redis.ConnectionPool(
                 host=host, 

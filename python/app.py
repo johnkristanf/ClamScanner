@@ -131,41 +131,6 @@ async def batch_upload_images(images: list[UploadFile], datasetClass: str, batch
     return results
 
 
-
-@app.post("/delete/dataset/class")
-async def delete_dataset_class(data: dict):
-
-    try:
-        key_path = data.get('folder_path')
-        cache_key = f"{key_path}/image_urls"
-
-        objects = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=key_path)
-
-        if 'Contents' in objects:
-            keys = [
-                {'Key': obj['Key'] } 
-                for obj in objects['Contents'] 
-                if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))
-
-            ]
-            
-            s3.delete_objects(
-                Bucket=BUCKET_NAME,
-                Delete={
-                    'Objects': keys
-                }
-            )
-
-            redis.DELETE(cache_key)
-
-        return JSONResponse(content={"success": "Dataset Class Deleted!"}, status_code=200)
-
-    except Exception as e:
-        print(f"Error dataset class deletion: {e}")
-        return HTTPException(status_code=500, detail=str(e))
-
-
-
 @app.post("/upload/dataset/images")
 async def upload_images(
     datasetClass: str = Form(...), 
@@ -196,6 +161,10 @@ async def upload_images(
                 
                 new_image_data = {'key': result['s3_key'], 'url': presigned_url}
                 redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data)
+
+        img_count = len(redis.GET(cache_key))
+        print("img_count: ", img_count)
+        dataset_db_ops.update_dataset_class_data(img_count, class_id)
         
         return JSONResponse(content={"message": "Image Uploaded Successfully"}, status_code=201)
 
@@ -270,6 +239,38 @@ async def delete_dataset_image(data: dict):
         print("Error during deletion image processing:", e)
         return JSONResponse(content={"error": "Image deletion failed"}, status_code=500)
 
+
+@app.post("/delete/dataset/class")
+async def delete_dataset_class(data: dict):
+
+    try:
+        key_path = data.get('folder_path')
+        cache_key = f"{key_path}/image_urls"
+
+        objects = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=key_path)
+
+        if 'Contents' in objects:
+            keys = [
+                {'Key': obj['Key'] } 
+                for obj in objects['Contents'] 
+                if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))
+
+            ]
+            
+            s3.delete_objects(
+                Bucket=BUCKET_NAME,
+                Delete={
+                    'Objects': keys
+                }
+            )
+
+            redis.DELETE(cache_key)
+
+        return JSONResponse(content={"success": "Dataset Class Deleted!"}, status_code=200)
+
+    except Exception as e:
+        print(f"Error dataset class deletion: {e}")
+        return HTTPException(status_code=500, detail=str(e))
 
 
 @app.websocket("/ws")

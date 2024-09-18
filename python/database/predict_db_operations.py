@@ -16,7 +16,7 @@ class PredictDatabaseOperations:
             conn = self.connection_pool.getconn() 
             cur = conn.cursor()
 
-            query = 'SELECT DISTINCT name FROM datasets'
+            query = 'SELECT name FROM datasets ORDER BY created_at ASC'
             cur.execute(query)
             
             result = cur.fetchall()
