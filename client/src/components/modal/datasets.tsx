@@ -413,11 +413,13 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
 
                             </div>
                             <button
+                                type="submit"
                                 onClick={Upload}
-                                className={`font-bold rounded-md p-2 w-full hover:opacity-75 'bg-blue-900 text-white`}
+                                className={`font-bold rounded-md p-2 w-full hover:opacity-75 bg-blue-900 text-white`}
                             >
                                 Upload
                             </button>
+
                             <button
                                 onClick={() => setisOpenUpload(false)}
                                 className={`bg-black text-white font-bold rounded-md p-2 w-full hover:opacity-75`}
