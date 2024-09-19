@@ -86,7 +86,20 @@ function Cards() {
                 icon: "success",
                 confirmButtonColor: "#3085d6",
             });
-        }
+        },
+
+        onMutate: () => {
+            Swal.fire({
+                title: 'Deleting...',
+                text: 'Please wait while the personnel account is being deleted.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+        },
     })
 
     const DeleteReportPopup = (account_id: number) => {
@@ -120,7 +133,6 @@ function Cards() {
                         <h1>{data.address}</h1>
 
                         <div className="flex gap-4 mt-3 text-white">
-                            <button className="bg-blue-900 rounded-md p-2 hover:opacity-75">Edit Account</button>
 
                             <button 
                                 onClick={() => DeleteReportPopup(data.user_id)}

@@ -214,6 +214,7 @@ async def delete_dataset_image(data: dict):
     try:
 
         image_keys = data.get('image_keys')
+        class_id = data.get('class_id')
 
         datasetClass = data.get('datasetClass')
         cache_key = f"{DATASET_PREFIX}/{datasetClass}/image_urls"
@@ -230,7 +231,10 @@ async def delete_dataset_image(data: dict):
             }
         )
 
+        img_count = len(redis.GET(cache_key)) - len(image_keys)
+        dataset_db_ops.update_dataset_class_data(img_count, class_id)
         redis.DELETE(cache_key)
+        
 
         return JSONResponse(content={"message": f"Deleted {len(image_keys)} images successfully"}, status_code=200)
         
