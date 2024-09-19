@@ -132,7 +132,7 @@ function Cards() {
                         <h1>{data.email}</h1>
                         <h1>{data.address}</h1>
 
-                        <div className="flex gap-4 mt-3 text-white">
+                        <div className="flex gap-4 mt-3 text-white w-full">
 
                             <button 
                                 onClick={() => DeleteReportPopup(data.user_id)}
