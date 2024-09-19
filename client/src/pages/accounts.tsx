@@ -136,7 +136,7 @@ function Cards() {
 
                             <button 
                                 onClick={() => DeleteReportPopup(data.user_id)}
-                                className="bg-red-800 rounded-md p-2 hover:opacity-75" >
+                                className="bg-red-800 rounded-md p-2 hover:opacity-75 w-full" >
                                     Delete Account
                             </button>
                             

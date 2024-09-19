@@ -57,7 +57,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   const currentMonth = new Date().getMonth();
   const [selectedMonth, setSelectedMonth] = useState<string>(monthNames[currentMonth]);
   const [selectedMollusk, setSelectedMollusk] = useState<string>('Scaly Clam');
-  const [selectedStatus, setSelectedStatus] = useState<string>('Resolved');
+  const [selectedStatus, setSelectedStatus] = useState<string>('In Progress');
 
   const reports_query = useQuery(
     ['reported_cases', selectedMonth, selectedMollusk],
