@@ -118,7 +118,20 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
         if (result.isConfirmed || result.isDismissed) setOpenReportsModal(true)
       })
 
-    }
+    },
+
+    onMutate: () => {
+      Swal.fire({
+          title: 'Deleting...',
+          text: 'Please wait while the report is being deleted.',
+          icon: 'info',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          willOpen: () => {
+              Swal.showLoading();
+          },
+      });
+  },
   });
 
   const DeleteReportPopup = (report_id: number) => {
