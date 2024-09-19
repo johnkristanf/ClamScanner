@@ -34,9 +34,13 @@ export function SignupForm({setisOpen}: any) {
         queryClient.invalidateQueries("personnel_accounts");
         reset();
         setisOpen(false);
+        Swal.close();
+        
       },
 
       onMutate: () => {
+        setisOpen(false);
+
         Swal.fire({
             title: 'Adding...',
             text: 'Please wait while the personnel account is being added.',

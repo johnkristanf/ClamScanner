@@ -289,8 +289,8 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
     const Upload = async () => {
         if (uploadedFiles.length > 0 && className && class_id) {
             Swal.fire({
-                title: 'Logging In...',
-                text: 'Please wait while the login is being process.',
+                title: 'Uploading...',
+                text: 'Please wait while the uploading image is being process.',
                 icon: 'info',
                 allowOutsideClick: false,
                 showConfirmButton: false,
