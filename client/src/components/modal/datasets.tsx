@@ -271,7 +271,6 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
 
     const queryClient = useQueryClient();
 
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -289,7 +288,16 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
 
     const Upload = async () => {
         if (uploadedFiles.length > 0 && className && class_id) {
-            setIsLoading(true);
+            Swal.fire({
+                title: 'Logging In...',
+                text: 'Please wait while the login is being process.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                },
+            });
 
             const formData = new FormData();
             uploadedFiles.forEach(file => {
@@ -301,7 +309,7 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
             const isUploaded = await UploadNewImage(formData);
 
             if (isUploaded) {
-                setIsLoading(false);
+                Swal.close();
 
                 Swal.fire({
                     title: "Images Uploaded",
@@ -405,18 +413,14 @@ export function UploadModal({ className, class_id, setisOpenUpload }: {
 
                             </div>
                             <button
-                                disabled={isLoading || uploadedFiles.length === 0}
                                 onClick={Upload}
-                                className={`font-bold rounded-md p-2 w-full hover:opacity-75 ${isLoading ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-900 text-white'
-                                    } `}
+                                className={`font-bold rounded-md p-2 w-full hover:opacity-75 'bg-blue-900 text-white`}
                             >
-                                {isLoading ? 'Uploading...' : 'Upload'}
+                                Upload
                             </button>
                             <button
-                                disabled={isLoading}
                                 onClick={() => setisOpenUpload(false)}
-                                className={`${isLoading ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-black text-white'
-                                    } font-bold rounded-md p-2 w-full hover:opacity-75`}
+                                className={`bg-black text-white font-bold rounded-md p-2 w-full hover:opacity-75`}
                             >
                                 Cancel
                             </button>

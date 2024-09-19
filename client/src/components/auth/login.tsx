@@ -20,7 +20,6 @@ export function LoginForm(){
 
         Swal.fire({
             title: 'Logging In...',
-            text: 'Please wait while the login is being process.',
             icon: 'info',
             allowOutsideClick: false,
             showConfirmButton: false,
@@ -35,11 +34,13 @@ export function LoginForm(){
 
             if(isLogin){
                 reset();
+                Swal.close(); 
                 window.location.href = '/dashboard'
             } 
 
             if(!isLogin){
                 if(invalidRef.current){
+                    Swal.close(); 
                     invalidRef.current.textContent = "Invalid Email or Password"
                 }
             }
