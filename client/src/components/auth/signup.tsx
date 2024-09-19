@@ -36,6 +36,19 @@ export function SignupForm({setisOpen}: any) {
         setisOpen(false);
       },
 
+      onMutate: () => {
+        Swal.fire({
+            title: 'Adding...',
+            text: 'Please wait while the personnel account is being added.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            },
+        });
+    },
+
       onError: (error: any) => {
         console.error("Signup error:", error);
       },

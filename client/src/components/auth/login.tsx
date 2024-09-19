@@ -3,6 +3,7 @@ import { classNames } from "../../utils/style"
 import { AdminLogin } from "../../http/post/auth";
 import { InputType, adminLoginCredentials } from "../../types/account";
 import { useRef } from "react";
+import Swal from "sweetalert2";
 
 const login_input: InputType[] = [
     { label: "email", type: "email", placeholder: "Enter Email" },
@@ -17,10 +18,20 @@ export function LoginForm(){
 
     const onSubmit = async (loginCredentials: adminLoginCredentials) => {
 
+        Swal.fire({
+            title: 'Logging In...',
+            text: 'Please wait while the login is being process.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+
         try {
             const isLogin = await AdminLogin(loginCredentials)
-
-            console.log("isLogin", isLogin)
 
             if(isLogin){
                 reset();
