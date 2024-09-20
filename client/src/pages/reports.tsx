@@ -52,20 +52,20 @@ const ReportsPage: React.FC = () => {
 
     const alertRef = useRef<HTMLAudioElement>(null);
 
-    const playAudioLoop = () => {
-        if (alertRef.current && alertRef.current.paused) {
-            alertRef.current.play().catch(error => {
-                console.error('Error playing the audio:', error);
-            });
-        }
-    };
+    // const playAudioLoop = () => {
+    //     if (alertRef.current && alertRef.current.paused) {
+    //         alertRef.current.play().catch(error => {
+    //             console.error('Error playing the audio:', error);
+    //         });
+    //     }
+    // };
     
-    const stopAudioLoop = () => {
-        if (alertRef.current && !alertRef.current.paused) {
-            alertRef.current.pause();
-            alertRef.current.loop = false;
-        }
-    };
+    // const stopAudioLoop = () => {
+    //     if (alertRef.current && !alertRef.current.paused) {
+    //         alertRef.current.pause();
+    //         alertRef.current.loop = false;
+    //     }
+    // };
 
     useEffect(() => {
         InitializeWSConnection(setReports);
