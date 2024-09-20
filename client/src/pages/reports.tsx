@@ -88,7 +88,7 @@ const ReportsPage: React.FC = () => {
                 cancelButtonColor: "#000000",
                 confirmButtonText: "View Reports"
             }).then((result) => {
-                if (result.isConfirmed){
+                if (result.isConfirmed) {
                     stopAudioLoop();  
                     setOpenReportsModal(true);
                 } 
@@ -98,12 +98,9 @@ const ReportsPage: React.FC = () => {
                 }
             });
         } else {
-            if (alertRef.current) {
-                alertRef.current.pause(); 
-                alertRef.current.loop = false; 
-            }
+            stopAudioLoop(); 
         }
-    }, [Reports]);
+    }, [Reports, queryClient]);
 
     return (
         <div className="flex flex-col h-full w-full">
