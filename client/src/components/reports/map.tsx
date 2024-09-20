@@ -60,7 +60,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   const [selectedStatus, setSelectedStatus] = useState<string>('In Progress');
 
   const reports_query = useQuery(
-    ['reported_cases', selectedMonth, selectedMollusk],
+    ['reported_cases', selectedMonth, selectedMollusk, selectedStatus],
     () => FetchMapReports({ month: selectedMonth, mollusk: selectedMollusk, status: selectedStatus }),
     {
       onSuccess: () => {
@@ -79,17 +79,17 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
 
   const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
 
-  useEffect(() => {
-    if (reports_query.isFetching) {
-      Swal.fire({
-        title: 'Loading reports...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-    }
-  }, [reports_query.isFetching]);
+  // useEffect(() => {
+  //   if (reports_query.isFetching) {
+  //     Swal.fire({
+  //       title: 'Loading reports...',
+  //       allowOutsideClick: false,
+  //       didOpen: () => {
+  //         Swal.showLoading();
+  //       },
+  //     });
+  //   }
+  // }, [reports_query.isFetching]);
 
   console.log("reports map data: ", reports);
   console.log("reports_query ", reports_query);
