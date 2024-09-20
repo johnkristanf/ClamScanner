@@ -1,5 +1,5 @@
 import { useQueryClient } from "react-query";
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
@@ -71,11 +71,15 @@ const ReportsPage: React.FC = () => {
         InitializeWSConnection(setReports);
     }, []);
 
-    useEffect(() => {
+
+    const refetchStaleCacheReports = useCallback(() => {
         queryClient.invalidateQueries('reported_cases');
         queryClient.invalidateQueries('perCity_reports');
         queryClient.invalidateQueries('perProvince_reports');
         queryClient.invalidateQueries('perMollusk_reports');
+    }, [queryClient]);
+
+    useEffect(() => {
 
         if (Reports && Reports > 0) {
             // playAudioLoop();
@@ -90,16 +94,16 @@ const ReportsPage: React.FC = () => {
                 confirmButtonText: "View Reports"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // stopAudioLoop();  
+                    refetchStaleCacheReports();
                     setOpenReportsModal(true);
                 } 
                     
-                // if (result.isDismissed || result.isDenied) {
-                //     stopAudioLoop();  
-                // }
+                if (result.isDismissed || result.isDenied) {
+                    refetchStaleCacheReports() 
+                }
             });
         } 
-    }, [Reports, queryClient]);
+    }, [Reports, refetchStaleCacheReports]);
 
     return (
         <div className="flex flex-col h-full w-full">
