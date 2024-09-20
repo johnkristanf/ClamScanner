@@ -99,7 +99,8 @@ const ReportsPage: React.FC = () => {
                 } 
                     
                 if (result.isDismissed || result.isDenied) {
-                    refetchStaleCacheReports() 
+                    refetchStaleCacheReports();
+                    setOpenReportsModal(true);
                 }
             });
         } 
