@@ -78,8 +78,9 @@ const ReportsPage: React.FC = () => {
         queryClient.invalidateQueries('perMollusk_reports');
 
         if (Reports && Reports > 0) {
-            playAudioLoop();
-
+            // playAudioLoop();
+            Swal.close();
+            
             Swal.fire({
                 title: `Received New Reported Cases`,
                 icon: "warning",
@@ -89,17 +90,15 @@ const ReportsPage: React.FC = () => {
                 confirmButtonText: "View Reports"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    stopAudioLoop();  
+                    // stopAudioLoop();  
                     setOpenReportsModal(true);
                 } 
                     
-                if (result.isDismissed || result.isDenied) {
-                    stopAudioLoop();  
-                }
+                // if (result.isDismissed || result.isDenied) {
+                //     stopAudioLoop();  
+                // }
             });
-        } else {
-            stopAudioLoop(); 
-        }
+        } 
     }, [Reports, queryClient]);
 
     return (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Tooltip, useMap, Marker, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import '/public/map.css';
@@ -79,17 +79,19 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
 
   const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
 
-  // useEffect(() => {
-  //   if (reports_query.isFetching) {
-  //     Swal.fire({
-  //       title: 'Loading reports...',
-  //       allowOutsideClick: false,
-  //       didOpen: () => {
-  //         Swal.showLoading();
-  //       },
-  //     });
-  //   }
-  // }, [reports_query.isFetching]);
+  useEffect(() => {
+    if (reports_query.isFetching) {
+      Swal.fire({
+        title: 'Loading reports...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+    } else {
+      Swal.close();
+    }
+  }, [reports_query.isFetching]);
 
   console.log("reports map data: ", reports);
   console.log("reports_query ", reports_query);
