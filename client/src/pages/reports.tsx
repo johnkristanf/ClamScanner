@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { SideBar } from "../components/navigation/sidebar";
-import ChatBot from "../components/chat/chatbot";
 
 const ReportedCases = lazy(() => import("../components/reports/reported"));
 const Map = lazy(() => import("../components/reports/map"));
@@ -152,7 +151,6 @@ const ReportsPage: React.FC = () => {
 
                 </div>
 
-                <ChatBot />
         </div>
     );
 }

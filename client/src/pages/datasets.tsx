@@ -8,7 +8,6 @@ import { FetchDatasetClasses, FetchDatasetClassImages } from "../http/get/datase
 import Swal from "sweetalert2";
 import { DeleteDatasetClass } from "../http/delete/dataset";
 import { DatasetClassTypes } from "../types/datasets";
-import ChatBot from "../components/chat/chatbot";
 import ImagePagination from "../components/datasets/pagination";
 
 
@@ -172,7 +171,6 @@ function DataSetsPage() {
                 </div>
             </div>
 
-            <ChatBot />
         </div>
     );
 }

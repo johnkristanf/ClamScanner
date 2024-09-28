@@ -9,7 +9,6 @@ import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
 // import { FetchModelType } from '../types/datasets';
 import { TrainModel } from '../http/post/train';
-import ChatBot from '../components/chat/chatbot';
 
 const socket = new WebSocket('wss://clamscanner.com/py/ws');
 
@@ -195,7 +194,6 @@ const ModelsPage: React.FC = () => {
         </div>
       </div>
 
-      <ChatBot />
     </div>
   );
 };

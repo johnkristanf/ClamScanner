@@ -11,7 +11,6 @@ import { PersonnelAccounts } from "../types/account"
 import { DeleteAccount } from "../http/delete/accounts"
 
 import Swal from "sweetalert2"
-import ChatBot from "../components/chat/chatbot"
 
 function AccountsPage(){
 
@@ -27,7 +26,6 @@ function AccountsPage(){
                <AccountsCardsList setisSidebarOpen={setisSidebarOpen} />
             </QueryClientProvider>
 
-            <ChatBot />
         </div>
     )
 }
