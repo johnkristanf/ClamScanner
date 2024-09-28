@@ -196,7 +196,7 @@ function RedListedMollusk() {
                         </div>
                     ) : (
                         <Chart
-                            chartType="PieChart"
+                            chartType="Bar"
                             width="100%"
                             height="90%"
                             data={data}
@@ -242,7 +242,7 @@ function DatasetClasses() {
                         </div>
                     ) : (
                         <Chart
-                            chartType="Bar"
+                            chartType="PieChart"
                             width="100%"
                             height="90%"
                             data={data}
