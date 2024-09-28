@@ -176,8 +176,19 @@ function RedListedMollusk() {
         });
     }
 
+    const generateColors = (numColors: number) => {
+        const colors = [];
+        for (let i = 0; i < numColors; i++) {
+            colors.push(`hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`); // Random HSL color
+        }
+        return colors;
+    };
+
+    // Chart options with dynamic colors and no legend
     const options = {
         is3D: true,
+        legend: { position: "none" },
+        colors: generateColors(reports.length), // Dynamically generate colors based on the number of data entries
     };
 
     return (
