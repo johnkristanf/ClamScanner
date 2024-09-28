@@ -67,8 +67,6 @@ function ReportedPerCity() {
             subtitle: "Yearly Reported Cases",
         },
 
-        colors: ["#FF5733", "#33B5FF", "#33FF57", "#FFC133", "#B533FF"], 
-
     };
 
     return (
@@ -132,8 +130,6 @@ function ReportedPerProvince() {
             subtitle: "Yearly Reported Cases",
         },
 
-        colors: ["#FF5733", "#33B5FF", "#33FF57", "#FFC133", "#B533FF"], 
-
     };
 
     return (
@@ -185,6 +181,7 @@ function RedListedMollusk() {
     const options = {
         legend: { position: "none" }, 
         colors: ["#FF5733", "#33B5FF", "#33FF57", "#FFC133", "#B533FF"], 
+
     };
 
     return (
