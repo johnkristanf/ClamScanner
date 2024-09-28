@@ -242,7 +242,7 @@ function DatasetClasses() {
                         </div>
                     ) : (
                         <Chart
-                            chartType="PieChart"
+                            chartType="Bar"
                             width="100%"
                             height="90%"
                             data={data}
