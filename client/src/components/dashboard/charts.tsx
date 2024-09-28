@@ -66,6 +66,9 @@ function ReportedPerCity() {
             title: "Reported Red Listed Mollusk Per City",
             subtitle: "Yearly Reported Cases",
         },
+
+        colors: ["#FF5733", "#33B5FF", "#33FF57", "#FFC133", "#B533FF"], 
+
     };
 
     return (
@@ -128,6 +131,9 @@ function ReportedPerProvince() {
             title: "Reported Red Listed Mollusk Per Province",
             subtitle: "Yearly Reported Cases",
         },
+
+        colors: ["#FF5733", "#33B5FF", "#33FF57", "#FFC133", "#B533FF"], 
+
     };
 
     return (
@@ -167,7 +173,7 @@ function RedListedMollusk() {
     console.log("reports per mollusk", reports);
 
     const data = [
-        ["Mollusk Type", "Mollusk Count"]
+        ["Mollusk Type", "Report Count"]
     ];
 
     if (reports.length > 0) {
@@ -177,7 +183,6 @@ function RedListedMollusk() {
     }
 
     const options = {
-        is3D: true,
         legend: { position: "none" }, 
         colors: ["#FF5733", "#33B5FF", "#33FF57", "#FFC133", "#B533FF"], 
     };
