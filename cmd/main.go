@@ -93,6 +93,7 @@ func main() {
 	
 	stack := middlewares.Use(
 		middlewares.Logger,
+		middlewares.AllowCors,
 	)
 
 	s := http.Server{

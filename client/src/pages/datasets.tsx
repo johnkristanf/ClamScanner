@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import { DeleteDatasetClass } from "../http/delete/dataset";
 import { DatasetClassTypes } from "../types/datasets";
 import ImagePagination from "../components/datasets/pagination";
+import ModelsPage from "./models";
 
 
 
@@ -107,7 +108,7 @@ function DataSetsPage() {
 
                     {!datasetDetails && (
                         <div className="flex justify-between w-full">
-                            <h1 className="text-white font-bold text-2xl">Clam Scanner Dataset Classes</h1>
+                            <h1 className="text-white font-bold text-3xl">Clam Scanner Dataset Classes</h1>
                             <button
                                 onClick={() => setIsOpenAddModal(true)}
                                 className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
@@ -131,7 +132,7 @@ function DataSetsPage() {
                                 />
                             ) : null}
 
-                            {datasets?.map((data) => (
+                            {/* {datasets?.map((data) => (
                                 <div key={data.class_id}>
                                     {!datasetDetails && (
                                         <div className="rounded-md h-[8%] w-[30%] bg-white">
@@ -165,12 +166,59 @@ function DataSetsPage() {
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                            ))} */}
+
+
+                                <div className="w-full flex justify-center">
+                                    {!datasetDetails && (
+                                        <div className="rounded-md h-[8%] w-full bg-white">
+                                            <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
+                                                <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
+                                                    <tr>
+                                                        <th scope="col" className="py-3 px-6">Name</th>
+                                                        <th scope="col" className="py-3 px-6">Status</th>
+                                                        <th scope="col" className="py-3 px-6">Actions</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+
+                                                    {
+                                                        datasets.map((data) => (
+                                                            <tr 
+                                                                key={data.class_id}
+                                                                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                                                            >
+                                                                <td className="py-4 px-6">{data.name}</td>
+                                                                <td className="py-4 px-6">{data.status}</td>
+                                                                <td className="py-4 px-6 flex gap-3">
+                                                                    <button
+                                                                        onClick={() => handleDetailsData(data)}
+                                                                        className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                                                        Details
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={() => DeleteDatasetClassPopup(data.class_id, data.name)}
+                                                                        className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                                                        Delete
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    }
+                                                    
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                 </div>
             </div>
 
+            <ModelsPage />
         </div>
     );
 }

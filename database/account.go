@@ -1,10 +1,13 @@
 package database
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/johnkristanf/clamscanner/types"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type AUTH_DB_METHOD interface {
@@ -89,15 +92,20 @@ func (sql *SQL) AdminLogin(loginCredentials *types.LoginCredentials) (adminData 
 }
 
 func (sql *SQL) EmailAlreadyTaken(email string) error {
+	var userInfo *types.EmailTaken
 
-	var userInfo *types.UserInfo
+	result := sql.DB.Table("users").Select("id").Where("email = ?", email).First(&userInfo)
 
-	result := sql.DB.Select("id, password").Where("email = ?", email).Table("users").First(&userInfo)
+	if result.Error == gorm.ErrRecordNotFound {
+		return nil
+	}
+
 	if result.Error != nil {
+		fmt.Println("Error querying the database:", result.Error)
 		return result.Error
 	}
 
-	return nil
+	return errors.New("email_already_taken")
 }
 
 func (sql *SQL) FetchPersonnelAccounts() ([]*types.PersonnelAccounts, error) {

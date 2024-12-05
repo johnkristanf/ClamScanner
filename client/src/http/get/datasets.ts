@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosResponse } from "axios";
 
 export async function FetchDatasetClassesDashboard(): Promise<AxiosResponse | any> {
 
     try {
-        return axios.get("https://clamscanner.com/go/fetch/dataset/class", {
+        return axios.get("http://localhost:8080/fetch/dataset/class", {
             withCredentials: true
         });
       
@@ -15,7 +16,7 @@ export async function FetchDatasetClassesDashboard(): Promise<AxiosResponse | an
 
 export function FetchDatasetClasses(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("https://clamscanner.com/go/fetch/dataset/class", {
+        return axios.get("http://localhost:8080/fetch/dataset/class", {
             withCredentials: true
         });
     } catch (error) {
@@ -31,7 +32,7 @@ export async function FetchDatasetClassImages(datasetClass: string): Promise<Axi
     console.log("classFolderName", datasetClass)
 
     try {
-        return axios.get(`https://clamscanner.com/py/fetch/images/${encodeURIComponent(datasetClass)}`, {
+        return axios.get(`http://localhost:5000/fetch/images/${encodeURIComponent(datasetClass)}`, {
             withCredentials: true
         });
 

@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/johnkristanf/clamscanner/types"
 )
@@ -36,7 +35,12 @@ type REPORTED_DB_METHOD interface {
 
 func (sql *SQL) InsertReport(reportCases *types.Reported_Cases) (int64, error) {
 
-	reportedAt := time.Now().Format("January 2, 2006 03:04 PM")
+	// location, err := time.LoadLocation("Asia/Manila")
+    // if err != nil {
+    //     return 0, err
+    // }
+
+	// reportedAt := time.Now().In(location).Format("January 2, 2006 03:04 PM")
 
 	reportedCases := &Reported_Cases{
 		Longitude:   reportCases.Longitude,
@@ -44,7 +48,7 @@ func (sql *SQL) InsertReport(reportCases *types.Reported_Cases) (int64, error) {
 		City:        reportCases.City,
 		Province:    reportCases.Province,
 		District:    reportCases.District,
-		ReportedAt:  reportedAt,
+		ReportedAt:  reportCases.ReportAt,
 		MolluskType: reportCases.MolluskType,
 		UserID:      reportCases.UserID,
 	}

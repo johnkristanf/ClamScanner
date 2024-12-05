@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { ModelTable } from '../components/models/model_table';
-import { SideBar } from '../components/navigation/sidebar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faRobot } from '@fortawesome/free-solid-svg-icons';
-// import { ModelDetailsModal } from '../components/modal/models';
+import { faRobot } from '@fortawesome/free-solid-svg-icons';
 import { useMutation } from 'react-query';
 import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
-// import { FetchModelType } from '../types/datasets';
 import { TrainModel } from '../http/post/train';
 
-const socket = new WebSocket('wss://clamscanner.com/py/ws');
+
+// const productionWSurl = 'wss://clamscanner.com/py/ws';
+const developmentWSurl = 'ws://localhost:5000/ws';
+
+const socket = new WebSocket(developmentWSurl);
 
 socket.onopen = () => {
-  console.log('WebSocket Connected');
+  console.log('Python WebSocket Connected');
 };
 
 socket.onerror = (error) => {
@@ -30,9 +31,6 @@ interface TrainingMetrics {
 }
 
 const ModelsPage: React.FC = () => {
-  const [isSidebarOpen, setisSidebarOpen] = useState<boolean>(false);
-  // const [isModelDetailsModalOpen, setIsModelDetailsModalOpen] = useState<boolean>(false);
-  // const [modelDetails, setModelDetails] = useState<FetchModelType>();
   const [numberOfTrainedModels, setNumberOfTrainedModels] = useState<number | undefined>(undefined);
   const [trainingMetrics, setTrainingMetrics] = useState<TrainingMetrics>({
     epochs: [],
@@ -109,7 +107,7 @@ const ModelsPage: React.FC = () => {
       setHasTrainingError(false)
     } 
 
-  }, [isTrainingComplete])
+  }, [isTrainingComplete, trainingMetrics.epochs])
 
 
   const newModelVersion = numberOfTrainedModels != undefined ? (numberOfTrainedModels + 1).toString() : '1';
@@ -132,21 +130,16 @@ const ModelsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full w-full">
-      {isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} />}
 
       {/* {isModelDetailsModalOpen && modelDetails && (
         <ModelDetailsModal setisModelDetailsOpen={setIsModelDetailsModalOpen} modelDetails={modelDetails} />
       )} */}
 
       <div className="h-full w-full flex flex-col items-start p-8">
-          <FontAwesomeIcon
-            onClick={() => setisSidebarOpen(true)} 
-            icon={faBars} 
-            className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
-          />
+          
 
         <div className="w-full flex justify-center">
-          <div className="w-[80%] bg-gray-600 rounded-md p-5 flex flex-col gap-5">
+          <div className="w-full bg-gray-600 rounded-md p-5 flex flex-col gap-5">
             <div className="flex justify-between">
               <h1 className="text-white font-bold text-3xl">Clam Scanner Models</h1>
               <button

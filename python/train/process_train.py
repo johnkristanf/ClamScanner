@@ -6,10 +6,12 @@ from keras._tf_keras.keras import regularizers
 from keras import Sequential
 from keras._tf_keras.keras.utils import image_dataset_from_directory
 
-from keras._tf_keras.keras.applications import ResNet50
+# from keras._tf_keras.keras.applications import ResNet50
+from keras._tf_keras.keras.applications import MobileNetV2
 from keras._tf_keras.keras.applications.resnet import preprocess_input
 
 from keras._tf_keras.keras.optimizers import Adam
+from keras import mixed_precision
 
 # import tensorflow as tf
 # from tensorflow.keras import layers, regularizers, Sequential
@@ -40,6 +42,12 @@ from dotenv import load_dotenv
 from io import BytesIO
 from PIL import Image
 
+
+tf.config.optimizer.set_jit(True)
+
+policy = mixed_precision.Policy('mixed_float16')
+mixed_precision.set_global_policy(policy)
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
 
 s3_client = boto3.client(
@@ -68,7 +76,7 @@ def fetch_class_name_from_s3():
 
 def fetch_s3_images(dataset_class):
     images = []
-    labels = []
+    # labels = []
 
     response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=f"datasets/{dataset_class}/")
 
@@ -86,9 +94,9 @@ def fetch_s3_images(dataset_class):
                 img = preprocess_input(img)  
 
                 images.append(img)
-                labels.append(dataset_class)
+                # labels.append(dataset_class)
 
-    return images, labels
+    return images
 
 
 def load_dataset_s3():
@@ -99,7 +107,7 @@ def load_dataset_s3():
     class_to_idx = {class_name: idx for idx, class_name in enumerate(class_names)}
 
     for class_name in class_names:
-        class_images, class_labels = fetch_s3_images(class_name)
+        class_images = fetch_s3_images(class_name)
         images.extend(class_images)
         labels.extend([class_to_idx[class_name]] * len(class_images))
 
@@ -206,15 +214,16 @@ class CustomCallback(tf.keras.callbacks.Callback):
 
 def train_save_model(train_ds, validation_ds, num_classes: int, class_names: list[str], model_version: str):
 
-    base_model = ResNet50(
+    base_model = MobileNetV2(
         include_top=False,
         weights='imagenet',
         input_shape=(224, 224, 3),
         pooling='avg'
     )
 
-    for layer in base_model.layers:
-        layer.trainable = False
+    for layer in base_model.layers[150:]: 
+        layer.trainable = True
+
 
     model = Sequential([
         base_model,
@@ -234,7 +243,7 @@ def train_save_model(train_ds, validation_ds, num_classes: int, class_names: lis
     )
 
 
-    for layer in base_model.layers[-10:]:
+    for layer in base_model.layers[150:]: 
         layer.trainable = True
 
 
@@ -250,7 +259,7 @@ def train_save_model(train_ds, validation_ds, num_classes: int, class_names: lis
 
     fine_tune_history = model.fit(
         train_ds,
-        epochs=20,
+        epochs=10,
         validation_data=validation_ds,
         callbacks=[early_stopping, lr_scheduler, model_checkpoint, custom_callback]
     )
@@ -283,11 +292,11 @@ def train_new_model(model_version):
     val_loss = fine_tune_history.history['val_loss']
 
     data = {
-        'version': model_version,
-        'train_acc': train_acc[-1],
-        'val_acc': val_acc[-1],
-        'train_loss': train_loss[-1],
-        'val_loss': val_loss[-1],
+        'version':      model_version,
+        'train_acc':    train_acc[-1],
+        'val_acc':      val_acc[-1],
+        'train_loss':   train_loss[-1],
+        'val_loss':     val_loss[-1],
     }
 
     train.insert_train_metrics(data)

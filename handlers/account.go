@@ -39,9 +39,21 @@ func (h *AccountHandler) SignupHandler(w http.ResponseWriter, r *http.Request) e
 		Role:     r.FormValue("role"),
 	}
 
-	// if err := h.DB_METHOD.EmailAlreadyTaken(signupCredentials.Email); err != gorm.ErrRecordNotFound{
-	// 	return err
-	// }
+	err := h.DB_METHOD.EmailAlreadyTaken(signupCredentials.Email)
+	if err != nil {
+		if err.Error() == "email_already_taken" {
+			fmt.Println("The email is already taken. Please choose another one.")
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Email_Taken"))
+			return nil
+		}
+
+		fmt.Println("An error occurred:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return nil
+	}
+
 
 	go func() {
 		defer close(errorChan)

@@ -35,6 +35,9 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
   const paginatedImages = datasetImages.slice(startIndex, endIndex);
 
+  console.log("paginatedImages: ", paginatedImages);
+  
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
@@ -188,7 +191,8 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
           
         </div>
 
-
+        
+        {/* THE IMAGE PRE SIGNED URL EXPIRES BANTOG DLI MAKITA SA FRONTEND */}
         {paginatedImages.map((data, index: number) => (
 
           <div 

@@ -51,8 +51,8 @@ function NavLinks() {
   const navLinks = [
     { name: "Dashboard", to: "/dashboard" },
     { name: "Reports Map", to: "/reports" },
-    { name: "Datasets", to: "/datasets" },
-    { name: "Models", to: "/models" },
+    { name: "Training", to: "/training" },
+    // { name: "Models", to: "/models" },
     { name: "Personnel Accounts", to: "/accounts" },
   ];
 

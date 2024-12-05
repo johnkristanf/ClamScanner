@@ -3,7 +3,7 @@ import { adminLoginCredentials } from "../../types/account";
 
 export function Signup(createAccountFormData: FormData): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.post("https://clamscanner.com/go/auth/signup", createAccountFormData, {
+        return axios.post("http://localhost:8080/auth/signup", createAccountFormData, {
             withCredentials: true
         });
     } catch (error) {
@@ -15,7 +15,7 @@ export function Signup(createAccountFormData: FormData): Promise<AxiosResponse<a
 
 export async function AdminLogin(loginCredentials: adminLoginCredentials): Promise<boolean> {
     try {
-        const response = await axios.post("https://clamscanner.com/go/admin/login", loginCredentials, {
+        const response = await axios.post("http://localhost:8080/admin/login", loginCredentials, {
             withCredentials: true
         })
 

@@ -28,13 +28,13 @@ app = FastAPI()
 # comment this out when you push to production cause the nginx configuration 
 # is handling the cors to avoid duplication error
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  
-#     allow_credentials=True,
-#     allow_methods=["*"],  
-#     allow_headers=["*"], 
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"], 
+)
 
 load_dotenv('.env')
 
@@ -59,47 +59,6 @@ s3 = boto3.client(
     config=s3_config
 )
 
-
-
-def list_folders_and_images_in_dataset():
-    try:
-        response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=f"{DATASET_PREFIX}/")
-
-        if 'Contents' in response:
-            for obj in response['Contents']:
-                key = obj['Key']
-                if key.endswith('/'):
-                    print(f"Folder: {key}")
-                else:
-                    print(f"Image: {key}")
-        else:
-            print("No folders or images found in the datasets folder")
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-
-# list_folders_and_images_in_dataset()
-
-def delete_all_objects():
-    try:
-        objects = s3.list_objects_v2(Bucket=BUCKET_NAME)
-
-        if 'Contents' in objects:
-            keys = [{'Key': obj['Key']} for obj in objects['Contents']]
-            
-            s3.delete_objects(
-                Bucket=BUCKET_NAME,
-                Delete={
-                    'Objects': keys
-                }
-            )
-            print(f"Deleted {len(keys)} objects from {BUCKET_NAME}")
-        else:
-            print(f"No objects found in {BUCKET_NAME}")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-
-# delete_all_objects()
 
 async def upload_image(image: UploadFile, datasetClass: str):
     s3_key = f"{DATASET_PREFIX}/{datasetClass}/{image.filename}"
@@ -147,23 +106,32 @@ async def upload_images(
         cache_key = f"{DATASET_PREFIX}/{datasetClass}/image_urls"
 
         # use this for large dataset size and changes are not frequent (production)
-        # redis.DELETE(cache_key)
+        # and to refresh the stale data inside cache to be able to see image after upload
+        # in the frontend
+        redis.DELETE(cache_key)
 
 
         # use this for low to medium dataset size and changes are frequent (development)
 
-        for result in upload_results:
-            if result:
-                presigned_url = s3.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': BUCKET_NAME, 'Key': result['s3_key']},
-                )
+        # for result in upload_results:
+        #     if result:
+        #         presigned_url = s3.generate_presigned_url(
+        #             'get_object',
+        #             Params={'Bucket': BUCKET_NAME, 'Key': result['s3_key']},
+        #         )
                 
-                new_image_data = {'key': result['s3_key'], 'url': presigned_url}
-                redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data)
+        #         new_image_data = {'key': result['s3_key'], 'url': presigned_url}
+        #         redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data)
 
-        img_count = len(redis.GET(cache_key))
+
+        # Ayaw intawn hutdi og delete ang image para dili mag crash ang redis cache
+        # kay mag error ning len function og ma hurot ang image sa s3 bucket
+        
+        cached_images = redis.GET(cache_key) or []  # Defaults to an empty list if None
+
+        img_count = len(cached_images)
         print("img_count: ", img_count)
+        
         dataset_db_ops.update_dataset_class_data(img_count, class_id)
         
         return JSONResponse(content={"message": "Image Uploaded Successfully"}, status_code=201)
@@ -300,13 +268,6 @@ async def train(data: dict):
     def train_model_async(data):
         model_version = data.get('version')
         train_new_model(model_version)
-        # return {
-        #     "version": f'ClamScanner_v{model_version}',
-        #     "train_accuracy": train_acc,
-        #     "validation_accuracy": val_acc,
-        #     "train_loss": train_loss,
-        #     "validation_loss": val_loss
-        # }
 
     thread = threading.Thread(target=train_model_async, args=(data,))
     thread.start()

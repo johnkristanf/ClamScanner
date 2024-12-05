@@ -6,7 +6,6 @@ import DashboardPage from '../pages/dashboard';
 import ReportsPage from '../pages/reports';
 import AccountsPage from '../pages/accounts';
 import DataSetsPage from '../pages/datasets';
-import ModelsPage from '../pages/models';
 
 import QueryProviderWrapper from '../components/QueryClientProvider';
 
@@ -22,9 +21,8 @@ export const ROUTER = createBrowserRouter(
         <Route path='dashboard' element={<QueryProviderWrapper > <DashboardPage /> </QueryProviderWrapper>} />
         
         <Route path='reports' element={ <QueryProviderWrapper > <ReportsPage  /> </QueryProviderWrapper> } />
-        <Route path='datasets' element={ <QueryProviderWrapper > <DataSetsPage /> </QueryProviderWrapper> } />
+        <Route path='training' element={ <QueryProviderWrapper > <DataSetsPage /> </QueryProviderWrapper> } />
         
-        <Route path='models' element={ <QueryProviderWrapper>  <ModelsPage  /> </QueryProviderWrapper> } />
         <Route path='accounts' element={ <AccountsPage  /> } />
 
       </>

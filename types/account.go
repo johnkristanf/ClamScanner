@@ -42,6 +42,10 @@ type UserInfo struct {
 	Role     string
 }
 
+type EmailTaken struct {
+	ID       int64
+}
+
 type SuccessLogin struct {
 	UserID		 int64 	`json:"user_id"`
 	Role         string `json:"role"`

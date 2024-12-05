@@ -51,7 +51,7 @@ function AccountsCardsList({ setisSidebarOpen }: { setisSidebarOpen: React.Dispa
 
                 <h1 className="text-white font-bold text-3xl">Personnel Accounts</h1>
 
-                <button 
+                    <button 
                         onClick={() => setisOpen(true)}
                         className="text-white font-bold bg-blue-900 w-[23%] rounded-md p-2 hover:opacity-75">
                         { <FontAwesomeIcon icon={faPlus} /> } Add New Personnel Account
@@ -120,29 +120,44 @@ function Cards() {
 
     return (
         <div className="flex gap-16 w-full h-full flex-wrap mt-3">
-
-            {
-                personnel_accounts ? personnel_accounts.map((data: PersonnelAccounts) => (
-
-                    <div key={data.user_id} className="bg-white rounded-md p-3 flex flex-col items-center gap-3 font-bold">
-
-                        <h1>{data.fullname}</h1>
-                        <h1>{data.email}</h1>
-                        <h1>{data.address}</h1>
-
-                        <div className="flex gap-4 mt-3 text-white w-full">
-
-                            <button 
-                                onClick={() => DeleteReportPopup(data.user_id)}
-                                className="bg-red-800 rounded-md p-2 hover:opacity-75 w-full" >
-                                    Delete Account
-                            </button>
-                            
-                        </div>
-
-                    </div>
-                )) : null
-            }
+            <div className="overflow-auto flex items-center justify-center h-full w-full scrollable-container">
+                <div className="rounded-md h-full w-full">
+                    <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-[50%] bg-white">
+                        <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
+                            <tr>
+                                <th scope="col" className="py-3 px-6">Full Name</th>
+                                <th scope="col" className="py-3 px-6">Email</th>
+                                <th scope="col" className="py-3 px-6">Address</th>
+                                <th scope="col" className="py-3 px-6">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {personnel_accounts && personnel_accounts.length > 0 ? (
+                                personnel_accounts.map((data: PersonnelAccounts) => (
+                                    <tr key={data.user_id} className="text-black font-bold">
+                                        <td scope="col" className="py-3 px-6"> {data.fullname} </td>
+                                        <td scope="col" className="py-3 px-6"> {data.email} </td>
+                                        <td scope="col" className="py-3 px-6"> {data.address} </td>
+                                        <td scope="col" className="py-3 px-6 text-white flex gap-3">
+                                            <button 
+                                                onClick={() => DeleteReportPopup(data.user_id)}
+                                                className="bg-red-800 rounded-md p-2 hover:opacity-75 w-full" >
+                                                    Delete Account
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="py-3 px-6 text-center text-gray-500 text-xl">
+                                        No Personnel Accounts Available
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     )
 }

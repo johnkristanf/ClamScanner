@@ -8,6 +8,7 @@ type Reported_Cases struct{
 	District 	  	string      `json:"district"` 
 	MolluskType     string 		`json:"mollusk_type"` 
 	UserID     		int64 		`json:"user_id"` 
+	ReportAt     	string 		`json:"reported_at"` 
 }
 
 
