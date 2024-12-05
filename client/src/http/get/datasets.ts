@@ -16,7 +16,7 @@ export async function FetchDatasetClassesDashboard(): Promise<AxiosResponse | an
 
 export function FetchDatasetClasses(): Promise<AxiosResponse<any, any>> {
     try {
-        return axios.get("https://clamscanner.com/py/fetch/dataset/class", {
+        return axios.get("https://clamscanner.com/go/fetch/dataset/class", {
             withCredentials: true
         });
     } catch (error) {
