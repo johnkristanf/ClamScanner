@@ -4,7 +4,7 @@ import { DatasetClassTypes, DeleteImageDataTypes } from "../../types/datasets";
 export async function UploadNewImage(uploadFormData: FormData): Promise<boolean | undefined>{
 
     try {
-        const response = await axios.post("http://localhost:5000/upload/dataset/images", uploadFormData, {
+        const response = await axios.post("https://clamscanner.com/py/upload/dataset/images", uploadFormData, {
             headers: { 
                 'Content-Type': 'multipart/form-data'
             }
@@ -58,7 +58,7 @@ export async function DeleteDatasetImage({ selectedKeys, class_id, datasetClass 
             datasetClass: datasetClass
         }
 
-        return axios.post("http://localhost:5000/delete/image", payload, 
+        return axios.post("https://clamscanner.com/py/delete/image", payload, 
             { withCredentials: true }
         );
 
