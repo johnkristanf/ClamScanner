@@ -6,8 +6,7 @@ from keras._tf_keras.keras import regularizers
 from keras import Sequential
 from keras._tf_keras.keras.utils import image_dataset_from_directory
 
-# from keras._tf_keras.keras.applications import ResNet50
-from keras._tf_keras.keras.applications import MobileNetV2
+from keras._tf_keras.keras.applications import ResNet50
 from keras._tf_keras.keras.applications.resnet import preprocess_input
 
 from keras._tf_keras.keras.optimizers import Adam
@@ -42,11 +41,6 @@ from dotenv import load_dotenv
 from io import BytesIO
 from PIL import Image
 
-
-tf.config.optimizer.set_jit(True)
-
-policy = mixed_precision.Policy('mixed_float16')
-mixed_precision.set_global_policy(policy)
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
 
@@ -114,7 +108,7 @@ def load_dataset_s3():
     images = np.concatenate(images, axis=0)
     labels = np.array(labels)
 
-    batch_size=32
+    batch_size=16
     dataset = tf.data.Dataset.from_tensor_slices((images, labels)).batch(batch_size)
 
     return dataset, len(class_names), class_names
@@ -156,12 +150,14 @@ def prepare(ds: tf.data.Dataset, shuffle=False, augment=False):
     if augment:
         data_augmentation = Sequential([
           layers.RandomFlip('horizontal'),
-          layers.RandomRotation(0.2),
-          layers.RandomZoom(0.2),
-          layers.RandomTranslation(0.1, 0.1),
-          layers.RandomContrast(0.2),
-          layers.RandomBrightness(0.2),
-          layers.GaussianNoise(0.2)
+            layers.RandomRotation(0.2),
+            layers.RandomZoom(0.2),
+            layers.RandomTranslation(0.1, 0.1),
+            layers.RandomContrast(0.2),
+            layers.RandomBrightness(0.2),
+            layers.GaussianNoise(0.2),
+            layers.RandomHeight(0.2),
+            layers.RandomWidth(0.2),
         ])
 
         ds = ds.map(lambda x, y: (data_augmentation(x), y), num_parallel_calls=tf.data.AUTOTUNE)
@@ -185,6 +181,7 @@ class CustomCallback(tf.keras.callbacks.Callback):
         super().__init__()
         self.class_names = class_names
 
+    # ASK GPT IF GETTING VAL ACC AND VAL LOSS CAN MAKE THE TRAINING SLOWER
     async def send_training_update(self, epoch, logs):
         data = {
             'epoch': epoch,
@@ -192,7 +189,6 @@ class CustomCallback(tf.keras.callbacks.Callback):
             'val_accuracy': logs.get('val_accuracy'),
             'loss': logs.get('loss'),
             'val_loss': logs.get('val_loss'),
-            'class_names': self.class_names
         }
         message = json.dumps(data)
         tasks = [client.send_text(message) for client in clients]
@@ -214,22 +210,21 @@ class CustomCallback(tf.keras.callbacks.Callback):
 
 def train_save_model(train_ds, validation_ds, num_classes: int, class_names: list[str], model_version: str):
 
-    base_model = MobileNetV2(
+    base_model = ResNet50(
         include_top=False,
         weights='imagenet',
         input_shape=(224, 224, 3),
         pooling='avg'
     )
 
-    for layer in base_model.layers[150:]: 
-        layer.trainable = True
+    for layer in base_model.layers:
+        layer.trainable = False
 
 
     model = Sequential([
         base_model,
-        layers.Flatten(),
-        layers.Dense(512, activation='relu'),
-        layers.Dropout(0.5),
+        layers.Dense(1024, activation='relu'),
+        layers.Dropout(0.3),
         layers.Dense(num_classes, activation='softmax')
     ])
 
@@ -237,21 +232,21 @@ def train_save_model(train_ds, validation_ds, num_classes: int, class_names: lis
     model.summary()
 
     model.compile(
-        optimizer=Adam(learning_rate=1e-4),
-        loss='sparse_categorical_crossentropy',
-        metrics=['accuracy']
-    )
-
-
-    for layer in base_model.layers[150:]: 
-        layer.trainable = True
-
-
-    model.compile(
         optimizer=Adam(learning_rate=1e-5),
         loss='sparse_categorical_crossentropy',
         metrics=['accuracy']
     )
+
+
+    # for layer in base_model.layers[100:]:
+    #     layer.trainable = True
+
+
+    # model.compile(
+    #     optimizer=Adam(learning_rate=1e-5),
+    #     loss='sparse_categorical_crossentropy',
+    #     metrics=['accuracy']
+    # )
 
 
     early_stopping, lr_scheduler, model_checkpoint = cb.training_callbacks(model_version=model_version)
@@ -283,7 +278,7 @@ def train_new_model(model_version):
     fine_tune_history = train_save_model(train_ds, val_ds, num_classes, class_names, model_version)
 
     # eval.plot_accuracy_loss(fine_tune_history)
-    # eval.evaluate_model(test_ds, model_version)
+    # recall, f1_score, precision_class = eval.evaluate_model(test_ds, model_version)
 
     
     train_acc = fine_tune_history.history['accuracy']
@@ -293,10 +288,10 @@ def train_new_model(model_version):
 
     data = {
         'version':      model_version,
-        'train_acc':    train_acc[-1],
-        'val_acc':      val_acc[-1],
-        'train_loss':   train_loss[-1],
-        'val_loss':     val_loss[-1],
+        'train_acc':        train_acc[-1],
+        'val_acc':          val_acc[-1],
+        'train_loss':       train_loss[-1],
+        'val_loss':         val_loss[-1],
     }
 
     train.insert_train_metrics(data)

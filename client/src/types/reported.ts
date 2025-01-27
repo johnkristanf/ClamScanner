@@ -18,20 +18,24 @@ export type ReportedCasesTypes = {
 }
 
 
-export type YearlyReportPerCity = {
+export type ReportPerCity = {
     city: string
-    year: string,
     reports_count: number
 }
 
 
-export type YearlyReportPerProvince = {
+export type ReportPerProvince = {
     province: string
-    year: string,
     reports_count: number
 }
 
 export type ReportsPerMollusk = {
     mollusk_type: string,
     mollusk_count: number
+}
+
+
+export type ReportsPerYear= {
+    year: string,
+    report_count: number
 }

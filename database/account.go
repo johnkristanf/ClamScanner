@@ -15,6 +15,11 @@ type AUTH_DB_METHOD interface {
 
 	AdminLogin(*types.LoginCredentials) (*types.AdminData, error)
 	Login(*types.LoginCredentials) (*types.UserInfo, error)
+	IsEmailVerified(string) (bool, error)
+	UpdateUserVerificationCode(string, string) error
+
+	CheckVerificationCode(string) (string, error)
+	SetVerifiedUser(string) error
 
 	EmailAlreadyTaken(string) error
 
@@ -23,14 +28,18 @@ type AUTH_DB_METHOD interface {
 }
 
 type User struct {
-	ID        int64     `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_userID"`
-	FullName  string    `gorm:"not null"`
-	Address   string    `gorm:"not null"`
-	Email     string    `gorm:"not null;index"`
-	Password  string    `gorm:"not null"`
-	Role      string    `gorm:"not null"`
-	CreatedAt time.Time `gorm:"not null;autoCreateTime"`
-	UpdatedAt time.Time `gorm:"not null;autoUpdateTime"`
+	ID        		  int64     `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_userID"`
+	FullName  		  string    `gorm:"not null"`
+	Address   		  string    `gorm:"not null"`
+	Email     		  string    `gorm:"not null;index"`
+	Password  		  string    `gorm:"not null"`
+	Role      		  string    `gorm:"not null"`
+
+	VerificationCode  string 	`gorm:"default:'RealCodeNotSet'"` 
+	Status            bool      `gorm:"default:false"`
+
+	CreatedAt 		 time.Time  `gorm:"not null;autoCreateTime"`
+	UpdatedAt 		 time.Time  `gorm:"not null;autoUpdateTime"`
 }
 
 func (sql *SQL) Signup(signupCredentials *types.SignupCredentials) error {
@@ -89,6 +98,59 @@ func (sql *SQL) AdminLogin(loginCredentials *types.LoginCredentials) (adminData 
 	}
 
 	return adminData, nil
+}
+
+func (sql *SQL) IsEmailVerified(email string) (bool, error) {
+
+	var user *types.EmailStatus
+
+	result := sql.DB.Select("status").Table("users").Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		return false, result.Error
+	}
+
+	if !user.Status{
+		return false, nil
+	}
+
+	return true, nil
+}
+
+
+func (sql *SQL) CheckVerificationCode(code string) (string, error) {
+    var user *types.ToBeVerifiedEmail
+
+    result := sql.DB.Select("email").Table("users").Where("verification_code = ?", code).First(&user)
+    if result.Error != nil {
+        return "", result.Error
+    }
+
+    return user.Email, nil
+}
+
+
+func (sql *SQL) SetVerifiedUser(email string) error {
+
+	result := sql.DB.Table("users").Where("email = ?", email).Update("status", true)
+	if result.Error != nil{
+		return result.Error
+	}
+
+	return nil
+}
+
+
+
+
+func (sql *SQL) UpdateUserVerificationCode(email string, code string) error {
+
+	result := sql.DB.Table("users").Where("email = ?", email).Update("verification_code", code)
+
+	if result.Error != nil{
+		return result.Error
+	}
+
+	return nil
 }
 
 func (sql *SQL) EmailAlreadyTaken(email string) error {

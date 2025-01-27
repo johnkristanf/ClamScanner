@@ -105,29 +105,17 @@ async def upload_images(
         
         cache_key = f"{DATASET_PREFIX}/{datasetClass}/image_urls"
 
-        # use this for large dataset size and changes are not frequent (production)
-        # and to refresh the stale data inside cache to be able to see image after upload
-        # in the frontend
-        redis.DELETE(cache_key)
-
-
-        # use this for low to medium dataset size and changes are frequent (development)
-
-        # for result in upload_results:
-        #     if result:
-        #         presigned_url = s3.generate_presigned_url(
-        #             'get_object',
-        #             Params={'Bucket': BUCKET_NAME, 'Key': result['s3_key']},
-        #         )
+        for result in upload_results:
+            if result:
+                presigned_url = s3.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': BUCKET_NAME, 'Key': result['s3_key']},
+                )
                 
-        #         new_image_data = {'key': result['s3_key'], 'url': presigned_url}
-        #         redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data)
-
-
-        # Ayaw intawn hutdi og delete ang image para dili mag crash ang redis cache
-        # kay mag error ning len function og ma hurot ang image sa s3 bucket
+                new_image_data = {'key': result['s3_key'], 'url': presigned_url}
+                redis.APPEND_TO_CACHED_URLS(cache_key, new_image_data)
         
-        cached_images = redis.GET(cache_key) or []  # Defaults to an empty list if None
+        cached_images = redis.GET(cache_key) or []  
 
         img_count = len(cached_images)
         print("img_count: ", img_count)
@@ -286,10 +274,13 @@ async def scan(captured_image_file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             buffer.write(captured_image_file.file.read())
 
-        mollusk_classified_result = predict.mollusk_predict(file_path)
+        mollusk_classified_result, predicted_class_percentage_str = predict.mollusk_predict(file_path)
+        
         response_data = {
-            "mollusk_classified_result": mollusk_classified_result
+            "mollusk_classified_result": mollusk_classified_result,
+            "prediction_percentage": predicted_class_percentage_str
         }
+
         print(f'response_data {response_data}')
         return JSONResponse(content=response_data, status_code=200)
 

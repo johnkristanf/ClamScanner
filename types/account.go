@@ -22,6 +22,15 @@ type LoginCredentials struct {
 	Password string `json:"password"`
 }
 
+type ToBeVerifiedEmail struct {
+	Email    string `json:"email"`
+}
+
+type VerificationCode struct {
+	VerificationCode    string `json:"verification_code"`
+}
+
+
 type AdminData struct {
 	ID       int64  `json:"id"`
 	Email    string `json:"email"`
@@ -46,7 +55,12 @@ type EmailTaken struct {
 	ID       int64
 }
 
+type EmailStatus struct {
+	Status       bool
+}
+
 type SuccessLogin struct {
+	Email 		 string `json:"email"`
 	UserID		 int64 	`json:"user_id"`
 	Role         string `json:"role"`
 	AccessToken  string `json:"access_token"`

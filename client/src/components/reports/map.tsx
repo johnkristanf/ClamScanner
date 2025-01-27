@@ -11,14 +11,15 @@ import { ReportedCasesTypes } from '../../types/reported';
 import { SetViewOnClickProps } from '../../types/map';
 import Swal from 'sweetalert2';
 
-const redIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  tooltipAnchor: [16, -28],
-  shadowSize: [41, 41],
-});
+// const redIcon = new L.Icon({
+//   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+//   popupAnchor: [1, -34],
+//   tooltipAnchor: [16, -28],
+//   shadowSize: [41, 41],
+// });
+
 
 const greenIcon = new L.Icon({
   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -29,8 +30,55 @@ const greenIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const redCircleOptions: L.CircleMarkerOptions = {
-  color: 'red',
+const orangeIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
+});
+
+
+const yellowIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
+});
+
+const blueIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
+});
+
+
+
+const orangeCircleOptions: L.CircleMarkerOptions = {
+  color: 'orange',
+  fillColor: 'transparent',
+  fillOpacity: 0,
+  weight: 1,
+};
+
+
+
+const yellowCircleOptions: L.CircleMarkerOptions = {
+  color: 'yellow',
+  fillColor: 'transparent',
+  fillOpacity: 0,
+  weight: 1,
+};
+
+
+const blueCircleOptions: L.CircleMarkerOptions = {
+  color: 'blue',
   fillColor: 'transparent',
   fillOpacity: 0,
   weight: 1,
@@ -55,10 +103,10 @@ const monthNames = [
 ];
 
 function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
-  const currentMonth = new Date().getMonth();
-  const [selectedMonth, setSelectedMonth] = useState<string>(monthNames[currentMonth]);
-  const [selectedMollusk, setSelectedMollusk] = useState<string>('Scaly Clam');
-  const [selectedStatus, setSelectedStatus] = useState<string>('In Progress');
+  // const currentMonth = new Date().getMonth();
+  const [selectedMonth, setSelectedMonth] = useState<string>("All");
+  const [selectedMollusk, setSelectedMollusk] = useState<string>("All");
+  const [selectedStatus, setSelectedStatus] = useState<string>('All');
 
   const reports_query = useQuery(
     ['reported_cases', selectedMonth, selectedMollusk, selectedStatus],
@@ -93,6 +141,19 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
       Swal.close();
     }
   }, [reports_query.isFetching]);
+
+
+  const molluskMarkers: Record<string, L.Icon> = {
+    "Scaly Clam": orangeIcon,     
+    "Tiger Cowrie": yellowIcon,    
+    "BullMouth Helmet": blueIcon
+  }
+
+  const molluskMarkerCircles: Record<string, L.CircleMarkerOptions> = {
+    "Scaly Clam": orangeCircleOptions,     
+    "Tiger Cowrie": yellowCircleOptions,    
+    "BullMouth Helmet": blueCircleOptions
+  }
 
   console.log("reports map data: ", reports);
   console.log("reports_query ", reports_query);
@@ -151,47 +212,61 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <SetViewOnClick MapCoor={MapCoor} />
 
-          {reports?.map((data) => {
-            const icon = data.status === 'Resolved' ? greenIcon : redIcon;
-            const circleOptions = data.status === 'Resolved' ? greenCircleOptions : redCircleOptions;
+            {reports?.map((data) => {
+              const icon = data.status === 'Resolved' ? greenIcon : molluskMarkers[data.mollusk_type];
+              const circleOptions = data.status === 'Resolved' ? greenCircleOptions : molluskMarkerCircles[data.mollusk_type];
 
-            return (
-              <div key={data.report_id}>
-                <Marker
-                  position={[data.latitude, data.longitude]}
-                  eventHandlers={{
-                    click: () => setMapCoor([data.latitude, data.longitude]),
-                  }}
-                  icon={icon}
-                >
-                  <Tooltip>
-                    {data.reporter_name} <br />
-                    {data.mollusk_type} <br />
-                    {data.city}{data.district}, {data.province} <br />
-                    {data.reportedAt} <br />
-                    {data.latitude}° N, {data.longitude}° E
-                  </Tooltip>
-                </Marker>
+              // const icon = data.status === 'Resolved' ? greenIcon : data.mollusk_type == "Tiger Cowrie" ? orangeIcon : data.mollusk_type == "Scaly Clam" ? yellowIcon : blueIcon;
+              // const circleOptions = data.status === 'Resolved' ? greenCircleOptions : redCircleOptions;
 
-                <CircleMarker
-                  center={[data.latitude, data.longitude]}
-                  pathOptions={circleOptions}
-                  radius={8}
-                />
-              </div>
-            );
-          })}
+              return (
+                <div key={data.report_id}>
+                  <Marker
+                    position={[data.latitude, data.longitude]}
+                    eventHandlers={{
+                      click: () => setMapCoor([data.latitude, data.longitude]),
+                    }}
+                    icon={icon}
+                  >
+                    <Tooltip>
+                      {data.reporter_name} <br />
+                      {data.mollusk_type} <br />
+                      {data.city}{data.district}, {data.province} <br />
+                      {data.reportedAt} <br />
+                      {data.latitude}° N, {data.longitude}° E
+                    </Tooltip>
+                  </Marker>
+
+                  <CircleMarker
+                    center={[data.latitude, data.longitude]}
+                    pathOptions={circleOptions}
+                    radius={8}
+                  />
+                </div>
+              );
+            })}
+
         </MapContainer>
 
         <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg" style={{ zIndex: 9999 }}>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <img src="/img/red_marker.png" width={20} height={30} />
-              <h1 className="text-sm">In Progress Cases</h1>
+              <img src="https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" width={20} height={30} />
+              <h1 className="text-sm">Scaly Clam Report</h1>
             </div>
 
             <div className="flex items-center gap-2">
-              <img src="/img/green_marker.png" width={20} height={30} />
+              <img src="https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png" width={20} height={30} />
+              <h1 className="text-sm">Tiger Cowrie Report</h1>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <img src="https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png" width={20} height={30} />
+              <h1 className="text-sm">BullMouth Helmet Report</h1>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <img src="/img/green_marker.png" width={25} height={30} />
               <h1 className="text-sm">Resolved Cases</h1>
             </div>
           </div>

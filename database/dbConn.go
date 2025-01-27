@@ -3,9 +3,9 @@ package database
 import (
 	"errors"
 	"fmt"
-	"time"
 	"os"
 	"strconv"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
@@ -53,9 +53,17 @@ func DBconfig() (*SQL, error) {
 	sql.SetConnMaxLifetime(time.Hour * 1)
 	sql.SetConnMaxIdleTime(time.Minute * 30)
 
-	db.AutoMigrate(&User{}, &Reported_Cases{}, &Admin{}, &Datasets{}, &Model{})
+	db.AutoMigrate(&User{}, &Reported_Cases{}, &Admin{}, &Datasets{}, &Model{}, &Provinces{}, &Cities{})
 
 	if err := SeedAdminAccount(db); err != nil{
+		return nil, err
+	}
+
+	if err := SeedProvinces(db); err != nil{
+		return nil, err
+	}
+
+	if err := SeedCities(db); err != nil{
 		return nil, err
 	}
 
@@ -94,3 +102,64 @@ func SeedAdminAccount(db *gorm.DB) error {
     return nil
 }
 
+
+func SeedProvinces(db *gorm.DB) (err error) {
+	provinces := [5]string{
+		"Davao del Norte", 
+		"Davao de Oro", 
+		"Davao del Sur", 
+		"Davao Oriental", 
+		"Davao Occidental",
+	}
+
+	for _, province := range provinces {
+		var existingProvince Provinces
+		result := db.Where("name = ?", province).First(&existingProvince)
+		if result.Error != nil && result.Error != gorm.ErrRecordNotFound {
+			return result.Error
+		}
+
+		if result.Error == gorm.ErrRecordNotFound {
+			result := db.Create(&Provinces{
+				Name: province,
+			})
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+	}
+
+	return nil
+}
+
+func SeedCities(db *gorm.DB) (err error) {
+	
+	cities := [6]string{
+		"Panabo", 
+		"Samal", 
+		"Tagum", 
+		"Davao", 
+		"Digos", 
+		"Mati",
+	}
+
+	for _, city := range cities {
+		var existingProvince Cities
+		result := db.Where("name = ?", city).First(&existingProvince)
+		if result.Error != nil && result.Error != gorm.ErrRecordNotFound {
+			return result.Error
+		}
+
+		if result.Error == gorm.ErrRecordNotFound {
+			result := db.Create(&Cities{
+				Name: city,
+			})
+
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+	}
+
+	return err
+}

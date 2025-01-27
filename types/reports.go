@@ -28,22 +28,38 @@ type Fetch_Cases struct{
 	ReporterAddress string 		`json:"reporter_address"` 
 }
 
-type YearlyReportsPerCity struct{
-	City 		string	`json:"city"` 
-	Year 		string	`json:"year"` 
-	ReportsCount int64	`json:"reports_count"` 
-
+type ReportsPerCity struct{
+	Name 		string	`json:"city"` 
+	Count 		int64	`json:"reports_count"` 
 }
 
-type YearlyReportsPerProvince struct{
-	Province 		string	`json:"province"` 
-	Year 			string	`json:"year"` 
-	ReportsCount 	int64	`json:"reports_count"` 
+type ReportsPerProvince struct{
+	Name 		string	`json:"province"` 
+	Count 		int64	`json:"reports_count"` 
 }
+
+
+// type YearlyReportsPerCity struct{
+// 	City 		string	`json:"city"` 
+// 	Year 		string	`json:"year"` 
+// 	ReportsCount int64	`json:"reports_count"` 
+
+// }
+
+// type YearlyReportsPerProvince struct{
+// 	Province 		string	`json:"province"` 
+// 	Year 			string	`json:"year"` 
+// 	ReportsCount 	int64	`json:"reports_count"` 
+// }
 
 type ReportsPerMollusk struct {
-	MolluskType		string	`json:"mollusk_type"` 
-	MolluskCount	int64	`json:"mollusk_count"` 
+	Name			string	`json:"mollusk_type"` 
+	ReportCount     int		`json:"mollusk_count"` 
 }
 
+
+type ReportsPerYear struct {
+	Year			string	`json:"year"` 
+	Count     		int		`json:"report_count"` 
+}
 

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 def evaluate_model(test_ds: tf.data.Dataset, model_version: str):
 
-    model = load_model(f'./models/ClamScanner_best_v{model_version}.keras')
+    model = load_model(f'./models/ClamScanner_v{model_version}.keras')
 
     y_true = []
     y_pred = []
@@ -24,15 +24,17 @@ def evaluate_model(test_ds: tf.data.Dataset, model_version: str):
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
 
-    accuracy = accuracy_score(y_true, y_pred)
+    # accuracy = accuracy_score(y_true, y_pred)
 
-    conf_matrix = confusion_matrix(y_true, y_pred)
+    class_report = classification_report(y_true, y_pred, output_dict=True, zero_division=1)
 
-    class_report = classification_report(y_true, y_pred)
+    recall = class_report['weighted avg']['recall'] 
+    f1_score = class_report['weighted avg']['f1-score']
+    precision_class = class_report['weighted avg']['precision']
 
-    print("Accuracy: ", accuracy)
-    print("Confusion Matrix: \n", conf_matrix)
-    print("Classification Report: \n", class_report)
+
+    return recall, f1_score, precision_class
+
 
 
 

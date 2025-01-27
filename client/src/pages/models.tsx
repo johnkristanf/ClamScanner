@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ModelTable } from '../components/models/model_table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
 import { TrainModel } from '../http/post/train';
@@ -43,6 +43,7 @@ const ModelsPage: React.FC = () => {
 
   const [isTrainingComplete, setIsTrainingComplete] = useState<boolean>(false); 
   const [hasTrainingError, setHasTrainingError] = useState<boolean>(false); 
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     socket.onmessage = (event) => {
@@ -96,7 +97,7 @@ const ModelsPage: React.FC = () => {
 
   useEffect(() => {
     if(isTrainingComplete){
-
+      queryClient.invalidateQueries('models');
       Swal.fire({
         icon: "success",
         title: "Training Has Completed",

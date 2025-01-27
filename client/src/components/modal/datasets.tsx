@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { faEdit, faX } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
@@ -96,12 +97,16 @@ export const AddNewDatasetModal = ({setisOpenAddModal}: {
                 />
 
 
-                <input 
+                <select 
                     {...register("status", { required: true })}
-                    type="text" 
-                    placeholder="Status (eg: Endangered, Vulnerable etc..)" 
                     className="rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-[60%] focus:outline-blue-950"
-                />
+                >
+                        <option value="" disabled selected>Select Status</option>
+                        <option value="Endangered">Endangered</option>
+                        <option value="Vulnerable">Vulnerable</option>
+                        <option value="Least Concern">Least Concern</option>
+                        <option value="N/A">N/A</option>
+                </select>
 
                 <button type="submit" className="text-white font-bold bg-blue-900 w-[60%] rounded-md p-3 hover:opacity-75">Add</button>
 

@@ -29,6 +29,16 @@ class ClamPrediction():
         self.model_path = os.path.abspath("./models/ClamScanner_best_v6.h5")
         self.model = self.load_resnetmodel()
 
+    def get_prediction_percentage(self, predictions):
+        predictions_flat = predictions.flatten() 
+        predictions_percentage = predictions_flat * 100  
+
+        predicted_class_index = np.argmax(predictions_flat) 
+        predicted_class_percentage = predictions_percentage[predicted_class_index] 
+        predicted_class_percentage_str = f"{predicted_class_percentage:.2f}%"
+
+        return predicted_class_percentage_str
+
     def load_resnetmodel(self):
         if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"Model file does not exist: {self.model_path}")
@@ -59,14 +69,17 @@ class ClamPrediction():
         preprocessed_image = self.resize_and_preprocess_image(image_path)
         predictions = self.model.predict(preprocessed_image)
 
-        print("predictions", predictions)
-
         # CLASSES = ['Blood Clam', 'BullMouth Helmet', 'Horn Snail', 'Invalid Image', 'Mussel', 'Oyster', 'Scaly Clam', 'Tiger Cowrie']
         CLASSES = self.load_dataset_classes()
         print("CLASSES", CLASSES)
 
+        predicted_class_percentage_str = self.get_prediction_percentage(predictions)
+
+        print("Predictions in percentage:", predicted_class_percentage_str)
+
+
         mollusk_classified_result = CLASSES[np.argmax(predictions)]
-        return mollusk_classified_result
+        return mollusk_classified_result, predicted_class_percentage_str
 
 
     def load_validate_image_file(self, request, jsonify):

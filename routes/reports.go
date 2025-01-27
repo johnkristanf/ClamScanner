@@ -18,11 +18,13 @@ func ReportsRoutes(router *http.ServeMux, reportsHandler *handlers.ReportHandler
 	router.HandleFunc("GET /fetch/reports", ParseHTTPHandler(reportsHandler.FetchAllReportsHandler))
 	router.HandleFunc("GET /fetch/map/reports/{month}/{mollusk}/{status}", ParseHTTPHandler(reportsHandler.FetchMapReportsHandler))
 	
-	router.HandleFunc("GET /fetch/reports/city", adminAuth(ParseHTTPHandler(reportsHandler.FetchYearlyReportByCityHandler)))
-	router.HandleFunc("GET /fetch/reports/province", adminAuth(ParseHTTPHandler(reportsHandler.FetchYearlyReportByProvinceHandler)))
+	router.HandleFunc("GET /fetch/reports/city", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportByCityHandler)))
+	router.HandleFunc("GET /fetch/reports/province", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportByProvinceHandler)))
 	router.HandleFunc("GET /fetch/reports/mollusk", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportPerMollusk)))
+	router.HandleFunc("GET /fetch/reports/year", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportPerYearHandler)))
+	router.HandleFunc("GET /fetch/reports/year/resolved", adminAuth(ParseHTTPHandler(reportsHandler.FetchResolvedReportPerYearHandler)))
 
 	router.HandleFunc("PUT /update/report/status/{report_id}", ParseHTTPHandler(reportsHandler.UpdateReportStatusHandler))
-	router.HandleFunc("DELETE /delete/reports/{report_id}", adminAuth(ParseHTTPHandler(reportsHandler.DeleteReportHandler)))
+	router.HandleFunc("DELETE /delete/reports/{report_id}/{molluskName}/{province}/{city}", adminAuth(ParseHTTPHandler(reportsHandler.DeleteReportHandler)))
 	
 }

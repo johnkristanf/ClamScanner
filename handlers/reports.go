@@ -180,7 +180,7 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 			
 		case reportID := <- lastReportChan:
 
-			reportKeys := [5]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map"}
+			reportKeys := [7]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map", "reports_per_year", "resolved_reports_per_year"}
 
 			if err := h.REDIS_METHOD.DELETEBYKEY(reportKeys, r); err != nil {
 				return err
@@ -229,24 +229,19 @@ func (h *ReportHandler) FetchMapReportsHandler(w http.ResponseWriter, r *http.Re
 	mollusk := r.PathValue("mollusk")
 	status := r.PathValue("status")
 
-	var cases []*types.Fetch_Cases
-	
 	cases, err := h.DB_METHOD.FetchMapReportedCases(month, mollusk, status)
 	if err != nil {
 		return err
 	}
 
-	if err := h.REDIS_METHOD.SET(cases, "reports_map", r); err != nil {
-		return err
-	}
-	
+
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
 
 }
 
-func (h *ReportHandler) FetchYearlyReportByCityHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *ReportHandler) FetchReportByCityHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var yearlyReports []*types.YearlyReportsPerCity
+	var yearlyReports []*types.ReportsPerCity
 
 	err := h.REDIS_METHOD.GET(&yearlyReports, "reports_city", r)
 
@@ -273,9 +268,9 @@ func (h *ReportHandler) FetchYearlyReportByCityHandler(w http.ResponseWriter, r 
 }
 
 
-func (h *ReportHandler) FetchYearlyReportByProvinceHandler(w http.ResponseWriter, r *http.Request) error {
+func (h *ReportHandler) FetchReportByProvinceHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var yearlyReports []*types.YearlyReportsPerProvince
+	var yearlyReports []*types.ReportsPerProvince
 
 	err := h.REDIS_METHOD.GET(&yearlyReports, "reports_province", r)
 
@@ -325,8 +320,74 @@ func (h *ReportHandler) FetchReportPerMollusk(w http.ResponseWriter, r *http.Req
 		return err
 	}
 
+	fmt.Println("reportsPerMollusk: ", reportsPerMollusk)
+
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerMollusk)	
+}
+
+
+
+func (h *ReportHandler) FetchReportPerYearHandler(w http.ResponseWriter, r *http.Request) error {
+	
+	var reportsPerYear []*types.ReportsPerYear
+
+	err := h.REDIS_METHOD.GET(&reportsPerYear, "reports_per_year", r)
+
+	if err == redis.Nil {
+
+		reportsPerYear, err := h.DB_METHOD.FetchReportsPerYear()
+		if err != nil{
+			return err
+		}
+
+
+		if err := h.REDIS_METHOD.SET(reportsPerYear, "reports_per_year", r); err != nil {
+			return err
+		}
+
+		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)
+
+	} else if err != nil {
+		return err
+	}
+
+	fmt.Println("reportsPerYear: ", reportsPerYear)
+
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)	
+}
+
+
+
+func (h *ReportHandler) FetchResolvedReportPerYearHandler(w http.ResponseWriter, r *http.Request) error {
+	
+	var reportsPerYear []*types.ReportsPerYear
+
+	err := h.REDIS_METHOD.GET(&reportsPerYear, "resolved_reports_per_year", r)
+
+	if err == redis.Nil {
+
+		reportsPerYear, err := h.DB_METHOD.FetchResolvedReportsPerYear()
+		if err != nil{
+			return err
+		}
+
+
+		if err := h.REDIS_METHOD.SET(reportsPerYear, "resolved_reports_per_year", r); err != nil {
+			return err
+		}
+
+		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)
+
+	} else if err != nil {
+		return err
+	}
+
+	fmt.Println("reportsPerYear: ", reportsPerYear)
+
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)	
 }
 
 
@@ -356,16 +417,20 @@ func (h *ReportHandler) UpdateReportStatusHandler(w http.ResponseWriter, r *http
 func (h *ReportHandler) DeleteReportHandler(w http.ResponseWriter, r *http.Request) error {
 
 	idParam := r.PathValue("report_id")
+	molluskNameParam := r.PathValue("molluskName")
+	provinceParam := r.PathValue("province")
+	cityParam := r.PathValue("city")
+
 	report_id, err := strconv.Atoi(idParam)
 	if err != nil {
 		return err
 	}
 
-	if err := h.DB_METHOD.DeleteReportCases(int64(report_id)); err != nil {
+	if err := h.DB_METHOD.DeleteReportCases(int64(report_id), provinceParam, cityParam, molluskNameParam); err != nil {
 		return err
 	}
 
-	reportKeys := [5]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map"}
+	reportKeys := [7]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map", "reports_per_year", "resolved_reports_per_year"}
 
 	if err := h.REDIS_METHOD.DELETEBYKEY(reportKeys, r); err != nil {
 		return err

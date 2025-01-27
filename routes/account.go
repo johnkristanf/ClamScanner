@@ -12,6 +12,11 @@ func AccountRoutes(router *http.ServeMux, accountHandler *handlers.AccountHandle
 
 	router.HandleFunc("POST /auth/signup", ParseHTTPHandler(accountHandler.SignupHandler))
 	router.HandleFunc("POST /auth/login", ParseHTTPHandler(accountHandler.LoginHandler))
+	router.HandleFunc("POST /send/verification_code", ParseHTTPHandler(accountHandler.SendVerificationCodeHandler))
+
+	router.HandleFunc("POST /verify", ParseHTTPHandler(accountHandler.VerifyHandler))
+	router.HandleFunc("POST /check/verified", ParseHTTPHandler(accountHandler.CheckUserIfVerifiedHandler))
+
 	router.HandleFunc("POST /admin/login", ParseHTTPHandler(accountHandler.AdminLoginHandler))
 
 	router.HandleFunc("GET /personnel/accounts", adminAuth(ParseHTTPHandler(accountHandler.PersonnelAccountsHandler)))

@@ -14,6 +14,7 @@ type Datasets struct {
 	Status          string  `gorm:"not null"`
 
 	Count           int 	`gorm:"not null"`
+	ReportCount     int 	`gorm:"not null"`
 	CreatedAt 		time.Time `gorm:"not null;autoCreateTime"`
 	UpdatedAt 		time.Time `gorm:"not null;autoUpdateTime"`
 }

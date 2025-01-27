@@ -8,6 +8,7 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
 
   const queryClient = useQueryClient();
@@ -17,6 +18,9 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
 
   const reports_query = useQuery("reported_cases", FetchReports);
   const reports = reports_query.data?.data;
+
+  console.log("reports table: ", reports);
+  
 
 
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -91,7 +95,7 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
           </button>
 
           <button
-            onClick={() => DeleteReportPopup(data.report_id)}
+            onClick={() => DeleteReportPopup(data.report_id, data.mollusk_type, data.province, data.city)}
             className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75"
           >
             Delete
@@ -108,6 +112,12 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
 
     onSuccess: () => {
       queryClient.invalidateQueries('reported_cases');
+      queryClient.invalidateQueries('perCity_reports');
+      queryClient.invalidateQueries('perProvince_reports');
+      queryClient.invalidateQueries('perMollusk_reports');
+      queryClient.invalidateQueries('perYear_reports');
+      queryClient.invalidateQueries('perYear_ResolvedReports');
+
 
       Swal.fire({
         title: "Deleted!",
@@ -134,7 +144,7 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
   },
   });
 
-  const DeleteReportPopup = (report_id: number) => {
+  const DeleteReportPopup = (report_id: number, molluskName: string, province: string, city: string) => {
     setOpenReportsModal(false)
 
     Swal.fire({
@@ -147,7 +157,14 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
       confirmButtonText: "Yes, delete it!"
 
     }).then((result) => {
-      if (result.isConfirmed) mutate.mutate(report_id)
+      const reportData = {
+        report_id,
+        molluskName,
+        province,
+        city
+      }
+
+      if (result.isConfirmed) mutate.mutate(reportData)
     });
 
   };

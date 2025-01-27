@@ -12,10 +12,10 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
     let ws: WebSocket | null = null;
 
     const connect = () => {
-        ws = new WebSocket("wss://clamscanner.com/go/ws/conn");
+        ws = new WebSocket("ws://localhost:8080/ws/conn");
 
         ws.onopen = () => {
-            console.log("WebSocket Connected");
+            console.log("Golang WebSocket Connected");
         };
 
         ws.onmessage = (event) => {
@@ -76,6 +76,8 @@ const ReportsPage: React.FC = () => {
         queryClient.invalidateQueries('perCity_reports');
         queryClient.invalidateQueries('perProvince_reports');
         queryClient.invalidateQueries('perMollusk_reports');
+        queryClient.invalidateQueries('perYear_reports');
+        queryClient.invalidateQueries('perYear_ResolvedReports');
     }, [queryClient]);
 
     useEffect(() => {

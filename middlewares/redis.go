@@ -24,7 +24,7 @@ type REDIS_METHOD interface{
 	SET(interface{}, string, *http.Request) error
 	GET(interface{}, string, *http.Request) error
 	DELETE(string, *http.Request) error
-	DELETEBYKEY([5]string, *http.Request) error
+	DELETEBYKEY([7]string, *http.Request) error
 	
 }
 
@@ -202,7 +202,7 @@ func (r *Redis) DELETE(cacheKey string, req *http.Request) error {
 
 }
 
-func (r *Redis) DELETEBYKEY(cacheKey [5]string, req *http.Request) error {
+func (r *Redis) DELETEBYKEY(cacheKey [7]string, req *http.Request) error {
 
 	if r == nil {
         return fmt.Errorf("Redis instance is nil")

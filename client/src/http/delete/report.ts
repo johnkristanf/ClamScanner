@@ -1,9 +1,17 @@
 import axios, { AxiosResponse } from "axios";
 
-export function DeleteReport(report_id: number): Promise<AxiosResponse<any, any>> {
+type ReportsData = {
+    report_id: number,
+    molluskName: string,
+    province: string, 
+    city: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DeleteReport(data: ReportsData): Promise<AxiosResponse<any, any>> {
 
     try {
-        return axios.delete(`https://clamscanner.com/go/delete/reports/${encodeURIComponent(report_id)}`, {
+        return axios.delete(`http://localhost:8080/delete/reports/${encodeURIComponent(data.report_id)}/${encodeURIComponent(data.molluskName)}/${encodeURIComponent(data.province)}/${encodeURIComponent(data.city)}`, {
             withCredentials: true
         });
     } catch (error) {

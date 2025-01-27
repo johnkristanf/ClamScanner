@@ -10,3 +10,28 @@
     height: 100%;
     width: 100%;
 }
+
+
+/* Add more specific styles to ensure the cluster number is visible */
+.leaflet-div-icon .cluster-number {
+    background-color: rgba(0, 123, 255, 0.8); /* Cluster background color */
+    color: white; /* Text color */
+    font-weight: bold; /* Text weight */
+    text-align: center;
+    line-height: 1.2;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px; /* Adjust font size */
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0 5px;
+    box-sizing: border-box;
+  }
+  
+  .leaflet-div-icon {
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+  }
+  

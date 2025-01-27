@@ -23,7 +23,7 @@ function DashboardPage(){
                    className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
                 />
 
-                <div className="h-[150vh] w-full p-5 flex flex-col gap-8 mt-12 bg-gray-600 rounded-md">
+                <div className="h-[200vh] w-full p-5 flex flex-col gap-8 mt-12 bg-gray-600 rounded-md">
 
                     <h1 className="text-white font-bold text-3xl">Clam Scanner Dashboard</h1>
                     <Charts />

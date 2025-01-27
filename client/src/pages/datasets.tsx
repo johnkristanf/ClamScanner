@@ -184,7 +184,7 @@ function DataSetsPage() {
                                                 <tbody>
 
                                                     {
-                                                        datasets.map((data) => (
+                                                        datasets && datasets.map((data) => (
                                                             <tr 
                                                                 key={data.class_id}
                                                                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
@@ -303,7 +303,7 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
                 </div>
             )}
 
-            { image && (
+            { image && image.image_data && (
                 <ImagePagination 
                     datasetImages={image.image_data} 
                     itemsPerPage={10} 

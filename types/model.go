@@ -29,5 +29,5 @@ type FetchModelDetails struct {
 	Version         string  	`json:"version"`
 	TrainAccuracy   float32 	`json:"train_acc"`
 	TrainLoss       float32 	`json:"train_loss"`
-	TrainedAt      string		`json:"trained_at"`
+	TrainedAt       string		`json:"trained_at"`
 }

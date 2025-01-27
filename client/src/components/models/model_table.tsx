@@ -7,7 +7,7 @@ export function ModelTable({ setNumberOfTrainedModels }: {
     setNumberOfTrainedModels:  React.Dispatch<React.SetStateAction<number | undefined>>
 }){
 
-    const models_query = useQuery("reported_cases", FetchModels);
+    const models_query = useQuery("models", FetchModels);
     const models: FetchModelType[] = models_query.data?.data;
     if(models) setNumberOfTrainedModels(models.length)
 
@@ -37,8 +37,15 @@ export function ModelTable({ setNumberOfTrainedModels }: {
                         {models && models.map((item) => (
                             <tr key={item.model_id} className="text-black font-bold">
                                 <td scope="col" className="py-3 px-6"> {item.version} </td>
-                                <td scope="col" className="py-3 px-6"> {item.train_acc} </td>
-                                <td scope="col" className="py-3 px-6"> {item.train_loss} </td>
+
+                                <td scope="col" className="py-3 px-6">
+                                    {(item.train_acc * 100).toFixed(2)} % 
+                                </td>
+
+                                <td scope="col" className="py-3 px-6">
+                                    {(item.train_loss * 100).toFixed(2)} % 
+                                </td>
+
                                 <td scope="col" className="py-3 px-6"> {item.trained_at} </td>
                                 {/* <td scope="col" className="py-3 px-6 text-white flex gap-3">
                                     <button 

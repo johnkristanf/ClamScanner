@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/johnkristanf/clamscanner/helpers"
 	"github.com/johnkristanf/clamscanner/middlewares"
 	"github.com/johnkristanf/clamscanner/types"
+	"gorm.io/gorm"
 )
 
 type AccountHandler struct {
@@ -136,6 +138,7 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 
 		if userInfo.Role == "user" {
 			return h.JSON_METHOD.JsonEncode(w, http.StatusOK, &types.SuccessLogin{
+				Email:  userInfo.Email,
 				UserID: userInfo.ID,
 				Role:         "user",
 				AccessToken:  access_token,
@@ -145,6 +148,7 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 
 		if userInfo.Role == "personnel" {
 			return h.JSON_METHOD.JsonEncode(w, http.StatusOK, &types.SuccessLogin{
+				Email:  userInfo.Email,
 				UserID: userInfo.ID,
 				Role:         "personnel",
 				AccessToken:  access_token,
@@ -155,6 +159,73 @@ func (h *AccountHandler) LoginHandler(w http.ResponseWriter, r *http.Request) er
 	}
 
 	return nil
+}
+
+func (h *AccountHandler) SendVerificationCodeHandler(w http.ResponseWriter, r *http.Request) error {
+	var user types.ToBeVerifiedEmail
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
+
+	code, err := helpers.GenerateVerificationCode()
+	if err != nil{
+		return err
+	}
+
+	if err := helpers.SendVerificationEmail(user.Email, code); err != nil{
+		return err
+	}
+
+	if err := h.DB_METHOD.UpdateUserVerificationCode(user.Email, code); err != nil{
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "code_sent_successfully")
+}
+
+func (h *AccountHandler) VerifyHandler(w http.ResponseWriter, r *http.Request) error {
+	var data types.VerificationCode
+
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
+
+	email, err := h.DB_METHOD.CheckVerificationCode(data.VerificationCode)
+	if err != nil{
+		if errors.Is(err, gorm.ErrRecordNotFound){
+			fmt.Println("NI GANA DIRI")
+			return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "incorrect_code")
+		}
+
+		return err
+	}
+
+	if err := h.DB_METHOD.SetVerifiedUser(email); err != nil{
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "user_verification_success")
+
+}
+
+func (h *AccountHandler) CheckUserIfVerifiedHandler(w http.ResponseWriter, r *http.Request) error {
+	var user types.ToBeVerifiedEmail
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
+
+	verified, err := h.DB_METHOD.IsEmailVerified(user.Email)
+	if err != nil{
+		return err
+	}
+
+	if !verified{
+		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "user_unverified")
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "user_verified")
 }
 
 func (h *AccountHandler) AdminLoginHandler(w http.ResponseWriter, r *http.Request) error {
