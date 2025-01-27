@@ -35,6 +35,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
   const paginatedImages = datasetImages.slice(startIndex, endIndex);
 
+  console.log("datasetImages: ", datasetImages);
   console.log("paginatedImages: ", paginatedImages);
   
 
@@ -58,12 +59,16 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
     );
   };
 
-  const mutate = useMutation(DeleteDatasetImage, {
+  const mutation = useMutation(DeleteDatasetImage, {
 
     onSuccess: () => {
       queryClient.invalidateQueries('dataset_images');
 
-      selectedKeys.length = 0
+      setSelectedKeys([]);
+
+      if ((currentPage - 1) * itemsPerPage >= datasetImages.length - selectedKeys.length) {
+        setCurrentPage(Math.max(1, currentPage - 1));
+      }
 
       Swal.fire({
         title: "Deleted!",
@@ -72,6 +77,10 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
         confirmButtonColor: "#3085d6",
       })
 
+    },
+
+    onSettled: () => {
+      queryClient.refetchQueries('dataset_images');
     },
 
     onMutate: () => {
@@ -111,7 +120,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
     }).then((result) => {
       if (result.isConfirmed) {
-        mutate.mutate({ selectedKeys, class_id, datasetClass }); 
+        mutation.mutate({ selectedKeys, class_id, datasetClass }); 
       }
     });
   } 
@@ -129,13 +138,18 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
   console.log("selectedKeys: ", selectedKeys)
 
-  if(paginatedImages.length <= 0){
+  if(datasetImages.length <= 0){
     return (
       <div className='flex justify-center mt-12 font-semibold text-2xl text-white'>
         <h1>No Dataset Images Available</h1>
       </div>
     )
   }
+
+  if (paginatedImages.length === 0 && datasetImages.length > 0 && currentPage > 1) {
+    setCurrentPage(currentPage - 1);
+  }
+  
 
 
 

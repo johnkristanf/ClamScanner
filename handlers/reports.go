@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"math/rand"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	"github.com/johnkristanf/clamscanner/database"
 	"github.com/johnkristanf/clamscanner/helpers"
@@ -180,11 +179,6 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 			
 		case reportID := <- lastReportChan:
 
-			reportKeys := [7]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map", "reports_per_year", "resolved_reports_per_year"}
-
-			if err := h.REDIS_METHOD.DELETEBYKEY(reportKeys, r); err != nil {
-				return err
-			}
 
 			if err := SendReportID(w, r, reportID); err != nil {
 				return fmt.Errorf("error writing json data to client: %v", err)
@@ -197,26 +191,11 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 
 func (h *ReportHandler) FetchAllReportsHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var cases []*types.Fetch_Cases
-
-	err := h.REDIS_METHOD.GET(&cases, "reports", r)
-
-	if err == redis.Nil {
-
+	
 		cases, err := h.DB_METHOD.FetchReportedCases()
 		if err != nil {
 			return err
 		}
-
-		if err := h.REDIS_METHOD.SET(cases, "reports", r); err != nil {
-			return err
-		}
-
-		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
-
-	} else if err != nil {
-		return err
-	}
 
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
@@ -241,27 +220,12 @@ func (h *ReportHandler) FetchMapReportsHandler(w http.ResponseWriter, r *http.Re
 
 func (h *ReportHandler) FetchReportByCityHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var yearlyReports []*types.ReportsPerCity
-
-	err := h.REDIS_METHOD.GET(&yearlyReports, "reports_city", r)
-
-	if err == redis.Nil {
-
+	
 		yearlyReports, err := h.DB_METHOD.FetchPerCityReports()
 		if err != nil{
 			return err
 		}
 
-
-		if err := h.REDIS_METHOD.SET(yearlyReports, "reports_city", r); err != nil {
-			return err
-		}
-
-		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, yearlyReports)
-
-	} else if err != nil {
-		return err
-	}
 
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, yearlyReports)	
@@ -270,11 +234,6 @@ func (h *ReportHandler) FetchReportByCityHandler(w http.ResponseWriter, r *http.
 
 func (h *ReportHandler) FetchReportByProvinceHandler(w http.ResponseWriter, r *http.Request) error {
 
-	var yearlyReports []*types.ReportsPerProvince
-
-	err := h.REDIS_METHOD.GET(&yearlyReports, "reports_province", r)
-
-	if err == redis.Nil {
 
 		yearlyReports, err := h.DB_METHOD.FetchPerProvinceReports()
 		if err != nil{
@@ -282,43 +241,18 @@ func (h *ReportHandler) FetchReportByProvinceHandler(w http.ResponseWriter, r *h
 		}
 
 
-		if err := h.REDIS_METHOD.SET(yearlyReports, "reports_province", r); err != nil {
-			return err
-		}
-
-		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, yearlyReports)
-
-	} else if err != nil {
-		return err
-	}
-
-
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, yearlyReports)	
 }
 
 func (h *ReportHandler) FetchReportPerMollusk(w http.ResponseWriter, r *http.Request) error {
 	
-	var reportsPerMollusk []*types.ReportsPerMollusk
-
-	err := h.REDIS_METHOD.GET(&reportsPerMollusk, "reports_per_mollusk", r)
-
-	if err == redis.Nil {
-
+	
 		reportsPerMollusk, err := h.DB_METHOD.FetchReportsPerMollusk()
 		if err != nil{
 			return err
 		}
 
 
-		if err := h.REDIS_METHOD.SET(reportsPerMollusk, "reports_per_mollusk", r); err != nil {
-			return err
-		}
-
-		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerMollusk)
-
-	} else if err != nil {
-		return err
-	}
 
 	fmt.Println("reportsPerMollusk: ", reportsPerMollusk)
 
@@ -330,29 +264,12 @@ func (h *ReportHandler) FetchReportPerMollusk(w http.ResponseWriter, r *http.Req
 
 func (h *ReportHandler) FetchReportPerYearHandler(w http.ResponseWriter, r *http.Request) error {
 	
-	var reportsPerYear []*types.ReportsPerYear
-
-	err := h.REDIS_METHOD.GET(&reportsPerYear, "reports_per_year", r)
-
-	if err == redis.Nil {
-
+	
 		reportsPerYear, err := h.DB_METHOD.FetchReportsPerYear()
 		if err != nil{
 			return err
 		}
 
-
-		if err := h.REDIS_METHOD.SET(reportsPerYear, "reports_per_year", r); err != nil {
-			return err
-		}
-
-		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)
-
-	} else if err != nil {
-		return err
-	}
-
-	fmt.Println("reportsPerYear: ", reportsPerYear)
 
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)	
@@ -362,27 +279,13 @@ func (h *ReportHandler) FetchReportPerYearHandler(w http.ResponseWriter, r *http
 
 func (h *ReportHandler) FetchResolvedReportPerYearHandler(w http.ResponseWriter, r *http.Request) error {
 	
-	var reportsPerYear []*types.ReportsPerYear
-
-	err := h.REDIS_METHOD.GET(&reportsPerYear, "resolved_reports_per_year", r)
-
-	if err == redis.Nil {
+	
 
 		reportsPerYear, err := h.DB_METHOD.FetchResolvedReportsPerYear()
 		if err != nil{
 			return err
 		}
 
-
-		if err := h.REDIS_METHOD.SET(reportsPerYear, "resolved_reports_per_year", r); err != nil {
-			return err
-		}
-
-		return h.JSON_METHOD.JsonEncode(w, http.StatusOK, reportsPerYear)
-
-	} else if err != nil {
-		return err
-	}
 
 	fmt.Println("reportsPerYear: ", reportsPerYear)
 
@@ -404,9 +307,6 @@ func (h *ReportHandler) UpdateReportStatusHandler(w http.ResponseWriter, r *http
 		return err
 	}
 
-	if err := h.REDIS_METHOD.DELETE("reports", r); err != nil {
-		return err
-	}
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Report Status Updated!")
 
@@ -430,11 +330,7 @@ func (h *ReportHandler) DeleteReportHandler(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	reportKeys := [7]string{"reports", "reports_city", "reports_province", "reports_per_mollusk", "reports_map", "reports_per_year", "resolved_reports_per_year"}
-
-	if err := h.REDIS_METHOD.DELETEBYKEY(reportKeys, r); err != nil {
-		return err
-	}
+	
 
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Report Deleted")

@@ -11,7 +11,7 @@ type ReportsData = {
 export function DeleteReport(data: ReportsData): Promise<AxiosResponse<any, any>> {
 
     try {
-        return axios.delete(`http://localhost:8080/delete/reports/${encodeURIComponent(data.report_id)}/${encodeURIComponent(data.molluskName)}/${encodeURIComponent(data.province)}/${encodeURIComponent(data.city)}`, {
+        return axios.delete(`https://clamscanner.com/go/delete/reports/${encodeURIComponent(data.report_id)}/${encodeURIComponent(data.molluskName)}/${encodeURIComponent(data.province)}/${encodeURIComponent(data.city)}`, {
             withCredentials: true
         });
     } catch (error) {

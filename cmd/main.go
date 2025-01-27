@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/johnkristanf/clamscanner/database"
@@ -37,11 +36,7 @@ func main() {
 		fmt.Printf("error in db config: %v \n", err)
 	}
 	
-	redis, err := middlewares.REDIS(os.Getenv("REDIS_URI"))
-	if err != nil {
-		fmt.Printf("error in redis: %v \n", err)
-	}
-
+	
 	json := helpers.JsonConfig()
 	image := helpers.ImageHelperConfig()
 
@@ -64,14 +59,12 @@ func main() {
 		DB_METHOD:   db,
 		JSON_METHOD: json,
 		JWT_METHOD: jwt,
-		REDIS_METHOD: redis,
 	}
 
 	datasetsHandler := &handlers.DatasetsHandlers{
 		DB_METHOD:   db,
 		JSON_METHOD: json,
 		JWT_METHOD: jwt,
-		REDIS_METHOD: redis,
 		IMAGE_HELPERS_METHODS: image,
 	}
 
@@ -79,7 +72,6 @@ func main() {
 		DB_METHOD:   db,
 		JSON_METHOD: json,
 		JWT_METHOD: jwt,
-		REDIS_METHOD: redis,
 	}
 
 
@@ -93,7 +85,6 @@ func main() {
 	
 	stack := middlewares.Use(
 		middlewares.Logger,
-		middlewares.AllowCors,
 	)
 
 	s := http.Server{

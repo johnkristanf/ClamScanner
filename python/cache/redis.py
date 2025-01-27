@@ -15,14 +15,8 @@ class RedisCachingMethods:
             redis_url = os.getenv("REDIS_URI")
             parsed_url = urlparse(redis_url)
 
-            print(f"Redis URI: {redis_url}")
-            print(f"Redis parsed_url URI: {parsed_url}")
-            
             host = parsed_url.hostname
             port = parsed_url.port
-
-            print(f"Redis host: {host}")
-            print(f"Redis port: {port}")
 
             return redis.ConnectionPool(
                 host=host, 

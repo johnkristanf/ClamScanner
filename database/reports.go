@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/johnkristanf/clamscanner/types"
@@ -151,16 +152,26 @@ func (sql *SQL) FetchMapReportedCases(month string, mollusk string, status strin
 		users.id AS user_id, users.full_name AS reporter_name, users.address AS reporter_address`).
 		Joins("INNER JOIN users ON reported_cases.user_id = users.id")
 
+	conditions := []string{}
+	values := []interface{}{}
+
 	if month != "All" {
-		query = query.Where("reported_at ILIKE ?", "%"+month+"%")
+		conditions = append(conditions, "reported_cases.reported_at ILIKE ?")
+		values = append(values, "%"+month+"%")
 	}
 
 	if mollusk != "All" {
-		query = query.Where("mollusk_type = ?", mollusk)
+		conditions = append(conditions, "reported_cases.mollusk_type = ?")
+		values = append(values, mollusk)
 	}
 
 	if status != "All" {
-		query = query.Where("status = ?", status)  
+		conditions = append(conditions, "reported_cases.status = ?")
+		values = append(values, status)
+	}
+
+	if len(conditions) > 0 {
+		query = query.Where(strings.Join(conditions, " AND "), values...)
 	}
 
 	query = query.Find(&cases)

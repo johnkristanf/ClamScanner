@@ -106,7 +106,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   // const currentMonth = new Date().getMonth();
   const [selectedMonth, setSelectedMonth] = useState<string>("All");
   const [selectedMollusk, setSelectedMollusk] = useState<string>("All");
-  const [selectedStatus, setSelectedStatus] = useState<string>('All');
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
 
   const reports_query = useQuery(
     ['reported_cases', selectedMonth, selectedMollusk, selectedStatus],
@@ -128,6 +128,9 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
 
   const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
 
+  console.log("reports: ", reports);
+  
+
   useEffect(() => {
     if (reports_query.isFetching) {
       Swal.fire({
@@ -143,6 +146,13 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   }, [reports_query.isFetching]);
 
 
+  const setShowAllReportsMap = () => {
+    setSelectedMonth("All");
+    setSelectedMollusk("All");
+    setSelectedStatus("All");
+  }
+
+
   const molluskMarkers: Record<string, L.Icon> = {
     "Scaly Clam": orangeIcon,     
     "Tiger Cowrie": yellowIcon,    
@@ -155,8 +165,9 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
     "BullMouth Helmet": blueCircleOptions
   }
 
-  console.log("reports map data: ", reports);
-  console.log("reports_query ", reports_query);
+  console.log("selectedStatus: ", selectedStatus);
+  console.log("selectedMollusk: ", selectedMollusk);
+  console.log("selectedMonth: ", selectedMonth);
 
   return (
     <div className="h-screen w-full mt-10 pb-20">
@@ -167,7 +178,11 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
           <div className="flex flex-col justify-center w-full gap-2">
             <h1 className="font-bold text-center">Filter Reports by</h1>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 ">
+
+              <button onClick={() => setShowAllReportsMap()} className="rounded-md p-2 text-white font-bold bg-blue-900 w-full hover:opacity-75 hover:cursor-pointer">
+                All Reports
+              </button>
 
               <select
                 className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2"
@@ -202,7 +217,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
             </div>
           </div>
           <button onClick={() => setOpenReportsModal(true)} className="rounded-md p-2 text-white font-bold bg-blue-900 w-full hover:opacity-75 hover:cursor-pointer">
-            All Reported Cases
+            Reports Table
           </button>
         </div>
       </div>

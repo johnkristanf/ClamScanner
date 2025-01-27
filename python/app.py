@@ -28,13 +28,13 @@ app = FastAPI()
 # comment this out when you push to production cause the nginx configuration 
 # is handling the cors to avoid duplication error
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  
-    allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"], 
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  
+#     allow_credentials=True,
+#     allow_methods=["*"],  
+#     allow_headers=["*"], 
+# )
 
 load_dotenv('.env')
 
@@ -145,25 +145,23 @@ async def fetch_images(datasetClass: str):
 
     response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
 
-    if 'Contents' in response:
-        image_data = [
-            {
-                'key': obj['Key'],
-                'url': s3.generate_presigned_url(
-                            'get_object',
-                            Params={'Bucket': BUCKET_NAME, 'Key': obj['Key']},
-                        ) 
-            }
+    image_data = [
+        {
+            'key': obj['Key'],
+            'url': s3.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': BUCKET_NAME, 'Key': obj['Key']},
+                ) 
+        }
            
-            for obj in response['Contents'] if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))
-        ]
+        for obj in response['Contents'] if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png'))
+    ]
 
-        redis.SET(cache_key, image_data)
+    print('uncached image_data: ', image_data)
+    redis.SET(cache_key, image_data)
 
-        return JSONResponse(content={"image_data": image_data}, status_code=200)
+    return JSONResponse(content={"image_data": image_data}, status_code=200)
     
-    return JSONResponse(content={"image_data": []}, status_code=200)
-
 
 @app.post('/delete/image')
 async def delete_dataset_image(data: dict):

@@ -23,7 +23,7 @@ export async function UploadNewImage(uploadFormData: FormData): Promise<boolean 
 export async function AddNewDatasetClass(data: DatasetClassTypes){
 
     try {
-        return axios.post("http://localhost:8080/add/dataset/class", data, {
+        return axios.post("https://clamscanner.com/go/add/dataset/class", data, {
             withCredentials: true,
             headers: {
                 "Content-Type": "application/json"
@@ -37,7 +37,7 @@ export async function AddNewDatasetClass(data: DatasetClassTypes){
 export async function EditDatasetClass(data: DatasetClassTypes){
 
     try {
-        return axios.post("http://localhost:8080/edit/dataset/class", data, {
+        return axios.post("https://clamscanner.com/go/edit/dataset/class", data, {
             withCredentials: true,
             headers: {
                 "Content-Type": "application/json"
