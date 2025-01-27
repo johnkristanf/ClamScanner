@@ -8,10 +8,10 @@ import { Chart } from 'react-google-charts';
 import { TrainModel } from '../http/post/train';
 
 
-// const productionWSurl = 'wss://clamscanner.com/py/ws';
-const developmentWSurl = 'ws://localhost:5000/ws';
+const productionWSurl = 'wss://clamscanner.com/py/ws';
+// const developmentWSurl = 'ws://localhost:5000/ws';
 
-const socket = new WebSocket(developmentWSurl);
+const socket = new WebSocket(productionWSurl);
 
 socket.onopen = () => {
   console.log('Python WebSocket Connected');
