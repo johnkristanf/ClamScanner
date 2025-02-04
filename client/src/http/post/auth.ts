@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { adminLoginCredentials } from "../../types/account";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function Signup(createAccountFormData: FormData): Promise<AxiosResponse<any, any>> {
     try {
         return axios.post("https://clamscanner.com/go/auth/signup", createAccountFormData, {

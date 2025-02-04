@@ -21,7 +21,7 @@ from upload.upload_ds_image import DatasetDatabaseOperations, DatasetImageUpload
 from cache.redis import RedisCachingMethods
 from ML.chat import ChatBotService
 from ML.predict import ClamPrediction
-from train.process_train import train_new_model
+from train.test_process_train import train_new_model
 
 app = FastAPI()
 

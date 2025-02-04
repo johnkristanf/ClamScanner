@@ -149,10 +149,8 @@ def prepare(ds: tf.data.Dataset, shuffle=False, augment=False):
 
     if augment:
         data_augmentation = Sequential([
-          layers.RandomFlip('horizontal'),
+            layers.RandomFlip('horizontal'),
             layers.RandomRotation(0.2),
-            layers.RandomZoom(0.2),
-            layers.RandomTranslation(0.1, 0.1),
             layers.RandomContrast(0.2),
             layers.RandomBrightness(0.2),
             layers.GaussianNoise(0.2),

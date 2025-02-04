@@ -8,10 +8,10 @@ import { Chart } from 'react-google-charts';
 import { TrainModel } from '../http/post/train';
 
 
-const productionWSurl = 'wss://clamscanner.com/py/ws';
-// const developmentWSurl = 'ws://localhost:5000/ws';
+// const productionWSurl = 'wss://clamscanner.com/py/ws';
+const developmentWSurl = 'ws://localhost:5000/ws';
 
-const socket = new WebSocket(productionWSurl);
+const socket = new WebSocket(developmentWSurl);
 
 socket.onopen = () => {
   console.log('Python WebSocket Connected');
@@ -116,14 +116,19 @@ const ModelsPage: React.FC = () => {
   let chartData: (string | number)[][] = [];
 
   if (trainingMetrics.epochs.length > 0) {
+    // Find max values for normalization
+    const maxAccuracy = Math.max(...trainingMetrics.accuracy, ...trainingMetrics.val_accuracy);
+    const maxLoss = Math.max(...trainingMetrics.loss, ...trainingMetrics.val_loss);
+    const globalMax = Math.max(maxAccuracy, maxLoss); // Ensure highest value is largest
+
     chartData = trainingMetrics.epochs.map((epoch, index) => ([
       epoch + 1,
-      trainingMetrics.accuracy[index],
-      trainingMetrics.val_accuracy[index],
-      trainingMetrics.loss[index],
-      trainingMetrics.val_loss[index],
+      (trainingMetrics.accuracy[index] / maxAccuracy) * globalMax,
+      (trainingMetrics.val_accuracy[index] / maxAccuracy) * globalMax,
+      (trainingMetrics.loss[index] / maxLoss) * globalMax,
+      (trainingMetrics.val_loss[index] / maxLoss) * globalMax,
     ]));
-    
+
     chartData.unshift(['Epoch', 'Accuracy', 'Val Accuracy', 'Loss', 'Val Loss']);
   }
 
