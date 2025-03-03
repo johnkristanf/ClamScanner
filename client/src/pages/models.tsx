@@ -8,10 +8,11 @@ import { Chart } from 'react-google-charts';
 import { TrainModel } from '../http/post/train';
 
 
-const productionWSurl = 'wss://clamscanner.com/py/ws';
-// const developmentWSurl = 'ws://localhost:5000/ws';
+// const productionWSurl = 'wss://clamscanner.com/py/ws';
 
-const socket = new WebSocket(productionWSurl);
+// AYAW KALIMOT BALIK TO 5000 ANG PORT
+const developmentWSurl = 'ws://localhost:6000/ws';
+const socket = new WebSocket(developmentWSurl);
 
 socket.onopen = () => {
   console.log('Python WebSocket Connected');
@@ -108,7 +109,7 @@ const ModelsPage: React.FC = () => {
       setHasTrainingError(false)
     } 
 
-  }, [isTrainingComplete, trainingMetrics.epochs])
+  }, [isTrainingComplete, queryClient, trainingMetrics.epochs])
 
 
   const newModelVersion = numberOfTrainedModels != undefined ? (numberOfTrainedModels + 1).toString() : '1';
@@ -142,10 +143,9 @@ const ModelsPage: React.FC = () => {
       )} */}
 
       <div className="h-full w-full flex flex-col items-start p-8">
-          
 
         <div className="w-full flex justify-center">
-          <div className="w-full bg-gray-600 rounded-md p-5 flex flex-col gap-5">
+          <div className="w-full h-full bg-gray-600 rounded-md p-5 flex flex-col gap-5 mt-6">
             <div className="flex justify-between">
               <h1 className="text-white font-bold text-3xl">Clam Scanner Models</h1>
               <button
@@ -185,9 +185,9 @@ const ModelsPage: React.FC = () => {
             )}
 
             {trainingMetrics.epochs.length == 0 && (
-              <ModelTable
-                setNumberOfTrainedModels={setNumberOfTrainedModels}
-              />
+              <div className="max-h-[500px] overflow-y-auto">
+                <ModelTable setNumberOfTrainedModels={setNumberOfTrainedModels} />
+              </div>
             )}
           </div>
         </div>

@@ -80,145 +80,118 @@ function DataSetsPage() {
                    className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
                 />
 
-                <div className="h-full w-full p-5 bg-gray-600 flex flex-col items-center gap-8 mt-12 rounded-md">
+                <div className="flex justify-center">
+                    <div className="h-full w-full p-5 bg-gray-600 flex flex-col items-center gap-8 mt-14 rounded-md">
 
-                    {isOpenAddModal && (
-                        <>
-                            <AddNewDatasetModal setisOpenAddModal={setIsOpenAddModal} />
-                        </>
-                    )}
+                        {isOpenAddModal && (
+                            <>
+                                <AddNewDatasetModal setisOpenAddModal={setIsOpenAddModal} />
+                            </>
+                        )}
 
-                    {isOpenUpload && classDetailsData ? (
-                        <UploadModal
-                            className={classDetailsData?.name}
-                            class_id={classDetailsData?.class_id}
-                            setisOpenUpload={setisOpenUpload}
-                        />
-                    ) : null}
-
-                    {isOpenInfoModal && classDetailsData ? (
-                        <>
-                            <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
-                            <InfoDatasetModal
-                                classDetailsData={classDetailsData}
-                                setisOpenInfoModal={setisOpenInfoModal}
+                        {isOpenUpload && classDetailsData ? (
+                            <UploadModal
+                                className={classDetailsData?.name}
+                                class_id={classDetailsData?.class_id}
+                                setisOpenUpload={setisOpenUpload}
                             />
-                        </>
-                    ) : null}
+                        ) : null}
 
-                    {!datasetDetails && (
-                        <div className="flex justify-between w-full">
-                            <h1 className="text-white font-bold text-3xl">Clam Scanner Dataset Classes</h1>
-                            <button
-                                onClick={() => setIsOpenAddModal(true)}
-                                className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
-                                <FontAwesomeIcon icon={faPlusCircle} /> Add New Class
-                            </button>
-                        </div>
-                    )}
-
-                    {isLoading ? (
-                        <div className="w-full flex justify-center text-white font-semibold text-2xl">
-                            <h1>Loading Dataset Classes...</h1>
-                        </div>
-                    ) : (
-                        <div className="flex gap-16 w-full h-full flex-wrap">
-                            {datasetDetails && classDetailsData ? (
-                                <DataSetDetails
+                        {isOpenInfoModal && classDetailsData ? (
+                            <>
+                                <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
+                                <InfoDatasetModal
                                     classDetailsData={classDetailsData}
-                                    setDatasetDetails={setDatasetDetails}
-                                    setisOpenUpload={setisOpenUpload}
                                     setisOpenInfoModal={setisOpenInfoModal}
                                 />
-                            ) : null}
+                            </>
+                        ) : null}
 
-                            {/* {datasets?.map((data) => (
-                                <div key={data.class_id}>
-                                    {!datasetDetails && (
-                                        <div className="rounded-md h-[8%] w-[30%] bg-white">
-                                            <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
-                                                <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
-                                                    <tr>
-                                                        <th scope="col" className="py-3 px-6">Class</th>
-                                                        <th scope="col" className="py-3 px-6">Actions</th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody>
-                                                    <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                                        <td className="py-4 px-6">{data.name}</td>
-                                                        <td className="py-4 px-6 flex gap-3">
-                                                            <button
-                                                                onClick={() => handleDetailsData(data)}
-                                                                className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
-                                                                Details
-                                                            </button>
-
-                                                            <button
-                                                                onClick={() => DeleteDatasetClassPopup(data.class_id, data.name)}
-                                                                className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75">
-                                                                Delete
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
-                                </div>
-                            ))} */}
-
-
-                                <div className="w-full flex justify-center">
-                                    {!datasetDetails && (
-                                        <div className="rounded-md h-[8%] w-full bg-white">
-                                            <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
-                                                <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
-                                                    <tr>
-                                                        <th scope="col" className="py-3 px-6">Name</th>
-                                                        <th scope="col" className="py-3 px-6">Status</th>
-                                                        <th scope="col" className="py-3 px-6">Actions</th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody>
-
-                                                    {
-                                                        datasets && datasets.map((data) => (
-                                                            <tr 
-                                                                key={data.class_id}
-                                                                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                                                            >
-                                                                <td className="py-4 px-6">{data.name}</td>
-                                                                <td className="py-4 px-6">{data.status}</td>
-                                                                <td className="py-4 px-6 flex gap-3">
-                                                                    <button
-                                                                        onClick={() => handleDetailsData(data)}
-                                                                        className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
-                                                                        Details
-                                                                    </button>
-
-                                                                    <button
-                                                                        onClick={() => DeleteDatasetClassPopup(data.class_id, data.name)}
-                                                                        className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75">
-                                                                        Delete
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        ))
-                                                    }
-                                                    
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
-                                </div>
+                        {!datasetDetails && (
+                            <div className="flex justify-between w-full">
+                                <h1 className="text-white font-bold text-3xl">Clam Scanner Dataset Classes</h1>
+                                <button
+                                    onClick={() => setIsOpenAddModal(true)}
+                                    className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                    <FontAwesomeIcon icon={faPlusCircle} /> Add New Class
+                                </button>
                             </div>
                         )}
+
+                        {isLoading ? (
+                            <div className="w-full flex justify-center text-white font-semibold text-2xl">
+                                <h1>Loading Dataset Classes...</h1>
+                            </div>
+                        ) : (
+                            <div className="flex gap-16 w-full h-full flex-wrap">
+                                {datasetDetails && classDetailsData ? (
+                                    <DataSetDetails
+                                        classDetailsData={classDetailsData}
+                                        setDatasetDetails={setDatasetDetails}
+                                        setisOpenUpload={setisOpenUpload}
+                                        setisOpenInfoModal={setisOpenInfoModal}
+                                    />
+                                ) : null}
+
+
+
+                                    {/* DATASET CLASSES TABLE */}
+
+                                    <div className="w-full flex justify-center max-h-[500px] overflow-y-auto">
+                                        {!datasetDetails && (
+                                            <div className="rounded-md h-[8%] w-full bg-white">
+                                                <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
+                                                    <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
+                                                        <tr>
+                                                            <th scope="col" className="py-3 px-6">Name</th>
+                                                            <th scope="col" className="py-3 px-6">Status</th>
+                                                            <th scope="col" className="py-3 px-6">Actions</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+
+                                                        {
+                                                            datasets && datasets.map((data) => (
+                                                                <tr 
+                                                                    key={data.class_id}
+                                                                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                                                                >
+                                                                    <td className="py-4 px-6">{data.name}</td>
+                                                                    <td className="py-4 px-6">{data.status}</td>
+                                                                    <td className="py-4 px-6 flex gap-3">
+                                                                        <button
+                                                                            onClick={() => handleDetailsData(data)}
+                                                                            className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                                                            Details
+                                                                        </button>
+
+                                                                        <button
+                                                                            onClick={() => DeleteDatasetClassPopup(data.class_id, data.name)}
+                                                                            className="bg-red-800 rounded-md font-bold p-2 text-white hover:opacity-75">
+                                                                            Delete
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))
+                                                        }
+                                                        
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                    </div>
+                    
+                    {/* TRAINED MODELS TABLE */}
+                    <ModelsPage />
+
                 </div>
+
             </div>
 
-            <ModelsPage />
         </div>
     );
 }

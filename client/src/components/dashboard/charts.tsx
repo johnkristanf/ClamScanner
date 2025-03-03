@@ -10,7 +10,7 @@ const Chart = lazy(() => import("react-google-charts").then(module => ({ default
 
 export function Charts() {
     return (
-        <>
+        <div className="flex flex-col gap-5 h-full w-full ">
             <div className="flex gap-5 h-full w-full">
 
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
@@ -20,20 +20,18 @@ export function Charts() {
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <ResolvedReportedPerYear />
                 </Suspense>
-            </div>
-
-            <div className="flex gap-5 h-full w-full">
 
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <ReportedPerProvince />
                 </Suspense>
 
+            </div>
+
+            <div className="flex gap-5 h-full w-full ">
+
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <ReportedPerCity />
                 </Suspense>
-            </div>
-
-            <div className="flex gap-5 h-full w-full">
 
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <RedListedMollusk />
@@ -43,7 +41,7 @@ export function Charts() {
                     <DatasetClasses />
                 </Suspense>
             </div>
-        </>
+        </div>
     );
 }
 
@@ -63,10 +61,10 @@ function ReportedPerCity() {
     
     
     const options = {
-        chart: {
-            title: "Reported Red Listed Mollusk Per City",
-            subtitle: "Yearly Reported Cases",
-        },
+        // chart: {
+        //     title: "Reported Red Listed Mollusk Per City",
+        //     subtitle: "Yearly Reported Cases",
+        // },
         legend: { position: "none" }, 
         vAxis: {
             minValue: 1,
@@ -80,17 +78,17 @@ function ReportedPerCity() {
     
 
     return (
-        <div className="rounded-md bg-white p-4 h-full w-full">
-            <h1 className="text-gray-600 font-bold text-3xl mb-4">Reported Red Listed Per City</h1>
+        <div className="rounded-md bg-white p-4 h-[90%] w-full">
+            <h1 className="text-gray-600 font-bold text-xl mb-4">Reported Red Listed Per City</h1>
 
             {reports_query.isLoading ? (
-                <div className="h-[70%] w-full flex items-center justify-center">
+                <div className="h-[50%] w-full flex items-center justify-center">
                     <ThreeCircles color="#E53E3E" height={80} width={80} />
                 </div>
             ) : (
                 <>
                     {reports.length === 0 ? (
-                        <div className="h-[90%] w-full flex items-center justify-center">
+                        <div className="h-[50%] w-full flex items-center justify-center">
                             <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
                         </div>
                         
@@ -125,10 +123,10 @@ function ReportedPerProvince() {
 
    
     const options = {
-        chart: {
-            title: "Reported Red Listed Mollusk Per Province",
-            subtitle: "Yearly Reported Cases",
-        },
+        // chart: {
+        //     title: "Reported Red Listed Mollusk Per Province",
+        //     subtitle: "Yearly Reported Cases",
+        // },
         legend: { position: "none" },
         vAxis: {
             minValue: 1,
@@ -143,7 +141,7 @@ function ReportedPerProvince() {
 
     return (
         <div className="rounded-md bg-white p-4 h-full w-full">
-            <h1 className="text-gray-600 font-bold text-3xl mb-4">Reported Red Listed Per Province</h1>
+            <h1 className="text-gray-600 font-bold text-xl mb-4">Reported Red Listed Per Province</h1>
             
             {reports_query.isLoading ? (
                 <div className="h-[70%] w-full flex items-center justify-center">
@@ -334,7 +332,7 @@ function RedListedMollusk() {
 
     return (
         <div className="rounded-md bg-white p-4 h-[90%] w-full"> 
-            <h1 className="text-gray-600 font-bold text-3xl mb-4">Reported Red Listed Mollusk Types</h1>
+            <h1 className="text-gray-600 font-bold text-xl mb-4">Reported Red Listed Mollusk Types</h1>
 
              {reports_query.isLoading ? (
                 <div className="h-[70%] w-full flex items-center justify-center">
@@ -350,7 +348,7 @@ function RedListedMollusk() {
                         <Chart
                             chartType="ColumnChart"
                             width="100%"
-                            height="90%"
+                            height="80%"
                             data={data}
                             options={options}
                         />
@@ -396,7 +394,7 @@ function DatasetClasses() {
 
     return (
         <div className="rounded-md bg-white p-4 h-[90%] w-full">
-            <h1 className="text-gray-600 font-bold text-3xl mb-4">Dataset Class Images</h1>
+            <h1 className="text-gray-600 font-bold text-xl mb-4">Dataset Class Images</h1>
 
             {datasets_query.isLoading ? (
                 <div className="h-[70%] w-full flex items-center justify-center">
@@ -414,7 +412,7 @@ function DatasetClasses() {
                         <Chart
                             chartType="PieChart"
                             width="100%"
-                            height="90%"
+                            height="80%"
                             data={data}
                             options={options}
                         />
@@ -476,7 +474,7 @@ function ReportedPerYear() {
 
     return (
         <div className="rounded-md bg-white p-4 h-full w-full">
-            <h1 className="text-gray-600 font-bold text-3xl mb-4">Total Reports Per Year</h1>
+            <h1 className="text-gray-600 font-bold text-xl mb-4">Total Reports Per Year</h1>
 
             {reports_query.isLoading ? (
                 <div className="h-[70%] w-full flex items-center justify-center">
@@ -485,7 +483,7 @@ function ReportedPerYear() {
             ) : (
                 <>
                     {reports.length === 0 ? (
-                        <div className="h-[70%] w-full flex items-center justify-center">
+                        <div className="h-[50%] w-full flex items-center justify-center">
                             <div className="text-red-800 font-bold text-xl text-center">No reported cases yet</div>
                         </div>
                     ) : (
@@ -555,7 +553,7 @@ function ResolvedReportedPerYear() {
 
     return (
         <div className="rounded-md bg-white p-4 h-full w-full">
-            <h1 className="text-gray-600 font-bold text-3xl mb-4">Resolved Reports Per Year</h1>
+            <h1 className="text-gray-600 font-bold text-xl mb-4">Resolved Reports Per Year</h1>
 
             {reports_query.isLoading ? (
                 <div className="h-[70%] w-full flex items-center justify-center">

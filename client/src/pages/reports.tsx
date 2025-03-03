@@ -1,9 +1,12 @@
-import { useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { SideBar } from "../components/navigation/sidebar";
+import { monthNames } from "../utils/list-months";
+import { ReportedCasesTypes } from "../types/reported";
+import { FetchMapReports } from "../http/get/reports";
 
 const ReportedCases = lazy(() => import("../components/reports/reported"));
 const Map = lazy(() => import("../components/reports/map"));
@@ -12,10 +15,10 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
     let ws: WebSocket | null = null;
 
     const connect = () => {
-        const productionWSurl = 'wss://clamscanner.com/go/ws/conn';
-        // const developmentWSurl = 'ws://localhost:5000/ws/conn';
+        // const productionWSurl = 'wss://clamscanner.com/go/ws/conn';
+        const developmentWSurl = 'ws://localhost:5000/ws/conn';
 
-        ws = new WebSocket(productionWSurl);
+        ws = new WebSocket(developmentWSurl);
 
         ws.onopen = () => {
             console.log("Golang WebSocket Connected");
@@ -43,6 +46,9 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
 };
 
 
+
+
+
 const ReportsPage: React.FC = () => {
     const queryClient = useQueryClient();
 
@@ -51,6 +57,10 @@ const ReportsPage: React.FC = () => {
 
     const [MapCoor, setMapCoor] = useState<number[]>([7.3042, 126.0893]);
     const [Reports, setReports] = useState<number | undefined>();
+
+    const [selectedMonth, setSelectedMonth] = useState<string>("All");
+    const [selectedMollusk, setSelectedMollusk] = useState<string>("All");
+    const [selectedStatus, setSelectedStatus] = useState<string>("All");
 
     const alertRef = useRef<HTMLAudioElement>(null);
 
@@ -72,6 +82,13 @@ const ReportsPage: React.FC = () => {
     useEffect(() => {
         InitializeWSConnection(setReports);
     }, []);
+
+
+    const setShowAllReportsMap = () => {
+        setSelectedMonth("All");
+        setSelectedMollusk("All");
+        setSelectedStatus("All");
+    }
 
 
     const refetchStaleCacheReports = useCallback(() => {
@@ -110,6 +127,28 @@ const ReportsPage: React.FC = () => {
         } 
     }, [Reports, refetchStaleCacheReports]);
 
+
+    const reports_query = useQuery(
+        ['reported_cases', selectedMonth, selectedMollusk, selectedStatus],
+        () => FetchMapReports({ month: selectedMonth, mollusk: selectedMollusk, status: selectedStatus }),
+        {
+          onSuccess: () => {
+            Swal.close(); 
+          },
+          onError: () => {
+            Swal.close(); 
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Failed to fetch reports!',
+            });
+          },
+        }
+      );
+    
+    const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
+    
+
     return (
         <div className="flex flex-col h-full w-full">
             <Suspense fallback={<div>Loading...</div>}>
@@ -120,11 +159,64 @@ const ReportsPage: React.FC = () => {
                             <div className="flex flex-col gap-5 h-full w-full">
                                 <div className="flex justify-between items-center">
                                     <h1 className="text-white font-bold text-3xl">Reported Cases</h1>
-                                    <button onClick={() => setOpenReportsModal(false)} className="bg-blue-900 rounded-md p-3 text-white font-bold flex items-center gap-2 hover:opacity-75 hover:cursor-pointer">
-                                        <FontAwesomeIcon className="text-white" icon={faTimes}/> Close Reports
-                                    </button>
+
+                                    <div className="flex items-center gap-8">
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                className="rounded-md p-2 text-white font-bold bg-blue-900 flex-1 hover:opacity-75 hover:cursor-pointer min-w-[120px] text-center"
+                                                onClick={() => setShowAllReportsMap()}
+                                            >
+                                                All Reports
+                                            </button>
+
+                                            <select
+                                                className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2 flex-1 min-w-[120px] text-center"
+                                                value={selectedStatus}
+                                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                            >
+                                                <option>In Progress</option>
+                                                <option>Resolved</option>
+                                            </select>
+
+                                            <select
+                                                className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2 flex-1 min-w-[120px] text-center"
+                                                value={selectedMonth}
+                                                onChange={(e) => setSelectedMonth(e.target.value)}
+                                            >
+                                                {monthNames.map((month) => (
+                                                    <option key={month} value={month}>
+                                                    {month}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <select
+                                                className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2 flex-1 min-w-[120px] text-center"
+                                                value={selectedMollusk}
+                                                onChange={(e) => setSelectedMollusk(e.target.value)}
+                                            >
+                                                <option>Scaly Clam</option>
+                                                <option>Tiger Cowrie</option>
+                                                <option>BullMouth Helmet</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <button onClick={() => setOpenReportsModal(false)} className="bg-blue-900 rounded-md p-3 text-white font-bold flex items-center gap-2 hover:opacity-75 hover:cursor-pointer">
+                                            <FontAwesomeIcon className="text-white" icon={faTimes}/> Close Reports
+                                        </button>
+
+                                    </div>
+
+                                    
+
+
                                 </div>
-                                <ReportedCases setMapCoor={setMapCoor} setOpenReportsModal={setOpenReportsModal} />
+                                <ReportedCases 
+                                    reports={reports}
+                                    setMapCoor={setMapCoor} 
+                                    setOpenReportsModal={setOpenReportsModal} 
+                                />
                             </div>
                         </div>
                     </>

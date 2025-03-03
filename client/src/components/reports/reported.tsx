@@ -1,6 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { ReportedCasesTypes } from "../../types/reported";
-import { FetchReports } from "../../http/get/reports";
 import { DeleteReport } from "../../http/delete/report";
 import Swal from 'sweetalert2';
 import '/public/scrollStyle.css';
@@ -9,15 +8,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
+function ReportedCases({ reports, setMapCoor, setOpenReportsModal }: any) {
 
   const queryClient = useQueryClient();
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const reports_query = useQuery("reported_cases", FetchReports);
-  const reports = reports_query.data?.data;
+  // const reports_query = useQuery("reported_cases", FetchReports);
+  // const reports = reports_query.data?.data;
 
   console.log("reports table: ", reports);
   
@@ -178,6 +177,8 @@ function ReportedCases({ setMapCoor, setOpenReportsModal }: any) {
     <div className="overflow-auto flex items-start justify-center h-full w-full scrollable-container">
 
       <div className="rounded-md h-full w-full">
+
+        
 
         <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-[50%]">
 
