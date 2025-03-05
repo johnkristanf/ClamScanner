@@ -168,6 +168,8 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
                     Swal.showLoading();
                 },
             });
+
+            setisOpenInfoModal(false)
         },
 
         onSuccess: () => {
