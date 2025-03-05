@@ -262,7 +262,7 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
 
                     <h1 
                         onClick={() => setDatasetDetails(false)}
-                        className="flex items-center gap-2 text-white font-bold text-2xl hover:text-black hover:cursor-pointer"
+                        className="flex items-center gap-2 font-bold text-2xl hover:text-black hover:cursor-pointer"
                         >
 
                         <FontAwesomeIcon 
@@ -274,8 +274,8 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
                     </h1>
 
                     <div className="flex flex-col mb-2">
-                        <h1 className="text-white font-bold text-4xl">{classDetailsData?.name}</h1>
-                        <h1 className="text-white font-semibold text-md" > Status: {classDetailsData.status} </h1>
+                        <h1 className=" font-bold text-4xl">{classDetailsData?.name}</h1>
+                        <h1 className=" font-semibold text-md" > Status: {classDetailsData.status} </h1>
                     </div>
 
                 </div>
@@ -305,7 +305,7 @@ function DataSetDetails({classDetailsData, setDatasetDetails, setisOpenUpload, s
 
             { isLoading && (
                 <div className="flex justify-center mt-12">
-                    <h1 className="text-white text-2xl font-semibold">Loading Images....</h1> 
+                    <h1 className="text-2xl font-semibold">Loading Images....</h1> 
                 </div>
             )}
 

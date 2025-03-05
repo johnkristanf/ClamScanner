@@ -4,7 +4,7 @@ import { DeleteDatasetImage } from '../../http/post/datasets';
 import { useMutation, useQueryClient } from 'react-query';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckDouble, faTrash, faX } from '@fortawesome/free-solid-svg-icons';
+import { faCheckDouble, faListCheck, faSquareCheck, faTrash, faX } from '@fortawesome/free-solid-svg-icons';
 
 interface ImagePaginationProps {
   datasetImages: ImageData[];
@@ -140,7 +140,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
   if(datasetImages.length <= 0){
     return (
-      <div className='flex justify-center mt-12 font-semibold text-2xl text-white'>
+      <div className='flex justify-center mt-12 font-semibold text-2xl '>
         <h1>No Dataset Images Available</h1>
       </div>
     )
@@ -159,7 +159,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
         <div className='w-full ml-6 mt-6 mb-3 flex justify-between'>
 
-          <p className='text-xl font-semibold text-white'>
+          <p className='text-xl font-semibold'>
             {
               datasetImages.length > 1 
                 ? `Total Dataset Images: ${totalImages}` 
@@ -168,7 +168,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
           </p>
 
           
-          <div className={`flex items-center ${selectedKeys.length == 0 ? "justify-end" : ""} mr-5 gap-3 w-[40%] font-semibold text-white`}>
+          <div className={`flex items-center ${selectedKeys.length == 0 ? "justify-end" : ""} mr-5 gap-3 w-[40%] font-semibold my-3`}>
 
             {
               selectedKeys.length > 0 ? (
@@ -181,10 +181,10 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
 
            
             <div 
-              className={`flex ${selectedKeys.length == 0 ? "w-[20%]" : "w-[40%]"} items-center gap-3 hover:opacity-75 hover:cursor-pointer`}
+              className={`flex ${selectedKeys.length == 0 ? "w-[20%] text-blue-900" : "w-[40%] text-red-800"} items-center gap-1 hover:opacity-75 hover:cursor-pointer`}
               onClick={handleSelectAll}
             >
-              { isSelectAll ? <FontAwesomeIcon icon={faX} />: <FontAwesomeIcon icon={faCheckDouble} /> }
+              { isSelectAll ? <FontAwesomeIcon icon={faX} />: <FontAwesomeIcon icon={faListCheck} /> }
               <h1>{ isSelectAll ? "Unselect All": "Select All" }</h1>
             </div>
                 
@@ -192,7 +192,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
             {
               selectedKeys.length > 0 && (
                 <div 
-                  className="flex w-[40%] items-center gap-3 hover:opacity-75 hover:cursor-pointer"
+                  className="flex w-[40%] items-center gap-3 hover:opacity-75 hover:cursor-pointer text-red-800"
                   onClick={handleImageDelete}
                 >
                   {<FontAwesomeIcon icon={faTrash} />}
@@ -255,7 +255,7 @@ const ImagePagination: React.FC<ImagePaginationProps> = ({
         )}
       </div>
 
-      <div className="flex justify-end mt-4 font-semibold text-white px-6">
+      <div className="flex justify-end mt-4 font-semibold px-6">
         <p>Page {currentPage} of {totalPages}</p>
       </div>
 
