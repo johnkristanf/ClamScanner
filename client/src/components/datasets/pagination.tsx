@@ -4,7 +4,7 @@ import { DeleteDatasetImage } from '../../http/post/datasets';
 import { useMutation, useQueryClient } from 'react-query';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckDouble, faListCheck, faSquareCheck, faTrash, faX } from '@fortawesome/free-solid-svg-icons';
+import { faListCheck, faTrash, faX } from '@fortawesome/free-solid-svg-icons';
 
 interface ImagePaginationProps {
   datasetImages: ImageData[];
