@@ -137,7 +137,7 @@ function DataSetsPage() {
 
                                     {/* DATASET CLASSES TABLE */}
 
-                                    <div className="w-full flex justify-center max-h-[500px] overflow-y-auto">
+                                    <div className="w-full flex justify-center max-h-[300px] overflow-y-auto">
                                         {!datasetDetails && (
                                             <div className="rounded-md h-[8%] w-full bg-white">
                                                 <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">

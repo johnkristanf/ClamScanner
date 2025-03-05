@@ -184,7 +184,7 @@ const ModelsPage: React.FC = () => {
             )}
 
             {trainingMetrics.epochs.length == 0 && (
-              <div className="max-h-[500px] overflow-y-auto">
+              <div className="max-h-[300px] overflow-y-auto">
                 <ModelTable setNumberOfTrainedModels={setNumberOfTrainedModels} />
               </div>
             )}
