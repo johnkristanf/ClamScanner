@@ -160,7 +160,7 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
         onMutate: () => {
             Swal.fire({
                 title: 'Editing...',
-                text: 'Please wait while the new dataset class is being added.',
+                text: 'Please wait while dataset class is being edited.',
                 icon: 'info',
                 allowOutsideClick: false,
                 showConfirmButton: false,
