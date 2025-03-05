@@ -20,6 +20,9 @@ func AccountRoutes(router *http.ServeMux, accountHandler *handlers.AccountHandle
 	router.HandleFunc("POST /admin/login", ParseHTTPHandler(accountHandler.AdminLoginHandler))
 
 	router.HandleFunc("GET /personnel/accounts", adminAuth(ParseHTTPHandler(accountHandler.PersonnelAccountsHandler)))
+	router.HandleFunc("GET /personnel/account/edit/{account_id}", adminAuth(ParseHTTPHandler(accountHandler.FetchAccountToEditHandler)))
+	router.HandleFunc("PUT /personnel/account/edit", adminAuth(ParseHTTPHandler(accountHandler.EditPersonnelAccountHandler)))
+
 	router.HandleFunc("GET /admin/data", adminAuth(ParseHTTPHandler(accountHandler.FetchAdminDataHandler)))
 
 	router.HandleFunc("DELETE /delete/account/{account_id}", adminAuth(ParseHTTPHandler(accountHandler.DeleteAccountHandler)))

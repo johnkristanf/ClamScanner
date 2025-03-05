@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosResponse } from "axios";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,5 +41,20 @@ export async function SignOut() {
        
     } catch (error) {
         console.error(error);
+    }
+}
+
+
+
+export function FetchAccountToEdit(personnel_id: number | undefined): Promise<AxiosResponse<any, any>> {
+    console.log("id sa FetchAccountToEdit: ", personnel_id);
+    
+    try {
+        return axios.get(`https://clamscanner.com/go/personnel/account/edit/${personnel_id}`, {
+            withCredentials: true
+        });
+    } catch (error) {
+        console.error(error);
+        return Promise.reject(error); 
     }
 }

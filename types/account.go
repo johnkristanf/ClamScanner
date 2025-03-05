@@ -78,8 +78,17 @@ type JWTPayloadClaims struct {
 
 type PersonnelAccounts struct {
 	ID       int64  `json:"user_id"`
-	FullName string `json:"fullname"`
+	FullName string `json:"full_name"`
 	Address  string `json:"address"`
 	Email    string `json:"email"`
-	Role     string `json:"role"`
+	Password    string `json:"password"`
+}
+
+
+type EditPersonnelAccountsCred struct {
+	ID       int64  `json:"user_id"`
+	FullName string `json:"full_name"`
+	Address  string `json:"address"`
+	Email    string `json:"email"`
+	Password    string `json:"password"`
 }

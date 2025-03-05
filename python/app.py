@@ -28,13 +28,13 @@ app = FastAPI()
 # comment this out when you push to production cause the nginx configuration 
 # is handling the cors to avoid duplication error
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  
-#     allow_credentials=True,
-#     allow_methods=["*"],  
-#     allow_headers=["*"], 
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"], 
+)
 
 load_dotenv('.env')
 
@@ -233,7 +233,13 @@ async def delete_dataset_class(data: dict):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+
+    print("New WebSocket connection request")
+    
     await websocket.accept()
+
+    print("WebSocket connection accepted")
+
     clients.append(websocket)
     try:
         while True:
@@ -292,23 +298,24 @@ async def scan(captured_image_file: UploadFile = File(...)):
 
 
 
-@app.post("/message/chatbot")
-async def chat(data: dict):
-    try:
-        user_input = data.get("message")
-        if user_input:
-            response = chatbot.get_responses(user_input)
-            return JSONResponse(content={"response": response}, status_code=200)
+# @app.post("/message/chatbot")
+# async def chat(data: dict):
+#     try:
+#         user_input = data.get("message")
+#         if user_input:
+#             response = chatbot.get_responses(user_input)
+#             return JSONResponse(content={"response": response}, status_code=200)
         
-        else:
-            raise HTTPException(status_code=400, detail="No message provided")
-    except Exception as e:
-        print("Error during chat process:", e)
-        return JSONResponse(content={"error_occured": "An error occurred while processing your request. Please try again later or contact support for assistance."}, status_code=500)
+#         else:
+#             raise HTTPException(status_code=400, detail="No message provided")
+#     except Exception as e:
+#         print("Error during chat process:", e)
+#         return JSONResponse(content={"error_occured": "An error occurred while processing your request. Please try again later or contact support for assistance."}, status_code=500)
 
 
 if __name__ == "__main__":
     # uvicorn app:app --host 0.0.0.0 --port 5000 --reload
 
+    # AYAW KALIMOT BALIK 5000 ang PORT
     print("Fast API Server HTTPS Listens to Port 5000")
     uvicorn.run(app, port=5000, host='0.0.0.0')

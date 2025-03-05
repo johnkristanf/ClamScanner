@@ -168,10 +168,10 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
   console.log("selectedMonth: ", selectedMonth);
 
   return (
-    <div className="h-screen w-full mt-10 pb-20">
+    <div className="h-[70vh] w-full mt-16 ">
 
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-gray-700 font-bold text-3xl">Clam Scanner Reported Mollusk Map</h1>
+      <div className="flex items-center justify-center mb-4">
+        {/* <h1 className="text-gray-700 font-bold text-3xl">Clam Scanner Reported Mollusk Map</h1> */}
 
       <div className="flex items-end justify-center gap-5 w-1/2">
         <div className="flex flex-col justify-center w-full gap-2">
@@ -192,15 +192,20 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
-              <option>In Progress</option>
-              <option>Resolved</option>
+              <option value="All" disabled>All</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
             </select>
+
 
             <select
               className="bg-blue-900 text-white font-bold rounded-md focus:outline-none p-2 flex-1 min-w-[120px] text-center"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
+              
             >
+              <option value="All" disabled>All</option>
+              
               {monthNames.map((month) => (
                 <option key={month} value={month}>
                   {month}
@@ -213,6 +218,8 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
               value={selectedMollusk}
               onChange={(e) => setSelectedMollusk(e.target.value)}
             >
+              <option value="All" disabled>All</option>
+
               <option>Scaly Clam</option>
               <option>Tiger Cowrie</option>
               <option>BullMouth Helmet</option>

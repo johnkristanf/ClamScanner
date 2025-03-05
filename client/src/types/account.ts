@@ -28,9 +28,10 @@ export const validEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 export type PersonnelAccounts = {
     user_id: number,
-    fullname: string,
+    full_name: string,
     email: string,
-    address: string
+    address: string,
+    password?: string,
 }
 
 
@@ -49,4 +50,13 @@ export interface InputType {
 export type AdminData = {
     id: number,
     email: string
+}
+
+
+export type PersonnelAccountEdit = {
+    id: number,
+    full_name: string,
+    address: string,
+    email: string,
+    password: string,
 }

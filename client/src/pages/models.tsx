@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ModelTable } from '../components/models/model_table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
@@ -6,6 +6,8 @@ import { useMutation, useQueryClient } from 'react-query';
 import Swal from 'sweetalert2';
 import { Chart } from 'react-google-charts';
 import { TrainModel } from '../http/post/train';
+
+import '../../public/scrollStyle.css';
 
 
 const productionWSurl = 'wss://clamscanner.com/py/ws';
@@ -30,7 +32,7 @@ interface TrainingMetrics {
   class_names: string[]
 }
 
-const ModelsPage: React.FC = () => {
+const ModelsPage = () => {
   const [numberOfTrainedModels, setNumberOfTrainedModels] = useState<number | undefined>(undefined);
   const [trainingMetrics, setTrainingMetrics] = useState<TrainingMetrics>({
     epochs: [],
@@ -41,6 +43,7 @@ const ModelsPage: React.FC = () => {
     class_names: []
   });
 
+  const [isTrainingLoading, setIsTrainingLoading] = useState<boolean>(false);
   const [isTrainingComplete, setIsTrainingComplete] = useState<boolean>(false); 
   const [hasTrainingError, setHasTrainingError] = useState<boolean>(false); 
   const queryClient = useQueryClient();
@@ -69,21 +72,22 @@ const ModelsPage: React.FC = () => {
 
   const { mutate } = useMutation(TrainModel, {
     onMutate: () => {
-      Swal.fire({
-        title: 'Training will take several moments to finish!',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        position: 'top-end',
-        backdrop: false,
-        width: '500px',
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+      setIsTrainingLoading(true)
+      // Swal.fire({
+      //   title: 'Training will take several moments to finish!',
+      //   allowOutsideClick: false,
+      //   allowEscapeKey: false,
+      //   backdrop: false,
+      //   width: '500px',
+      //   didOpen: () => {
+      //     Swal.showLoading();
+      //   },
+      // });
     },
     
     onError: (error) => {
       console.error('Training error:', error);
+      setIsTrainingLoading(false)
       setIsTrainingComplete(true); 
       setHasTrainingError(true); 
 
@@ -104,11 +108,15 @@ const ModelsPage: React.FC = () => {
       });
 
       trainingMetrics.epochs.length = 0
+      setIsTrainingLoading(false)
       setIsTrainingComplete(false)
       setHasTrainingError(false)
     } 
 
-  }, [isTrainingComplete, queryClient, trainingMetrics.epochs])
+  }, [isTrainingComplete, queryClient, trainingMetrics.epochs]);
+
+  console.log("trainingMetrics: ", trainingMetrics);
+  
 
 
   const newModelVersion = numberOfTrainedModels != undefined ? (numberOfTrainedModels + 1).toString() : '1';
@@ -144,9 +152,9 @@ const ModelsPage: React.FC = () => {
       <div className="h-full w-full flex flex-col items-start p-8">
 
         <div className="w-full flex justify-center">
-          <div className="w-full h-full bg-gray-600 rounded-md p-5 flex flex-col gap-5 mt-6">
+          <div className="w-full h-full rounded-md bg-gray-100 p-3 flex flex-col gap-5 mt-12">
             <div className="flex justify-between">
-              <h1 className="text-white font-bold text-3xl">Clam Scanner Models</h1>
+              <h1 className="font-bold text-3xl">Trained Models</h1>
               <button
                 onClick={() => mutate(newModelVersion)}
                 className="bg-blue-900 rounded-md p-3 text-white font-bold flex items-center gap-2 hover:opacity-75 hover:cursor-pointer"
@@ -183,12 +191,30 @@ const ModelsPage: React.FC = () => {
               </div>
             )}
 
+
+
+            {isTrainingLoading && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 z-[999] flex justify-center items-center pointer-events-auto">
+                <div className="w-[30%] bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
+                  <p className="text-2xl font-bold mb-2 ">Training in Progress...</p>
+                  <p 
+                    className='text-lg font-semibold mb-8 opacity-75'
+                  >
+                    Training Epochs: { trainingMetrics.epochs.length } / 10
+                  </p>
+                  <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+                </div>
+              </div>
+            )}
+
+
             {trainingMetrics.epochs.length == 0 && (
-              <div className="max-h-[350px] overflow-y-auto">
+              <div className="max-h-[350px] overflow-y-auto scrollable-container">
                 <ModelTable setNumberOfTrainedModels={setNumberOfTrainedModels} />
               </div>
             )}
           </div>
+
         </div>
       </div>
 

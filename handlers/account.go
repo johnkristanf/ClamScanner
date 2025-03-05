@@ -307,6 +307,42 @@ func (h *AccountHandler) FetchAdminDataHandler(w http.ResponseWriter, r *http.Re
 	
 }
 
+
+func (h *AccountHandler) FetchAccountToEditHandler(w http.ResponseWriter, r *http.Request) error {
+
+	idParam := r.PathValue("account_id")
+	account_id, err := strconv.Atoi(idParam)
+	if err != nil {
+		return err
+	}
+
+	account, err := h.DB_METHOD.FetchPersonnelAccountByID(int64(account_id));
+	if err != nil {
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, account)
+}
+
+
+func (h *AccountHandler) EditPersonnelAccountHandler(w http.ResponseWriter, r *http.Request) error {
+
+	account := &types.EditPersonnelAccountsCred{}
+	if err := json.NewDecoder(r.Body).Decode(&account); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
+
+	fmt.Println("EDIT ACCOUNT ENDPOINT")
+
+	if err := h.DB_METHOD.EditPersonnelAccount(account); err != nil {
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Edit Account Successfully")
+}
+
+
+
 func (h *AccountHandler) DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 
 	idParam := r.PathValue("account_id")

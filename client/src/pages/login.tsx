@@ -21,10 +21,17 @@ export default function LoginPage(){
                 
             </div>
 
-            <div className="w-[35%] h-[50%] bg-white rounded-md p-5 flex flex-col items-center">
-                <h1 className="font-bold text-slate-950 text-3xl pb-5">Login</h1>
-                <LoginForm />
+            <div className="relative w-[30%] h-[40%] rounded-md p-5 flex flex-col items-center">
+                {/* Background blur layer */}
+                <div className="absolute inset-0 bg-white bg-opacity-50 rounded-md backdrop-blur-5xl pointer-events-none"></div>
+
+                {/* Actual content (not blurred) */}
+                <div className="relative z-10 w-full h-full flex flex-col items-center">
+                    <LoginForm />
+                </div>
             </div>
+
+
         </div>
     )
 }

@@ -49,6 +49,7 @@ export async function EditDatasetClass(data: DatasetClassTypes){
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function DeleteDatasetImage({ selectedKeys, class_id, datasetClass }: DeleteImageDataTypes): Promise<AxiosResponse<any, any>> {
     try {
 

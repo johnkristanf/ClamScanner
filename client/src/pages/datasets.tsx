@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SideBar } from "../components/navigation/sidebar";
 import { AddNewDatasetModal, InfoDatasetModal, UploadModal } from "../components/modal/datasets";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faExclamationCircle, faPlusCircle, faArrowLeft, faUpload} from "@fortawesome/free-solid-svg-icons";
+import { faExclamationCircle, faPlusCircle, faArrowLeft, faUpload, faChevronRight} from "@fortawesome/free-solid-svg-icons";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { FetchDatasetClasses, FetchDatasetClassImages } from "../http/get/datasets";
 import Swal from "sweetalert2";
@@ -10,8 +10,9 @@ import { DeleteDatasetClass } from "../http/delete/dataset";
 import { DatasetClassTypes } from "../types/datasets";
 import ImagePagination from "../components/datasets/pagination";
 import ModelsPage from "./models";
+import { ClamScannerNavBar } from "../components/navbar";
 
-
+import '../../public/scrollStyle.css';
 
 function DataSetsPage() {
     const queryClient = useQueryClient();
@@ -22,6 +23,8 @@ function DataSetsPage() {
     const [isOpenUpload, setisOpenUpload] = useState<boolean>(false);
     const [isOpenInfoModal, setisOpenInfoModal] = useState<boolean>(false);
     const [classDetailsData, setclassDetailsData] = useState<DatasetClassTypes>();
+
+    const [trainingTableSwitch, setTrainingTableSwitch] = useState<string>('dataset');
 
     const { data: dataset_query, isLoading } = useQuery("dataset_classes", FetchDatasetClasses);
     const datasets: DatasetClassTypes[] = dataset_query?.data;
@@ -74,14 +77,13 @@ function DataSetsPage() {
             {isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} />}
 
             <div className="h-full w-full p-8">
-                <FontAwesomeIcon
-                   onClick={() => setisSidebarOpen(true)} 
-                   icon={faBars} 
-                   className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
-                />
+                <ClamScannerNavBar setisSidebarOpen={setisSidebarOpen} pageName="Training"/>
 
-                <div className="flex justify-center">
-                    <div className="h-full w-full p-5 bg-gray-600 flex flex-col items-center gap-8 mt-14 rounded-md">
+            {
+                trainingTableSwitch === 'dataset' && (
+            
+                <div className="flex justify-center mt-5">
+                    <div className="h-full w-full p-5 bg-gray-100 flex flex-col items-center gap-8 mt-14 rounded-md">
 
                         {isOpenAddModal && (
                             <>
@@ -109,7 +111,7 @@ function DataSetsPage() {
 
                         {!datasetDetails && (
                             <div className="flex justify-between w-full">
-                                <h1 className="text-white font-bold text-3xl">Clam Scanner Dataset Classes</h1>
+                                <h1 className="font-bold text-3xl">Dataset Classes</h1>
                                 <button
                                     onClick={() => setIsOpenAddModal(true)}
                                     className="bg-blue-900 rounded-md font-bold p-2 text-white hover:opacity-75">
@@ -137,7 +139,7 @@ function DataSetsPage() {
 
                                     {/* DATASET CLASSES TABLE */}
 
-                                    <div className="w-full flex justify-center max-h-[350px] overflow-y-auto">
+                                    <div className="w-full flex justify-center max-h-[350px] overflow-y-auto scrollable-container">
                                         {!datasetDetails && (
                                             <div className="rounded-md h-[8%] w-full bg-white">
                                                 <table className="text-sm text-left w-full text-gray-800 font-semibold dark:text-gray-400 h-full">
@@ -178,17 +180,48 @@ function DataSetsPage() {
                                                         
                                                     </tbody>
                                                 </table>
+
                                             </div>
                                         )}
                                     </div>
+
+
                                 </div>
                             )}
+
+                            
                     </div>
                     
                     {/* TRAINED MODELS TABLE */}
-                    <ModelsPage />
 
+                   
                 </div>
+
+                )
+            }
+
+                {
+                    trainingTableSwitch === 'models' && (<ModelsPage />)
+                }
+                    
+                    <div className="w-full flex justify-end font-semibold text-lg">
+                        <h1 
+                            className="hover:opacity-75 hover:cursor-pointer flex items-center gap-2"
+                            onClick={() => setTrainingTableSwitch(trainingTableSwitch === 'dataset' ? 'models' : 'dataset')}
+                        >
+                            {trainingTableSwitch === 'dataset' ? (
+                                <>
+                                    Trained Models <FontAwesomeIcon icon={faChevronRight} />
+                                </>
+                            ) : (
+                                <>
+                                    <FontAwesomeIcon icon={faChevronRight} className="rotate-180" />
+                                    Dataset Classes
+                                </>
+                            )}
+                        </h1>
+                    </div>
+
 
             </div>
 

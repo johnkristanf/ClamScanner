@@ -1,12 +1,13 @@
 import { useQuery, useQueryClient } from "react-query";
 import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { SideBar } from "../components/navigation/sidebar";
 import { monthNames } from "../utils/list-months";
 import { ReportedCasesTypes } from "../types/reported";
 import { FetchMapReports } from "../http/get/reports";
+import { ClamScannerNavBar } from "../components/navbar";
 
 const ReportedCases = lazy(() => import("../components/reports/reported"));
 const Map = lazy(() => import("../components/reports/map"));
@@ -175,6 +176,8 @@ const ReportsPage: React.FC = () => {
                                                 value={selectedStatus}
                                                 onChange={(e) => setSelectedStatus(e.target.value)}
                                             >
+                                                <option value="All" disabled>All</option>
+
                                                 <option>In Progress</option>
                                                 <option>Resolved</option>
                                             </select>
@@ -184,6 +187,8 @@ const ReportsPage: React.FC = () => {
                                                 value={selectedMonth}
                                                 onChange={(e) => setSelectedMonth(e.target.value)}
                                             >
+                                                <option value="All" disabled>All</option>
+
                                                 {monthNames.map((month) => (
                                                     <option key={month} value={month}>
                                                     {month}
@@ -196,6 +201,9 @@ const ReportsPage: React.FC = () => {
                                                 value={selectedMollusk}
                                                 onChange={(e) => setSelectedMollusk(e.target.value)}
                                             >
+
+                                                <option value="All" disabled>All</option>
+
                                                 <option>Scaly Clam</option>
                                                 <option>Tiger Cowrie</option>
                                                 <option>BullMouth Helmet</option>
@@ -226,11 +234,7 @@ const ReportsPage: React.FC = () => {
                 {isSidebarOpen && <SideBar setisSidebarOpen={setisSidebarOpen} />}
 
                 <div className="h-full w-full flex flex-col items-start p-8">
-                    <FontAwesomeIcon
-                        onClick={() => setisSidebarOpen(true)} 
-                        icon={faBars} 
-                        className="fixed top-3 font-bold text-3xl hover:opacity-75 hover:cursor-pointer bg-black text-white p-2 rounded-md"
-                    />
+                    <ClamScannerNavBar setisSidebarOpen={setisSidebarOpen} pageName="Reports Map"/>
 
                     <audio ref={alertRef} controls style={{display: 'none'}}>
                         <source src="/public/Drop.mp3" type="audio/mpeg" />

@@ -64,11 +64,12 @@ export const AddNewDatasetModal = ({setisOpenAddModal}: {
     return(
 
         <>
-        
-        <div className="bg-gray-950 fixed top-0 w-full h-full opacity-75" style={{ zIndex: 6000 }}></div>
+    {/* Dark gray background overlay */}
+    <div className="bg-gray-950 fixed inset-0 opacity-75" style={{ zIndex: 6000 }}></div>
 
-        <div className="flex flex-col bg-white rounded-md items-center fixed top-0 w-[40%] p-5" style={{zIndex: 7000}}>
-            
+    {/* Centered form container */}
+    <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 7000 }}>
+        <div className="relative flex flex-col bg-white rounded-md items-center w-[40%] p-5">
             <h1 className="text-black font-bold text-2xl mb-5">Add New Dataset Class</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-center w-full gap-5">
@@ -89,35 +90,46 @@ export const AddNewDatasetModal = ({setisOpenAddModal}: {
 
                 <textarea 
                     {...register("description", { required: true })}
-
                     rows={4} 
                     cols={50} 
                     className="rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-[60%] focus:outline-blue-950" 
                     placeholder="Description"
                 />
 
-
                 <select 
                     {...register("status", { required: true })}
                     className="rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-[60%] focus:outline-blue-950"
                 >
-                        <option value="" disabled selected>Select Status</option>
-                        <option value="Endangered">Endangered</option>
-                        <option value="Vulnerable">Vulnerable</option>
-                        <option value="Least Concern">Least Concern</option>
-                        <option value="N/A">N/A</option>
+                    <option value="" disabled selected>Select Status</option>
+                    <option value="Endangered">Endangered</option>
+                    <option value="Vulnerable">Vulnerable</option>
+                    <option value="Least Concern">Least Concern</option>
+                    <option value="N/A">N/A</option>
                 </select>
 
-                <button type="submit" className="text-white font-bold bg-blue-900 w-[60%] rounded-md p-3 hover:opacity-75">Add</button>
+                <div className="flex items-center w-[60%] gap-3">
+                    <button 
+                        type="button" 
+                        className="text-white font-bold bg-black w-[60%] rounded-md p-3 hover:opacity-75"
+                        onClick={() => setisOpenAddModal(false)}
+                    >
+                        Cancel
+                    </button>
 
+                    <button 
+                        type="submit" 
+                        className="text-white font-bold bg-blue-900 w-[60%] rounded-md p-3 hover:opacity-75"
+                    >
+                        Add
+                    </button>
+                </div>
+
+                
             </form>
-
-            <button onClick={() => setisOpenAddModal(false)} className="text-white mt-3 font-bold bg-black w-[60%] rounded-md p-3 hover:opacity-75">Cancel</button>
-
-
         </div>
+    </div>
+</>
 
-        </>
 
     )
 }

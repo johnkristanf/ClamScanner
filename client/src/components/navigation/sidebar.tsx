@@ -13,30 +13,36 @@ interface SideBarProps {
 export const SideBar: React.FC<SideBarProps> = ({ setisSidebarOpen }) => {
 
     return (
+      <>
+      
+        <div className="fixed top-0 w-full h-screen bg-gray-700 opacity-75 z-[999]"></div>
 
-      <div className="w-[25%] h-full fixed left-0 bg-black flex flex-col justify-around p-5" style={{zIndex: 5000}}>
+        <div className="w-[25%] h-full fixed left-0 z-[99] bg-black flex flex-col justify-around p-5 " style={{zIndex: 5000}}>
 
-        <FontAwesomeIcon
-          onClick={() => setisSidebarOpen(false)} 
-          icon={faBars} 
-          className="font-bold text-4xl hover:opacity-75 hover:cursor-pointer fixed top-2 left-2 text-white"
-        />
+          <FontAwesomeIcon
+            onClick={() => setisSidebarOpen(false)} 
+            icon={faBars} 
+            className="font-bold text-4xl hover:opacity-75 hover:cursor-pointer fixed top-2 left-2 text-white"
+          />
 
-        <Logo/>  
+          <Logo/>  
 
 
-        <NavLinks />
+          <NavLinks />
 
-        <UserInfo />
+          <UserInfo />
 
-      </div>
+        </div>
+
+      </>
+
     );
 }
 
 function Logo(){
   return(
-    <div className="flex items-center gap-4 w-full mt-6">
-      <img src="/img/clam_logo.png" width={60} alt="ClamScanner Nav Logo" />
+    <div className="flex flex-col items-center gap-4 w-full mt-6">
+      <img src="/img/clam_logo.png" width={80} alt="ClamScanner Nav Logo" />
       <h1 className="text-white font-bold text-3xl">Clam Scanner</h1>
     </div>
   )

@@ -61,13 +61,13 @@ export function LoginForm(){
                        key={data.type}
                        type={data.type} 
                        placeholder={data.placeholder} 
-                       className={classNames("rounded-md bg-gray-300 placeholder-gray-500 font-semibold p-2 w-[100%] focus:outline-blue-950")} 
+                       className={classNames("rounded-md font-semibold p-3 w-full focus:outline-blue-800 ")} 
                        {...register(data.label, { required: true})}
                     />
                 ))
             }
 
-            <button type="submit" className="text-white font-bold bg-blue-900 w-full rounded-md p-3 hover:opacity-75">Login</button>
+            <button type="submit" className="text-white font-bold bg-blue-900 w-1/2 rounded-md p-3 hover:opacity-75">Login</button>
         </form>
     )
 }

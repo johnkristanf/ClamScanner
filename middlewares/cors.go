@@ -17,6 +17,7 @@ func AllowCors(next http.Handler) http.Handler {
 			AllowCredentials: true,
 		})
 
+
 		next = c.Handler(next)
 		next.ServeHTTP(w, r)
 

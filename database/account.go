@@ -24,6 +24,9 @@ type AUTH_DB_METHOD interface {
 	EmailAlreadyTaken(string) error
 
 	FetchPersonnelAccounts() ([]*types.PersonnelAccounts, error)
+	FetchPersonnelAccountByID(personnelID int64) (*types.PersonnelAccounts, error)
+	EditPersonnelAccount(account *types.EditPersonnelAccountsCred) error
+
 	DeletePersonnelAccount(int64) error
 }
 
@@ -180,6 +183,61 @@ func (sql *SQL) FetchPersonnelAccounts() ([]*types.PersonnelAccounts, error) {
 	}
 
 	return accounts, nil
+}
+
+
+func (sql *SQL) FetchPersonnelAccountByID(personnelID int64) (*types.PersonnelAccounts, error) {
+
+	account := &types.PersonnelAccounts{}
+
+	result := sql.DB.Table("users").
+		Select("id, full_name, address, email, password").
+		Where("id = ?", personnelID).
+		First(&account)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	fmt.Println("account id: ", account.ID)
+	fmt.Println("account full name: ", account.FullName)
+	fmt.Println("account email: ", account.Email)
+
+	return account, nil
+}
+
+
+func (sql *SQL) EditPersonnelAccount(account *types.EditPersonnelAccountsCred) error {
+
+	fmt.Println("account id: ", account.ID)
+	fmt.Println("account full name: ", account.FullName)
+	fmt.Println("account email: ", account.Email)
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
+		if err != nil{
+			return err
+		}
+
+	updates := map[string]interface{}{
+		"full_name": account.FullName,
+		"address":   account.Address,
+		"email":     account.Email,
+		"password":  string(hashedPassword),
+	}
+
+	// Perform the update where id matches
+	result := sql.DB.Table("users").Where("id = ?", account.ID).Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Optional: check if any rows were actually updated
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no record found with id %d", account.ID)
+	}
+
+	return nil
 }
 
 
