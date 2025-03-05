@@ -268,7 +268,7 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
 
         <button 
           onClick={() => setOpenReportsModal(true)} 
-          className="z-[999] absolute w-[15%] top-9 right-8 rounded-md p-2 text-white font-bold bg-blue-900 w-full hover:opacity-75 hover:cursor-pointer"
+          className="z-[999] absolute w-[10%] top-9 right-8 rounded-md p-2 text-white font-bold bg-blue-900 w-full hover:opacity-75 hover:cursor-pointer"
         >
           Reports Table
         </button>
