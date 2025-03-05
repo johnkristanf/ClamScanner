@@ -15,10 +15,10 @@ const InitializeWSConnection = (setReports: React.Dispatch<React.SetStateAction<
     let ws: WebSocket | null = null;
 
     const connect = () => {
-        // const productionWSurl = 'wss://clamscanner.com/go/ws/conn';
-        const developmentWSurl = 'ws://localhost:5000/ws/conn';
+        const productionWSurl = 'wss://clamscanner.com/go/ws/conn';
+        // const developmentWSurl = 'ws://localhost:8080/ws/conn';
 
-        ws = new WebSocket(developmentWSurl);
+        ws = new WebSocket(productionWSurl);
 
         ws.onopen = () => {
             console.log("Golang WebSocket Connected");
