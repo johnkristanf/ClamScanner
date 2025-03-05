@@ -155,7 +155,20 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
         }));
     };
 
-    const { isLoading, mutate } = useMutation(EditDatasetClass, {
+    const { mutate } = useMutation(EditDatasetClass, {
+
+        onMutate: () => {
+            Swal.fire({
+                title: 'Editing...',
+                text: 'Please wait while the new dataset class is being added.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+        },
 
         onSuccess: () => {
             queryClient.invalidateQueries("dataset_classes");
@@ -170,7 +183,7 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
                 const { isConfirmed, isDismissed } = result
 
                 if(isConfirmed || isDismissed){
-                    window.location.href = '/datasets'
+                    window.location.href = '/training'
                 }
             })
     
@@ -186,12 +199,8 @@ export const InfoDatasetModal = ({ classDetailsData, setisOpenInfoModal }: {
 
 
     const saveChanges = () => mutate(formData)
-
        
     
-
-    if(isLoading) return <div>Fetching Dataset Clase Information....</div>
-
 
     return (
         <div className="flex w-full justify-center items-center">
