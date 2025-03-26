@@ -20,4 +20,10 @@ python/.envpython/.env
 
 *.pem
 
+*.jpg
+
+*.png
+
+*.jpeg
+
 docker-compose.yml

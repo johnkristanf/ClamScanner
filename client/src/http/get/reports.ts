@@ -38,6 +38,19 @@ export function FetchYearlyReportsPerCity(): Promise<AxiosResponse<any, any>> {
     }
 }
 
+
+
+export function FetchScanLogs(): Promise<AxiosResponse<any, any>> {
+    try {
+        return axios.get("https://clamscanner.com/go/fetch/scan/logs", {
+            withCredentials: true
+        });
+    } catch (error) {
+        console.error(error);
+        return Promise.reject(error); 
+    }
+}
+
 export function FetchYearlyReportsPerProvince(): Promise<AxiosResponse<any, any>> {
     try {
         return axios.get("https://clamscanner.com/go/fetch/reports/province", {

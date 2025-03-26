@@ -24,6 +24,14 @@ type Reported_Cases struct {
 
 }
 
+type ScanLogs struct {
+	ID          int64  `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_reportedID" json:"id"`
+	Address     string `gorm:"index" json:"address"`
+	MolluskType string `gorm:"not null" json:"mollusk_type"`
+	UserID      int64  `gorm:"not null" json:"user_id"`
+	ReportedAt  string `gorm:"not null;index" json:"reported_at"`
+}
+
 
 type Provinces struct {
 	ID          int64   `gorm:"primaryKey;autoIncrement:true;uniqueIndex:idx_reportedID"`
@@ -40,10 +48,13 @@ type Cities struct {
 
 type REPORTED_DB_METHOD interface {
 	InsertReport(*types.Reported_Cases) (int64, error)
+	InsertScanLogs(*ScanLogs) (error)
 
 	FetchReportedCases() ([]*types.Fetch_Cases, error)
 	FetchMapReportedCases(string, string, string) ([]*types.Fetch_Cases, error)
 	
+	FetchScanLogs() ([]*types.ScanLogUserDetails, error)
+
 	FetchPerCityReports() ([]*types.ReportsPerCity, error)
 	FetchPerProvinceReports() ([]*types.ReportsPerProvince, error)
 	FetchReportsPerMollusk() ([]*types.ReportsPerMollusk, error)
@@ -121,6 +132,14 @@ func (sql *SQL) InsertReport(reportCases *types.Reported_Cases) (int64, error) {
 	return lastInsertedID, nil
 }
 
+func (sql *SQL) InsertScanLogs(scanLogsData *ScanLogs) (error) {
+	result := sql.DB.Create(scanLogsData)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
 
 func (sql *SQL) FetchReportedCases() ([]*types.Fetch_Cases, error) {
 
@@ -197,6 +216,24 @@ func (sql *SQL) FetchPerCityReports() ([]*types.ReportsPerCity, error) {
 	}	
 
 	return reports, nil
+}
+
+
+func (sql *SQL) FetchScanLogs() ([]*types.ScanLogUserDetails, error) {
+	
+	var scanLogs []*types.ScanLogUserDetails
+
+	result := sql.DB.Table("scan_logs").
+		Select(`users.full_name, users.email, scan_logs.id, scan_logs.address, scan_logs.mollusk_type, scan_logs.reported_at`).
+		Joins("INNER JOIN users ON scan_logs.user_id = users.id").
+		Order("scan_logs.id DESC").
+		Find(&scanLogs);
+
+	if result.Error != nil {
+		return nil, result.Error
+	}	
+
+	return scanLogs, nil
 }
 
 func (sql *SQL) FetchPerProvinceReports() ([]*types.ReportsPerProvince, error) {

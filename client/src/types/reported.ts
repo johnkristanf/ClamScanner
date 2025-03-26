@@ -39,3 +39,12 @@ export type ReportsPerYear= {
     year: string,
     report_count: number
 }
+
+export type ScanLogsData = {
+    full_name: string
+    address: string
+	email: string
+	id: number
+	mollusk_type: string
+	reported_at: string
+}

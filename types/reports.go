@@ -12,6 +12,16 @@ type Reported_Cases struct{
 }
 
 
+type ScanLogUserDetails struct {
+	FullName    string    `json:"full_name"`
+	Email       string    `json:"email"`
+	Address     string    `json:"address"`
+	ID          int64     `json:"id"`
+	MolluskType string    `json:"mollusk_type"`
+	ReportedAt  string `json:"reported_at"`
+}
+
+
 type Fetch_Cases struct{
 	ID 				int64		`json:"report_id"` 
 	Longitude  		float32     `json:"longitude"` 

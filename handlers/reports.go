@@ -189,6 +189,21 @@ func (h *ReportHandler) InsertReportHandler(w http.ResponseWriter, r *http.Reque
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Reported Successfully")
 }
 
+
+func (h *ReportHandler) InsertScanLogsHandler(w http.ResponseWriter, r *http.Request) error {
+
+	scanLogsData := &database.ScanLogs{}
+	if err := json.NewDecoder(r.Body).Decode(&scanLogsData); err != nil{
+		return fmt.Errorf("error in json decoding %d", err)
+	}
+
+	if err := h.DB_METHOD.InsertScanLogs(scanLogsData); err != nil {
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, "Scan Logs Inserted Successfully")
+}
+
 func (h *ReportHandler) FetchAllReportsHandler(w http.ResponseWriter, r *http.Request) error {
 
 	
@@ -216,6 +231,17 @@ func (h *ReportHandler) FetchMapReportsHandler(w http.ResponseWriter, r *http.Re
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
 
+}
+
+
+func (h *ReportHandler) FetchScanLogsHandler(w http.ResponseWriter, r *http.Request) error {
+
+	scanLogs, err := h.DB_METHOD.FetchScanLogs()
+	if err != nil{
+		return err
+	}
+
+	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, scanLogs)	
 }
 
 func (h *ReportHandler) FetchReportByCityHandler(w http.ResponseWriter, r *http.Request) error {

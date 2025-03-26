@@ -53,7 +53,16 @@ func DBconfig() (*SQL, error) {
 	sql.SetConnMaxLifetime(time.Hour * 1)
 	sql.SetConnMaxIdleTime(time.Minute * 30)
 
-	db.AutoMigrate(&User{}, &Reported_Cases{}, &Admin{}, &Datasets{}, &Model{}, &Provinces{}, &Cities{})
+	db.AutoMigrate(
+		&User{}, 
+		&Reported_Cases{}, 
+		&Admin{}, 
+		&Datasets{}, 
+		&Model{}, 
+		&Provinces{}, 
+		&Cities{},
+		&ScanLogs{},
+	)
 
 	if err := SeedAdminAccount(db); err != nil{
 		return nil, err

@@ -14,10 +14,12 @@ func ReportsRoutes(router *http.ServeMux, reportsHandler *handlers.ReportHandler
 	router.HandleFunc("GET /ws/conn", ParseHTTPHandler(reportsHandler.WebsocketConnHandler))
 
 	router.HandleFunc("POST /insert/report", ParseHTTPHandler(reportsHandler.InsertReportHandler))
+	router.HandleFunc("POST /insert/logs", ParseHTTPHandler(reportsHandler.InsertScanLogsHandler))
 
 	router.HandleFunc("GET /fetch/reports", ParseHTTPHandler(reportsHandler.FetchAllReportsHandler))
 	router.HandleFunc("GET /fetch/map/reports/{month}/{mollusk}/{status}", ParseHTTPHandler(reportsHandler.FetchMapReportsHandler))
 	
+	router.HandleFunc("GET /fetch/scan/logs", adminAuth(ParseHTTPHandler(reportsHandler.FetchScanLogsHandler)))
 	router.HandleFunc("GET /fetch/reports/city", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportByCityHandler)))
 	router.HandleFunc("GET /fetch/reports/province", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportByProvinceHandler)))
 	router.HandleFunc("GET /fetch/reports/mollusk", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportPerMollusk)))

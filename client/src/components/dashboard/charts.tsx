@@ -1,18 +1,56 @@
-import  { Suspense, lazy } from "react";
+import  { Suspense, lazy, useState } from "react";
 import { useQuery } from "react-query";
 import { ThreeCircles } from 'react-loader-spinner';
 import { FetchDatasetClassesDashboard } from "../../http/get/datasets";
-import { FetchReportsPerMollusk, FetchReportsPerYear, FetchResolvedReportsPerYear, FetchYearlyReportsPerCity, FetchYearlyReportsPerProvince } from "../../http/get/reports";
-import { ReportsPerMollusk, ReportPerCity, ReportPerProvince, ReportsPerYear } from "../../types/reported";
+import { FetchReportsPerMollusk, FetchReportsPerYear, FetchResolvedReportsPerYear, FetchScanLogs, FetchYearlyReportsPerCity, FetchYearlyReportsPerProvince } from "../../http/get/reports";
+import { ReportsPerMollusk, ReportPerCity, ReportPerProvince, ReportsPerYear, ScanLogsData } from "../../types/reported";
 import { DatasetClassTypes } from "../../types/datasets";
+import ScanLogsDataModal from "./scanLogsModal";
+import Swal from "sweetalert2";
 
 const Chart = lazy(() => import("react-google-charts").then(module => ({ default: module.Chart })));
 
 export function Charts() {
-    return (
-        <div className="flex flex-col gap-5 h-full w-full ">
-            <div className="flex gap-5 h-full w-full">
 
+    const [OpenScanLogsModal, setOpenScanLogsModal] = useState<boolean>(false);
+
+    const scanlogs_query = useQuery(
+
+            ['scan_logs'],
+
+            () => FetchScanLogs(),
+
+            {
+              onSuccess: () => {
+                Swal.close(); 
+              },
+              onError: () => {
+                Swal.close(); 
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Failed to fetch reports!',
+                });
+              },
+            }
+          );
+        
+        const scan_logs: ScanLogsData[] = Array.isArray(scanlogs_query.data?.data) ? scanlogs_query.data.data : [];
+        console.log("scan_logs: ", scan_logs);
+        
+    return (
+        <div className="flex flex-col gap-5 h-full w-full">
+
+            <div className="w-full flex justify-end font-semibold">
+                <button
+                    className="bg-blue-700 rounded-md p-3 text-white hover:opacity-75 hover:cursor-pointer"
+                    onClick={() => setOpenScanLogsModal(true)}
+                >
+                    Scan Logs
+                </button>
+            </div>
+
+            <div className="flex gap-5 h-full w-full">
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <ReportedPerYear />
                 </Suspense>
@@ -41,6 +79,31 @@ export function Charts() {
                     <DatasetClasses />
                 </Suspense>
             </div>
+
+
+            {OpenScanLogsModal && (
+                                <> 
+                                    <div className="bg-gray-950 fixed top-0 left-0 w-full h-full opacity-75" style={{zIndex: 6000}}></div>
+                                    <div className="flex fixed top-0 left-0 flex-col w-full h-full rounded-md p-5 gap-8" style={{zIndex: 7000}}>
+                                        <div className="flex flex-col gap-5 h-full w-full">
+                                            <div className="flex justify-between items-center">
+                                                <h1 className="text-white font-bold text-3xl">Scan Logs</h1>
+                                                <button 
+                                                    className="bg-blue-700 rounded-md p-3 text-white font-semibold hover:opacity-75"
+                                                    onClick={() => setOpenScanLogsModal(false)}
+                                                >
+                                                    Close Modal
+                                                </button>
+                                            </div>
+
+                                            <ScanLogsDataModal 
+                                                scanLogs={scan_logs}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
         </div>
     );
 }
