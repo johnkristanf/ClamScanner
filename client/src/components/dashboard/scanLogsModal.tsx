@@ -67,8 +67,8 @@ function ScanLogsDataModal({ scanLogs }: any) {
       <tr key={data.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
 
 
-        <td className="py-4 px-6">{data.full_name}</td>
-        <td className="py-4 px-6">{data.email}</td>
+        <td className="py-4 px-6">{data.id}</td>
+        {/* <td className="py-4 px-6">{data.email}</td> */}
         
         <td className="py-4 px-6">{data.mollusk_type}</td>
         <td className="py-4 px-6"> {data.address}</td>
@@ -91,8 +91,8 @@ function ScanLogsDataModal({ scanLogs }: any) {
 
           <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
             <tr>
-              <th scope="col" className="py-3 px-6">Full Name</th>
-              <th scope="col" className="py-3 px-6">Email</th>
+              <th scope="col" className="py-3 px-6">User ID</th>
+              {/* <th scope="col" className="py-3 px-6">Email</th> */}
               <th scope="col" className="py-3 px-6">Mollusk Type</th>
               <th scope="col" className="py-3 px-6">Scan Place</th>
               <th scope="col" className="py-3 px-6">Scan Date</th>
