@@ -8,6 +8,7 @@ import { monthNames } from "../utils/list-months";
 import { ReportedCasesTypes } from "../types/reported";
 import { FetchMapReports } from "../http/get/reports";
 import { ClamScannerNavBar } from "../components/navbar";
+import { handleGenerateReport } from "../utils/generate-report";
 
 const ReportedCases = lazy(() => import("../components/reports/reported"));
 const Map = lazy(() => import("../components/reports/map"));
@@ -146,6 +147,9 @@ const ReportsPage: React.FC = () => {
           },
         }
       );
+
+    
+    
     
     const reports: ReportedCasesTypes[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
     
@@ -164,6 +168,14 @@ const ReportsPage: React.FC = () => {
                                     <div className="flex items-center gap-8">
 
                                         <div className="flex gap-2">
+
+                                            <button
+                                                className="rounded-md p-2 text-white font-bold bg-blue-900 flex-1 hover:opacity-75 hover:cursor-pointer min-w-[120px] text-center"
+                                                onClick={handleGenerateReport}
+                                            >
+                                                Generate Reports
+                                            </button>
+
                                             <button
                                                 className="rounded-md p-2 text-white font-bold bg-blue-900 flex-1 hover:opacity-75 hover:cursor-pointer min-w-[120px] text-center"
                                                 onClick={() => setShowAllReportsMap()}

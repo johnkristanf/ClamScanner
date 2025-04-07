@@ -4,7 +4,8 @@ def training_callbacks(model_version: str) -> tuple[EarlyStopping, ReduceLROnPla
 
     early_stopping = EarlyStopping(
         monitor='val_loss', 
-        patience=5, 
+        patience=2, 
+        min_delta=0.01,
         restore_best_weights=True
     )
 

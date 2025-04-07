@@ -26,7 +26,7 @@ predict = PredictDatabaseOperations()
 
 class ClamPrediction():
     def __init__(self):
-        self.model_path = os.path.abspath("./models/ClamScanner_best_v6.h5")
+        self.model_path = os.path.abspath("./models/main_model/ClamScanner_best_v6.h5")
         self.model = self.load_resnetmodel()
 
     def get_prediction_percentage(self, predictions):

@@ -11,6 +11,7 @@ import { ReportedCasesTypes } from '../../types/reported';
 import { SetViewOnClickProps } from '../../types/map';
 import Swal from 'sweetalert2';
 import { monthNames } from '../../utils/list-months';
+import { handleGenerateReport } from '../../utils/generate-report';
 
 // const redIcon = new L.Icon({
 //   iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
@@ -180,6 +181,14 @@ function Map({ setMapCoor, MapCoor, setOpenReportsModal }: any) {
 
           {/* FILTER BUTTONS */}
           <div className="flex gap-2">
+
+            <button
+              onClick={handleGenerateReport}
+              className="rounded-md p-2 text-white font-bold bg-blue-900 flex-1 hover:opacity-75 hover:cursor-pointer min-w-[120px] text-center"
+            >
+              Generate Reports
+            </button>
+
             <button
               onClick={() => setShowAllReportsMap()}
               className="rounded-md p-2 text-white font-bold bg-blue-900 flex-1 hover:opacity-75 hover:cursor-pointer min-w-[120px] text-center"

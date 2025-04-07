@@ -13,6 +13,18 @@ export function FetchReports(): Promise<AxiosResponse<any, any>> {
     }
 }
 
+export async function GenerateReports(){
+    try {
+        const response = await axios.get('https://clamscanner.com/go/generate/reports', {
+          responseType: 'blob', 
+        });
+  
+        return response.data;
+      } catch (error) {
+        console.error('Error downloading Excel file:', error);
+      }
+}
+
 
 export function FetchMapReports({ month, mollusk, status }: FetchMapReportsParams): Promise<AxiosResponse<any, any>> {
     try {

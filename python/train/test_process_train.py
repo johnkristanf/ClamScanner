@@ -2,7 +2,7 @@ import tensorflow as tf
 import keras._tf_keras.keras.layers as layers
 from keras._tf_keras.keras import regularizers
 from keras import Sequential
-from keras._tf_keras.keras.applications import ResNet50
+from keras._tf_keras.keras.applications import MobileNetV3Large
 from keras._tf_keras.keras.applications.resnet import preprocess_input
 from keras._tf_keras.keras.optimizers import Adam
 import numpy as np
@@ -21,7 +21,7 @@ mixed_precision.set_global_policy('mixed_float16')  # Enable mixed precision
 
 # Constants
 DATASET_DIR = "./datasets"  # Path to dataset directory
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 IMAGE_SIZE = (224, 224)
 
 train_db = TrainDatabaseOperations()
@@ -43,7 +43,7 @@ def load_dataset():
     dataset = tf.keras.preprocessing.image_dataset_from_directory(
         DATASET_DIR,
         image_size=IMAGE_SIZE,
-        batch_size=BATCH_SIZE,
+        batch_size=None,
         label_mode='int'  # Uses integer labels from folder names
     )
 
@@ -76,21 +76,28 @@ def prepare(ds, shuffle=False, augment=False):
         data_augmentation = Sequential([
             layers.RandomFlip('horizontal'),
             layers.RandomRotation(0.3),
-            layers.RandomContrast(0.3),
-            layers.RandomBrightness(0.3),
             layers.GaussianNoise(0.3),
-            layers.RandomHeight(0.3),
-            layers.RandomWidth(0.3),
+            # layers.RandomContrast(0.3),
+            # layers.RandomBrightness(0.3),
+            # layers.RandomHeight(0.3),
+            # layers.RandomWidth(0.3),
+            # layers.RandomZoom(0.3), 
+            # layers.RandomTranslation(height_factor=0.2, width_factor=0.2),  
         ])
+
         ds = ds.map(lambda x, y: (data_augmentation(x), y), num_parallel_calls=tf.data.AUTOTUNE)
 
-    # Apply ResNet50 preprocessing
+    # Ensure correct preprocessing for MobileNetV3
+    ds = ds.map(lambda x, y: (tf.image.resize(x, IMAGE_SIZE), y), num_parallel_calls=tf.data.AUTOTUNE)
     ds = ds.map(lambda x, y: (preprocess_input(x), y), num_parallel_calls=tf.data.AUTOTUNE)
+
 
     if shuffle:
         ds = ds.shuffle(buffer_size=100)
 
-    return ds.prefetch(buffer_size=tf.data.AUTOTUNE)
+    ds = ds.batch(BATCH_SIZE).cache().prefetch(tf.data.AUTOTUNE)  # Optimized
+
+    return ds
 
 
 class CustomCallback(tf.keras.callbacks.Callback):
@@ -106,9 +113,11 @@ class CustomCallback(tf.keras.callbacks.Callback):
             'loss': logs.get('loss'),
             'val_loss': logs.get('val_loss'),
         }
+
         message = json.dumps(data)
         tasks = [client.send_text(message) for client in clients]
         await asyncio.gather(*tasks)
+
 
     def on_epoch_end(self, epoch, logs=None):
         asyncio.run(self.send_training_update(epoch, logs))
@@ -127,24 +136,24 @@ def train_save_model(train_ds, validation_ds, num_classes, class_names, model_ve
     Builds, trains, and saves a ResNet50 model.
     """
 
-    base_model = ResNet50(
+    base_model = MobileNetV3Large(
         include_top=False,
         weights='imagenet',
         input_shape=(224, 224, 3),
-        pooling='avg'
     )
 
-    # Unfreeze last 30 layers
-    for layer in base_model.layers[-10:]:  
+    for layer in base_model.layers[-20:]:  # Unfreezing the last 20 layers
         layer.trainable = True
 
 
     model = Sequential([
         base_model,
-        layers.Dense(1024, activation='relu'),  
-        layers.Dropout(0.4),  
-        layers.Dense(num_classes, activation='softmax')  
+        layers.GlobalAveragePooling2D(),
+        layers.Dense(512, activation='relu'),  
+        layers.Dropout(0.4),
+        layers.Dense(num_classes, activation='softmax')
     ])
+
 
 
     model.compile(

@@ -18,6 +18,9 @@ func ReportsRoutes(router *http.ServeMux, reportsHandler *handlers.ReportHandler
 
 	router.HandleFunc("GET /fetch/reports", ParseHTTPHandler(reportsHandler.FetchAllReportsHandler))
 	router.HandleFunc("GET /fetch/map/reports/{month}/{mollusk}/{status}", ParseHTTPHandler(reportsHandler.FetchMapReportsHandler))
+
+	router.HandleFunc("GET /generate/reports", ParseHTTPHandler(reportsHandler.GenerateReportsHandler))
+
 	
 	router.HandleFunc("GET /fetch/scan/logs", adminAuth(ParseHTTPHandler(reportsHandler.FetchScanLogsHandler)))
 	router.HandleFunc("GET /fetch/reports/city", adminAuth(ParseHTTPHandler(reportsHandler.FetchReportByCityHandler)))

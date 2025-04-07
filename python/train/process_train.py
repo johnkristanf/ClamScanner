@@ -42,6 +42,7 @@ from io import BytesIO
 from PIL import Image
 
 
+mixed_precision.set_global_policy('mixed_float16')
 load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
 
 s3_client = boto3.client(
@@ -68,49 +69,40 @@ def fetch_class_name_from_s3():
     return class_names
 
 
-def fetch_s3_images(dataset_class):
-    images = []
-    # labels = []
-
+def fetch_s3_image_keys(dataset_class):
     response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=f"datasets/{dataset_class}/")
 
-    if 'Contents' in response:
-        for obj in response['Contents']:
-            key = obj['Key']
+    if 'Contents' not in response:
+        return []
 
-            if key.lower().endswith(('jpg', 'jpeg', 'png')):
+    image_keys = [ obj['Key'] for obj in response['Contents'] if obj['Key'].lower().endswith(('jpg', 'jpeg', 'png')) ]
+    return image_keys
+
+
+def load_dataset_s3():
+    class_names = fetch_class_name_from_s3()
+    class_to_idx = {class_name: idx for idx, class_name in enumerate(class_names)}
+
+
+    def image_generator():
+        for class_name in class_names:
+            image_keys = fetch_s3_image_keys(class_name)
+            for key in image_keys:
                 response = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
                 image_data = response['Body'].read()
                 img = Image.open(BytesIO(image_data)).convert('RGB')
                 img = img.resize((224, 224))
+                img = np.array(img, dtype=np.float32)
+                img = preprocess_input(img)
+                yield img, class_to_idx[class_name]
 
-                img = np.expand_dims(np.array(img), axis=0)
-                img = preprocess_input(img)  
+    dataset = tf.data.Dataset.from_generator(
+        image_generator,
+        output_signature=(tf.TensorSpec(shape=(224, 224, 3), dtype=tf.float32),
+                          tf.TensorSpec(shape=(), dtype=tf.int32))
+    )
 
-                images.append(img)
-                # labels.append(dataset_class)
-
-    return images
-
-
-def load_dataset_s3():
-    images = []
-    labels = []
-
-    class_names = fetch_class_name_from_s3()
-    class_to_idx = {class_name: idx for idx, class_name in enumerate(class_names)}
-
-    for class_name in class_names:
-        class_images = fetch_s3_images(class_name)
-        images.extend(class_images)
-        labels.extend([class_to_idx[class_name]] * len(class_images))
-
-    images = np.concatenate(images, axis=0)
-    labels = np.array(labels)
-
-    batch_size=16
-    dataset = tf.data.Dataset.from_tensor_slices((images, labels)).batch(batch_size)
-
+    dataset = dataset.batch(8).prefetch(tf.data.AUTOTUNE)  
     return dataset, len(class_names), class_names
 
 
@@ -122,9 +114,9 @@ def load_dataset() -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset, i
 
     dataset, num_classes, class_names = load_dataset_s3()
 
-    dataset_size = len(dataset)
+    dataset_size = tf.data.experimental.cardinality(dataset).numpy()  
     train_size = int(0.7 * dataset_size)
-    val_size = test_size = (dataset_size - train_size) // 2
+    val_size = test_size = (dataset_size - train_size) 
 
 
     train_ds = dataset.take(train_size)
@@ -152,10 +144,10 @@ def prepare(ds: tf.data.Dataset, shuffle=False, augment=False):
             layers.RandomFlip('horizontal'),
             layers.RandomRotation(0.2),
             layers.RandomContrast(0.2),
-            layers.RandomBrightness(0.2),
-            layers.GaussianNoise(0.2),
-            layers.RandomHeight(0.2),
-            layers.RandomWidth(0.2),
+            # layers.RandomBrightness(0.2),
+            # layers.GaussianNoise(0.2),
+            # layers.RandomHeight(0.2),
+            # layers.RandomWidth(0.2),
         ])
 
         ds = ds.map(lambda x, y: (data_augmentation(x), y), num_parallel_calls=tf.data.AUTOTUNE)
@@ -215,7 +207,11 @@ def train_save_model(train_ds, validation_ds, num_classes: int, class_names: lis
         pooling='avg'
     )
 
-    for layer in base_model.layers:
+    # Freeze all but last 50 layers 
+    # - which means kuha rakag 50 layers knowledge 
+    #   from resnet then adapt mostly saimong dataset
+
+    for layer in base_model.layers[:-50]:
         layer.trainable = False
 
 

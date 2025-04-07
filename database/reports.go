@@ -54,6 +54,7 @@ type REPORTED_DB_METHOD interface {
 	FetchMapReportedCases(string, string, string) ([]*types.Fetch_Cases, error)
 	
 	FetchScanLogs() ([]*types.ScanLogUserDetails, error)
+	FetchReportsData() ([]*types.Fetch_Cases, error)
 
 	FetchPerCityReports() ([]*types.ReportsPerCity, error)
 	FetchPerProvinceReports() ([]*types.ReportsPerProvince, error)
@@ -204,6 +205,29 @@ func (sql *SQL) FetchMapReportedCases(month string, mollusk string, status strin
 	return cases, nil
 
 }
+
+
+func (sql *SQL) FetchReportsData() ([]*types.Fetch_Cases, error) {
+
+	var cases []*types.Fetch_Cases
+
+	query := sql.DB.Table("reported_cases").
+		Select(`reported_cases.id, reported_cases.longitude, reported_cases.latitude, reported_cases.city, reported_cases.province, reported_cases.district, reported_cases.reported_at, reported_cases.mollusk_type, reported_cases.status,
+		users.id AS user_id, users.full_name AS reporter_name, users.address AS reporter_address`).
+		Joins("INNER JOIN users ON reported_cases.user_id = users.id")
+
+	query = query.Find(&cases)
+
+	if query.Error != nil {
+		return nil, query.Error 
+	}
+
+	fmt.Println("cases in db: ", cases)
+
+	return cases, nil
+
+}
+
 
 func (sql *SQL) FetchPerCityReports() ([]*types.ReportsPerCity, error) {
 	

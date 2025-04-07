@@ -9,6 +9,8 @@ import (
 	"math/rand"
 
 	"github.com/gorilla/websocket"
+	"github.com/xuri/excelize/v2"
+
 	"github.com/johnkristanf/clamscanner/database"
 	"github.com/johnkristanf/clamscanner/helpers"
 	"github.com/johnkristanf/clamscanner/middlewares"
@@ -231,6 +233,76 @@ func (h *ReportHandler) FetchMapReportsHandler(w http.ResponseWriter, r *http.Re
 
 	return h.JSON_METHOD.JsonEncode(w, http.StatusOK, cases)
 
+}
+
+
+func (h *ReportHandler) GenerateReportsHandler(w http.ResponseWriter, r *http.Request) error {
+	reports, err := h.DB_METHOD.FetchReportsData()
+	if err != nil {
+		return err
+	}
+
+	f := excelize.NewFile()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Error closing file:", err)
+		}
+	}()
+
+	sheetName := "Reported Cases"
+	index, err := f.NewSheet(sheetName)
+	if err != nil {
+		fmt.Println("Error creating sheet:", err)
+		return err
+	}
+
+	// Set headers
+	headers := []string{"ID", "Longitude", "Latitude", "City", "Province", "District", "Reported At", "Mollusk Type", "Status", "User ID", "Reporter Name", "Reporter Address"}
+	for col, header := range headers {
+		cell := fmt.Sprintf("%s%d", string('A'+col), 1)
+		f.SetCellValue(sheetName, cell, header)
+	}
+
+	// Populate data rows
+	for rowNum, caseData := range reports {
+		row := rowNum + 2 // Start from row 2 after headers
+
+		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), caseData.ID)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), caseData.Longitude)
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), caseData.Latitude)
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), caseData.City)
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), caseData.Province)
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), caseData.District)
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), caseData.ReportedAt) // Format the time
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), caseData.MolluskType)
+		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), caseData.Status)
+		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), caseData.UserID)
+		f.SetCellValue(sheetName, fmt.Sprintf("K%d", row), caseData.ReporterName)
+		f.SetCellValue(sheetName, fmt.Sprintf("L%d", row), caseData.ReporterAddress)
+	}
+
+	f.SetActiveSheet(index)
+
+	// 3. Save the Excel file to a buffer (in memory)
+	excelData, err := f.WriteToBuffer()
+	if err != nil {
+		http.Error(w, "Failed to generate Excel file", http.StatusInternalServerError)
+		return err
+	}
+
+	// 4. Set HTTP headers for Blob download
+	w.Header().Set("Content-Disposition", "attachment; filename=reported_cases.xlsx")
+	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	w.Header().Set("Content-Length", strconv.Itoa(excelData.Len()))
+
+	// 5. Send the Excel data as the response body
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(excelData.Bytes())
+	if err != nil {
+		fmt.Println("Error writing response:", err)
+	}
+
+	return nil
 }
 
 
