@@ -72,7 +72,16 @@ function ScanLogsDataModal({ scanLogs }: any) {
         
         <td className="py-4 px-6">{data.mollusk_type}</td>
         <td className="py-4 px-6"> {data.address}</td>
-        <td className="py-4 px-6">{data.reported_at}</td>
+        <td className="py-4 px-6"> 
+          {new Date(data.reported_at).toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          })}
+      </td>
 
       </tr>
 
@@ -91,7 +100,7 @@ function ScanLogsDataModal({ scanLogs }: any) {
 
           <thead className="text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-bold">
             <tr>
-              <th scope="col" className="py-3 px-6">User ID</th>
+              <th scope="col" className="py-3 px-6">Log ID</th>
               {/* <th scope="col" className="py-3 px-6">Email</th> */}
               <th scope="col" className="py-3 px-6">Mollusk Type</th>
               <th scope="col" className="py-3 px-6">Scan Place</th>
