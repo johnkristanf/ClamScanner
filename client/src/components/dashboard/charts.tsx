@@ -2,7 +2,7 @@ import  { Suspense, lazy, useState } from "react";
 import { useQuery } from "react-query";
 import { ThreeCircles } from 'react-loader-spinner';
 import { FetchDatasetClassesDashboard } from "../../http/get/datasets";
-import { FetchReportsPerMollusk, FetchReportsPerYear, FetchResolvedReportsPerYear, FetchScanLogs, FetchYearlyReportsPerCity, FetchYearlyReportsPerProvince } from "../../http/get/reports";
+import { FetchReportsPerMollusk, FetchReportsPerYear, FetchScanLogs, FetchYearlyReportsPerCity, FetchYearlyReportsPerProvince } from "../../http/get/reports";
 import { ReportsPerMollusk, ReportPerCity, ReportPerProvince, ReportsPerYear, ScanLogsData } from "../../types/reported";
 import { DatasetClassTypes } from "../../types/datasets";
 import ScanLogsDataModal from "./scanLogsModal";
@@ -55,9 +55,9 @@ export function Charts() {
                     <ReportedPerYear />
                 </Suspense>
 
-                <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
+                {/* <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <ResolvedReportedPerYear />
-                </Suspense>
+                </Suspense> */}
 
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <ReportedPerProvince />
@@ -75,10 +75,14 @@ export function Charts() {
                     <RedListedMollusk />
                 </Suspense>
 
+                
+            </div>
+
+
                 <Suspense fallback={<ThreeCircles color="#E53E3E" height={80} width={80} />}>
                     <DatasetClasses />
                 </Suspense>
-            </div>
+
 
 
             {OpenScanLogsModal && (
@@ -124,19 +128,15 @@ function ReportedPerCity() {
     
     
     const options = {
-        // chart: {
-        //     title: "Reported Red Listed Mollusk Per City",
-        //     subtitle: "Yearly Reported Cases",
-        // },
         legend: { position: "none" }, 
         vAxis: {
-            minValue: 1,
-            format: "integer", 
-            ticks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            gridlines: {
-                count: 20,  // Change this value to 20 for 20 grid lines
-            },
+           title: 'Reports'
         },
+
+        hAxis: {
+            title: "Cities",
+        },
+       
     };
     
 
@@ -152,14 +152,14 @@ function ReportedPerCity() {
                 <>
                     {reports.length === 0 ? (
                         <div className="h-[50%] w-full flex items-center justify-center">
-                            <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
+                            <div className="text-red-800 font-bold text-xl  text-center">No reported cases yet</div>
                         </div>
                         
                     ) : (
                         <Chart
-                            chartType="Bar"
+                            chartType="ColumnChart"
                             width="100%"
-                            height="90%"
+                            height="100%"
                             data={data}
                             options={options}
                         />
@@ -177,7 +177,7 @@ function ReportedPerProvince() {
     console.log("reports: ", reports);
 
     const data: [string, string | number][] = [
-        ["Provinces", "Total Reports"]
+        ["Provinces", "Reports"]
     ];
     
     reports.map((item) => {
@@ -185,25 +185,19 @@ function ReportedPerProvince() {
     })
 
    
-    const options = {
-        // chart: {
-        //     title: "Reported Red Listed Mollusk Per Province",
-        //     subtitle: "Yearly Reported Cases",
-        // },
+   const options = {
         legend: { position: "none" },
-        vAxis: {
-            minValue: 1,
-            format: "integer", 
-            ticks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            gridlines: {
-                count: 20,  // Change this value to 20 for 20 grid lines
-            },
+        hAxis: {
+            title: "Provinces",
         },
-
+        vAxis: {
+            title: "Reports",
+        },
+       
     };
 
     return (
-        <div className="rounded-md bg-white p-4 h-full w-full">
+        <div className="rounded-md bg-white p-4 h-[90%] w-full">
             <h1 className="text-gray-600 font-bold text-xl mb-4">Reported Red Listed Per Province</h1>
             
             {reports_query.isLoading ? (
@@ -214,16 +208,18 @@ function ReportedPerProvince() {
                 <>
                     {reports.length === 0 ? (
                         <div className="h-[90%] w-full flex items-center justify-center">
-                            <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
+                            <div className="text-red-800 font-bold text-xl text-center">No reported cases yet</div>
                         </div>
                     ) : (
+
                         <Chart
-                            chartType="Bar"
+                            chartType="ColumnChart"
                             width="100%"
-                            height="90%"
+                            height="100%"
                             data={data}
                             options={options}
                         />
+
                     )}
                 </>
             )}
@@ -232,132 +228,6 @@ function ReportedPerProvince() {
     );
 }
 
-// function ReportedPerCity() {
-//     const reports_query = useQuery("perCity_reports", FetchYearlyReportsPerCity);
-//     const reports: ReportPerCity[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
-  
-//     const cities = Array.from(new Set(reports && reports.map(report => report.city)));
-  
-//     const data: (string | number)[][] = [["Year", ...cities]];
-  
-//     const reportsMap: { [year: string]: { [city: string]: number } } = {};
-  
-//     reports.forEach((report) => {
-//         if (!reportsMap[report.year]) {
-//             reportsMap[report.year] = {};
-//         }
-//         reportsMap[report.year][report.city] = report.reports_count;
-//     });
-  
-//     Object.keys(reportsMap).forEach((year) => {
-//         const row: (string | number)[] = [year];
-//         cities.forEach((city) => {
-//             row.push(reportsMap[year][city] || 0);
-//         });
-//         data.push(row);
-//     });
-  
-//     const options = {
-//         chart: {
-//             title: "Reported Red Listed Mollusk Per City",
-//             subtitle: "Yearly Reported Cases",
-//         },
-
-//     };
-
-//     return (
-//         <div className="rounded-md bg-white p-4 h-full w-full">
-//             <h1 className="text-gray-600 font-bold text-3xl mb-4">Reported Red Listed Per City</h1>
-
-//             {reports_query.isLoading ? (
-//                 <div className="h-[70%] w-full flex items-center justify-center">
-//                     <ThreeCircles color="#E53E3E" height={80} width={80} />
-//                 </div>
-//             ) : (
-//                 <>
-//                     {reports.length === 0 ? (
-//                         <div className="h-[70%] w-full flex items-center justify-center">
-//                             <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
-//                         </div>
-                        
-//                     ) : (
-//                         <Chart
-//                             chartType="Bar"
-//                             width="100%"
-//                             height="90%"
-//                             data={data}
-//                             options={options}
-//                         />
-//                     )}
-//                 </>
-//             )}
-//         </div>
-//     );
-// }
-
-
-// function ReportedPerProvince() {
-//     const reports_query = useQuery("perProvince_reports", FetchYearlyReportsPerProvince);
-//     const reports: ReportPerProvince[] = Array.isArray(reports_query.data?.data) ? reports_query.data.data : [];
-    
-//     const provinces = Array.from(new Set(reports && reports.map(report => report.province)));
-  
-//     const data: (string | number)[][] = [["Year", ...provinces]];
-  
-//     const reportsMap: { [year: string]: { [province: string]: number } } = {};
-  
-//     reports.forEach((report) => {
-//         if (!reportsMap[report.year]) {
-//             reportsMap[report.year] = {};
-//         }
-//         reportsMap[report.year][report.province] = report.reports_count;
-//     });
-  
-//     Object.keys(reportsMap).forEach((year) => {
-//         const row: (string | number)[] = [year];
-//         provinces.forEach((province) => {
-//             row.push(reportsMap[year][province] || 0);
-//         });
-//         data.push(row);
-//     });
-  
-//     const options = {
-//         chart: {
-//             title: "Reported Red Listed Mollusk Per Province",
-//             subtitle: "Yearly Reported Cases",
-//         },
-
-//     };
-
-//     return (
-//         <div className="rounded-md bg-white p-4 h-full w-full">
-//             <h1 className="text-gray-600 font-bold text-3xl mb-4">Reported Red Listed Per Province</h1>
-            
-//             {reports_query.isLoading ? (
-//                 <div className="h-[70%] w-full flex items-center justify-center">
-//                     <ThreeCircles color="#E53E3E" height={80} width={80} />
-//                 </div>
-//             ) : (
-//                 <>
-//                     {reports.length === 0 ? (
-//                         <div className="h-[70%] w-full flex items-center justify-center">
-//                             <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
-//                         </div>
-//                     ) : (
-//                         <Chart
-//                             chartType="Bar"
-//                             width="100%"
-//                             height="90%"
-//                             data={data}
-//                             options={options}
-//                         />
-//                     )}
-//                 </>
-//             )}
-
-//         </div>
-//     );
-// }
 
 function RedListedMollusk() {
     const reports_query = useQuery("perMollusk_reports", FetchReportsPerMollusk);
@@ -389,7 +259,12 @@ function RedListedMollusk() {
     const options = {
         legend: { position: "none" }, 
         vAxis: {
+            title: 'Reports',
             minValue: 0,
+        },
+
+         hAxis: {
+            title: "Mollusk Types",
         },
     };
 
@@ -405,13 +280,13 @@ function RedListedMollusk() {
                 <>
                     {reports.length === 0 ? (
                         <div className="h-[70%] w-full flex items-center justify-center">
-                            <div className="text-red-800 font-bold text-xl text-red-800 text-center">No reported cases yet</div>
+                            <div className=" font-bold text-xl text-red-800 text-center">No reported cases yet</div>
                         </div>
                     ) : (
                         <Chart
                             chartType="ColumnChart"
                             width="100%"
-                            height="80%"
+                            height="100%"
                             data={data}
                             options={options}
                         />
@@ -456,7 +331,7 @@ function DatasetClasses() {
     };
 
     return (
-        <div className="rounded-md bg-white p-4 h-[90%] w-full">
+        <div className="rounded-md bg-white p-4 h-full w-full">
             <h1 className="text-gray-600 font-bold text-xl mb-4">Dataset Class Images</h1>
 
             {datasets_query.isLoading ? (
@@ -475,7 +350,7 @@ function DatasetClasses() {
                         <Chart
                             chartType="PieChart"
                             width="100%"
-                            height="80%"
+                            height="100%"
                             data={data}
                             options={options}
                         />
@@ -496,7 +371,7 @@ function ReportedPerYear() {
     console.log("reports per year 123", reports);
 
     const data: [string, string | number][] = [
-        ["Year", "Total Reports"]
+        ["Year", "Reports"]
     ];
 
     if (reports.length > 0) {
@@ -507,24 +382,14 @@ function ReportedPerYear() {
 
     const options = {
         hAxis: {
-            title: "Total Reports",
+            title: "Years",
             titleTextStyle: { color: "#333" },
         },
         vAxis: {
-            minValue: 0,
-            format: "integer",  // Ensure it is formatted as an integer
-            ticks: [0, 2, 4, 6, 8, 10],  // Set ticks to increment by 2
-            gridlines: {
-                count: 6,  // Adjust the number of gridlines if needed
-            },
+            title: "Reports",
+           
         },
 
-        chartArea: {
-            top: 50,    // Add padding to the top of the chart
-            left: 50,   // Add padding to the left of the chart
-            bottom: 50, // Add padding to the bottom of the chart
-            right: 50,  // Add padding to the right of the chart
-        },
 
         series: {
             0: {
@@ -536,7 +401,7 @@ function ReportedPerYear() {
     };
 
     return (
-        <div className="rounded-md bg-white p-4 h-full w-full">
+        <div className="rounded-md bg-white h-full w-full">
             <h1 className="text-gray-600 font-bold text-xl mb-4">Total Reports Per Year</h1>
 
             {reports_query.isLoading ? (
@@ -551,9 +416,9 @@ function ReportedPerYear() {
                         </div>
                     ) : (
                         <Chart
-                            chartType="Line"
+                            chartType="LineChart"
                             width="100%"
-                            height="90%"
+                            height="100%"
                             data={data}
                             options={options}
                             className="p-8"
@@ -566,80 +431,80 @@ function ReportedPerYear() {
 }
 
 
-function ResolvedReportedPerYear() {
+// function ResolvedReportedPerYear() {
 
-    const reports_query = useQuery("perYear_ResolvedReports", FetchResolvedReportsPerYear);
-    const reports: ReportsPerYear[] = reports_query.data?.data ?? [];
+//     const reports_query = useQuery("perYear_ResolvedReports", FetchResolvedReportsPerYear);
+//     const reports: ReportsPerYear[] = reports_query.data?.data ?? [];
 
-    console.log("reports per year", reports);
+//     console.log("reports per year", reports);
 
-    const data: [string, string | number][] = [
-        ["Year", "Total Reports"]
-    ];
+//     const data: [string, string | number][] = [
+//         ["Year", "Total Reports"]
+//     ];
 
-    if (reports.length > 0) {
-        reports.forEach((item) => {
-            data.push([item.year, Math.round(Number(item.report_count))]); // Rounds to nearest whole number
-        });
-    }
+//     if (reports.length > 0) {
+//         reports.forEach((item) => {
+//             data.push([item.year, Math.round(Number(item.report_count))]); // Rounds to nearest whole number
+//         });
+//     }
 
-    const options = {
-        hAxis: {
-            title: "Total Reports",
-            titleTextStyle: { color: "#333" },
-        },
+//     const options = {
+//         hAxis: {
+//             title: "Total Reports",
+//             titleTextStyle: { color: "#333" },
+//         },
 
-        vAxis: {
-            minValue: 0,
-            format: "integer",  // Ensure it is formatted as an integer
-            ticks: [0, 2, 4, 6, 8, 10],  // Set ticks to increment by 2
-            gridlines: {
-                count: 6,  // Adjust the number of gridlines if needed
-            },
-        },
+//         vAxis: {
+//             minValue: 0,
+//             format: "integer",  // Ensure it is formatted as an integer
+//             ticks: [0, 2, 4, 6, 8, 10],  // Set ticks to increment by 2
+//             gridlines: {
+//                 count: 6,  // Adjust the number of gridlines if needed
+//             },
+//         },
 
-        chartArea: {
-            top: 50,    // Add padding to the top of the chart
-            left: 50,   // Add padding to the left of the chart
-            bottom: 50, // Add padding to the bottom of the chart
-            right: 50,  // Add padding to the right of the chart
-        },
+//         chartArea: {
+//             top: 50,    // Add padding to the top of the chart
+//             left: 50,   // Add padding to the left of the chart
+//             bottom: 50, // Add padding to the bottom of the chart
+//             right: 50,  // Add padding to the right of the chart
+//         },
        
-        series: {
-            0: {
-                color: "#008000",  
-            },
-        },
+//         series: {
+//             0: {
+//                 color: "#008000",  
+//             },
+//         },
 
-        legend: { position: "none" }, 
-    };
+//         legend: { position: "none" }, 
+//     };
 
-    return (
-        <div className="rounded-md bg-white p-4 h-full w-full">
-            <h1 className="text-gray-600 font-bold text-xl mb-4">Resolved Reports Per Year</h1>
+//     return (
+//         <div className="rounded-md bg-white p-4 h-full w-full">
+//             <h1 className="text-gray-600 font-bold text-xl mb-4">Resolved Reports Per Year</h1>
 
-            {reports_query.isLoading ? (
-                <div className="h-[70%] w-full flex items-center justify-center">
-                    <ThreeCircles color="#E53E3E" height={80} width={80} />
-                </div>
-            ) : (
-                <>
-                    {reports.length === 0 ? (
-                        <div className="h-[70%] w-full flex items-center justify-center">
-                            <div className="text-red-800 font-bold text-xl text-center">No resolved reported cases yet</div>
-                        </div>
-                    ) : (
-                        <Chart
-                            chartType="BarChart"
-                            width="90%"
-                            height="90%"
-                            data={data}
-                            options={options}
-                            className="p-7"
-                        />
-                    )}
-                </>
-            )}
-        </div>
-    );
-}
+//             {reports_query.isLoading ? (
+//                 <div className="h-[70%] w-full flex items-center justify-center">
+//                     <ThreeCircles color="#E53E3E" height={80} width={80} />
+//                 </div>
+//             ) : (
+//                 <>
+//                     {reports.length === 0 ? (
+//                         <div className="h-[70%] w-full flex items-center justify-center">
+//                             <div className="text-red-800 font-bold text-xl text-center">No resolved reported cases yet</div>
+//                         </div>
+//                     ) : (
+//                         <Chart
+//                             chartType="BarChart"
+//                             width="90%"
+//                             height="90%"
+//                             data={data}
+//                             options={options}
+//                             className="p-7"
+//                         />
+//                     )}
+//                 </>
+//             )}
+//         </div>
+//     );
+// }

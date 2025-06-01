@@ -20,7 +20,7 @@ function DashboardPage(){
                 <ClamScannerNavBar setisSidebarOpen={setisSidebarOpen} pageName="Dashboard"/>
 
                 
-                <div className="h-[120vh] w-full p-5 flex flex-col gap-8 mt-20 rounded-md bg-gray-100">
+                <div className="h-[165vh] w-full p-5 flex flex-col gap-8 mt-20 rounded-md bg-gray-100">
 
                     {/* <h1 className="font-bold text-3xl">Clam Scanner Dashboard</h1> */}
                     <Charts />
